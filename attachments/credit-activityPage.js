@@ -1769,10 +1769,19 @@ global.CreditPAL=function(ctx){
  ].map(([key,label,options])=>({key,label,options,value:settings[key],group:'portfolio',disabled:options.length===1}));}
  function headline(id,items){if(ctx.shouldDraw&&!ctx.shouldDraw(id))return;const el=$('#'+id),summary=document.createElement('div');summary.className='ch-chart-summary';summary.innerHTML=items.map(([value,label])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join('');el.before(summary);}
  function snapshot(rows){
-  const counts=[['Facilities',unique(rows,'facility_id'),'facilities'],['Relationships',unique(rows,'relationship_id'),'relationships'],['CAs expired',unique(rows.filter(r=>r.pal_ca_expired),'relationship_id'),'caexpired'],['Facilities expired',unique(rows.filter(r=>r.pal_facility_expired),'facility_id'),'expired']];
-
-  return '<section class="ch-card pal-table-card pal-coverage-card" id="pal-snapshot"><div class="ch-card-head"><div><h2>Portfolio coverage</h2><p class="ch-card-sub">Distinct records in this portfolio</p></div></div><div class="pal-coverage-stats">'+counts.map(([name,count,key])=>'<button type="button" class="pal-coverage-stat" data-pal-rows="'+key+'" data-title="'+name+'" aria-label="View '+name.toLowerCase()+' records"><span>'+name+'</span><strong>'+num(count)+'</strong><small>'+(key==='relationships'||key==='caexpired'?'Relationships':'Facilities')+'</small>'+(global.CreditIcons?.icon('arrow')||'↗')+'</button>').join('')+'</div></section>';
+  const data=ctx.data(),dates=by(data.portfolio||[],'as_of_date'),comparison=global.CreditSnapshots?.compare(data,['PORTFOLIO']);
+  const ready=dates.length===1&&typeof dates[0]==='string'&&comparison?.ready,prior=ready?filterRows(filtered(comparison.prior)):[];
+  const counts=[['Facilities','Distinct facilities','facility_id','facilities',null],['Relationships','Distinct relationships','relationship_id','relationships',null],['CAs expired','Relationships with expired CAs','relationship_id','caexpired','pal_ca_expired'],['Facilities expired','Past maturity date','facility_id','expired','pal_facility_expired']];
+  return '<section class="ch-card pal-table-card pal-coverage-card" id="pal-snapshot" aria-label="Portfolio coverage"><div class="ch-card-head"><div><h2>Portfolio coverage</h2></div></div><div class="pal-coverage-stats">'+counts.map(([name,subtitle,field,key,flag])=>{
+   const cohort=rs=>flag?rs.filter(r=>r[flag]===true):rs,count=unique(cohort(rows),field),previous=unique(cohort(prior),field),delta=count-previous;
+   const sign=delta>0?'+':delta<0?'−':'',percent=previous?sign+(Math.abs(delta)/previous*100).toFixed(1)+'%':count?'New':'0.0%';
+   const tone=!ready||delta===0?'neutral':flag?(delta>0?'adverse':'favorable'):key==='relationships'?'purple':'blue';
+   const trend=ready&&delta!==0?'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="'+(delta>0?'M2 14l5-5 4 3 6-8M12 4h5v5':'M2 6l5 5 4-3 6 8M12 16h5v-5')+'"/></svg>':'';
+   const change=ready?percent:'Unavailable',footer=ready?'<strong>'+sign+num(Math.abs(delta))+'</strong> <span>vs previous weekday</span>':'<span>Prior weekday unavailable</span>';
+   return '<button type="button" class="pal-coverage-stat" data-pal-rows="'+key+'" data-title="'+name+'" aria-label="View '+name.toLowerCase()+' records"><span class="pal-coverage-title">'+name+'</span><span class="pal-coverage-subtitle">'+subtitle+'</span><span class="pal-coverage-value-row"><strong class="pal-coverage-value">'+num(count)+'</strong><span class="pal-coverage-change '+tone+'" title="'+esc(ready?comparison.label:comparison?.reason||'A comparable previous-weekday portfolio is required')+'">'+trend+change+'</span></span><span class="pal-coverage-comparison">'+footer+'</span></button>';
+  }).join('')+'</div></section>';
  }
+
  function overview(rows){
   rows=filterRows(rows);
   details={};const monitor=ctx.monitoringRows?ctx.monitoringRows():filtered(ctx.data().monitoring),report=rows[0]?.as_of_date||ctx.data().portfolio[0]?.as_of_date,month=report?.slice(0,7);
@@ -2647,5 +2656,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="4ee77c5fc39f:activity";
+window.CREDIT_PAGE_BUILD="4cf38fba4192:activity";
 })();

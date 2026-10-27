@@ -162,8 +162,14 @@ No retained financial cache bypasses a permission error or sign-in response.
 PUBLISHED DASHBOARD LAYOUT
 Underwriters Summary uses two equal-width chart pairs and a full-width action
 register. Portfolio coverage is a full-width row immediately below the KPI cards,
-with four large, clickable statistics and vertical dividers. It retains all four
-exact source cohorts. The following row pairs CAs & Facilities Expiring with
+with four large, clickable statistics and full-height vertical dividers. Each
+statistic follows the reference layout: title, subtitle, large count, change
+badge and comparison line. There is no separate section heading above the row.
+Changes use distinct IDs from a validated previous-weekday Portfolio release
+with the same page and portfolio filters; aggregate history is never substituted.
+Missing comparison data is marked unavailable, and a zero baseline with a new
+count is labeled New. The current sample counts are unchanged (0.0%). All four
+source cohorts and their drills remain intact. The following row pairs CAs & Facilities Expiring with
 New Facilities Approved at equal widths. Portfolio also pairs New deals with
 Pending Closure, Relationships with Monitoring priorities, and Covenants with
 CCM. Narrow screens wrap and stack without horizontal page overflow.

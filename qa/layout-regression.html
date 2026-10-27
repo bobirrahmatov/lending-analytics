@@ -93,6 +93,8 @@ function inspect(page,width){
     const coverage=byId('pal-snapshot'),stats=[...doc.querySelectorAll('#pal-snapshot .pal-coverage-stat')],kpis=rect(doc.querySelector('.pal-metrics'));
     check('Coverage is the first full-width row below KPIs',full(coverage)&&geometry[0]===coverage&&coverage.y>=kpis.bottom);
     check('All four coverage statistics fit the card',stats.length===4&&stats.every(el=>{const r=rect(el);return visible(el)&&r.x>=coverage.x&&r.right<=coverage.right;}));
+    check('Coverage has no separate header above the statistics',win.getComputedStyle(doc.querySelector('#pal-snapshot .ch-card-head')).display==='none');
+    if(width>=1280)check('Coverage dividers span the card height',stats.every(el=>near(rect(el).height,coverage.height-2)));
     if(width>=1280)check('Coverage statistics form one horizontal row',stats.every(el=>near(rect(el).y,rect(stats[0]).y)));
     const expirySeries=[...doc.querySelectorAll('#facilityTrendChart .highcharts-series-group>.highcharts-series.highcharts-column-series')].map(series=>[...series.querySelectorAll('.highcharts-point')].map(rect));
     const pairGaps=expirySeries[0]?.map((bar,i)=>expirySeries[1]?.[i]?.x-bar.right)||[];

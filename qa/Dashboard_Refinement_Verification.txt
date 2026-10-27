@@ -64,3 +64,15 @@ control uses the resolved Citi Text stack, and neither state causes page overflo
 These are local-fixture results, not confirmation of the live Confluence theme.
 For this follow-up, replace application attachments and all matching generated
 page script pairs. Existing header include and page macro fragments stay valid.
+
+Reference-style Portfolio coverage follow-up
+The coverage strip now matches the supplied card structure: no separate heading,
+full-height dividers, metric titles and subtitles, large counts with inline
+comparison badges, and an absolute-change line. All four original metrics remain.
+Browser checks confirmed the layout, all eight 390/900/1280/1920 px geometry
+cases, full-height desktop dividers, dark-theme text/surfaces, exact expired-CA
+record drill and header restoration, and return to the four statistics on Reset.
+Comparison tests cover distinct-ID duplicates, matching page/PAL filters, positive,
+negative, zero and new populations, missing/stale/changed-coverage prior sources,
+and mixed current dates. No aggregate-history fallback is used for these counts.
+Unchanged samples correctly display 0.0%; unavailable snapshots are labeled.
