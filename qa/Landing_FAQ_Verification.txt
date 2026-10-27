@@ -1,0 +1,25 @@
+LANDING FAQ VERIFICATION — 27 October 2026
+
+Four expandable questions follow the journey section on Lending Analytics.
+Topics: dashboard selection; chart/table drilling and page filters; source reporting
+dates and reload; supporting tables and all-matching download scope.
+
+The question rows reproduce the existing WCSpedia landing FAQ interaction using
+only dashboard-owned markup, CSS and handlers. Each question is independently
+expandable. Native buttons expose aria-expanded/aria-controls. Collapsed panels
+are hidden from accessibility and inert; opening restores the answer. The plus
+icon rotates on expansion, with animations disabled for reduced-motion users.
+
+Local checks passed:
+- npm run build (13 page pairs, fragments, shared CSS, attachment limits).
+- test_landing_startup.cjs (all five configuration/failure scenarios and timeout).
+- test_standalone_macros.cjs (generated landing/Portfolio, all 11 destinations,
+  native host isolation, XLSX, table drill and Reset).
+- test_host_styles.cjs (host-scoped typography and theme contract).
+- Actual browser: four questions initially collapsed; click opens an answer;
+  Enter closes and Space opens a question. ARIA and inert attributes agree.
+- Desktop screenshot and 375px iframe review: readable questions and answers,
+  natural wrapping and right-aligned icons. Eleven dashboard links remain.
+
+Evidence: Landing-FAQs.png and Landing-FAQs-Mobile.png.
+Native Confluence installation was not exercised in this local check.

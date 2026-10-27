@@ -21,6 +21,7 @@ keep_qa |= {'Portfolio_Three_Card_Row_Verification.txt','Portfolio-Three-Card-Ro
 keep_qa |= {'Table_Typography_Verification.txt','Table_Typography_Browser.json','Table-Typography-Portfolio.png'}
 keep_qa |= {'Final_Release_Verification.txt','Landing_Excel_Verification.txt','Lending-Analytics-Editorial.png','Lending-Analytics-Mobile.png','Excel-Runtime-Portfolio.png','excel-runtime.html','responsive-landing.html','Landing_Cards_Verification.txt','landing-cards-responsive.html','Lending-Analytics-Cards.png','Lending-Analytics-Cards-Mobile.png'}
 keep_qa |= {'native-sidebar-fixture.html','Standalone_Dashboard_Verification.txt','Standalone-Dashboard-Portfolio.png','Standalone-Dashboard-Expanded.png'}
+keep_qa |= {'Landing_FAQ_Verification.txt','Landing-FAQs.png','Landing-FAQs-Mobile.png'}
 with ZipFile(P/'Credit_Monitoring_Package.zip','w',ZIP_DEFLATED) as z:
  for f in sorted(P.rglob('*')):
   if not f.is_file():continue

@@ -2,12 +2,13 @@
 <style>body{margin:20px;background:#e8edf2;font:14px Arial}iframe{display:block;height:1050px;border:0;background:white;margin:10px 0}p{margin:0}</style>
 <p id="label"></p><iframe src="../pages/lendinganalytics.html" title="Landing card viewport"></iframe>
 <script>
-const width=Number(new URLSearchParams(location.search).get('width'))||375;
+const params=new URLSearchParams(location.search),width=Number(params.get('width'))||375;
+const section=params.get('section')==='faq'?'.la-faq':'.la-areas';
 const frame=document.querySelector('iframe');frame.style.width=width+'px';
 document.body.style.width=width+'px';document.getElementById('label').textContent=width+'px landing card viewport';
 frame.onload=()=>{
  const doc=frame.contentDocument;
- function ready(){const cards=doc.querySelector('.la-areas');if(!cards)return false;cards.scrollIntoView({block:'start'});return true;}
+ function ready(){const cards=doc.querySelector(section);if(!cards)return false;cards.scrollIntoView({block:'start'});return true;}
  if(!ready()){const observer=new MutationObserver(()=>{if(ready())observer.disconnect();});observer.observe(doc.body,{subtree:true,childList:true});}
 };
 </script></html>

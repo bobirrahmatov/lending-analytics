@@ -1487,6 +1487,25 @@
 #credit-hub .la-journey li:before{content:counter(journey);position:absolute;left:0;top:0;font-size:16px;font-weight:600;color:var(--blue)}
 #credit-hub .la-journey li strong{display:block;font-size:16px!important;line-height:1.5!important;font-weight:600!important;margin-bottom:6px;color:var(--ink)!important}
 #credit-hub .la-journey li span{display:block;font-size:14px!important;line-height:1.65!important;color:var(--muted)!important}
+/* Landing FAQ uses native buttons and intrinsic-height panels within the dashboard. */
+#credit-hub .la-faq{display:grid;grid-template-columns:1fr 1.8fr;gap:64px;padding:40px 0 56px}
+#credit-hub .la-faq h2{font-size:30px!important;line-height:1.3!important;font-weight:500!important;letter-spacing:-.02em;color:var(--ink)!important;margin:16px 0 0!important}
+#credit-hub .la-faq-list{min-width:0}
+#credit-hub .la-faq-item{border-bottom:1px solid var(--line)}
+#credit-hub .la-faq-item h3{margin:0!important}
+#credit-hub .la-faq-item button{display:flex!important;align-items:center;justify-content:space-between;gap:20px;width:100%;padding:22px 0!important;border:0!important;border-radius:0!important;background:transparent!important;color:var(--ink)!important;font:inherit!important;font-size:18px!important;line-height:1.5!important;font-weight:500!important;text-align:left;cursor:pointer;box-shadow:none!important}
+#credit-hub .la-faq-item button span{font:inherit!important;color:inherit!important}
+#credit-hub .la-faq-item button:hover{color:var(--blue)!important}
+#credit-hub .la-faq-item button:focus-visible{outline:2px solid var(--blue)!important;outline-offset:4px}
+#credit-hub .la-faq-item button svg{width:22px;height:22px;flex:none;transition:transform .24s ease}
+#credit-hub .la-faq-item button[aria-expanded="true"] svg{transform:rotate(45deg)}
+#credit-hub .la-faq-answer{display:grid;grid-template-rows:0fr;visibility:hidden;opacity:0;transition:grid-template-rows .24s ease,opacity .24s ease,visibility .24s}
+#credit-hub .la-faq-answer[aria-hidden="false"]{grid-template-rows:1fr;visibility:visible;opacity:1}
+#credit-hub .la-faq-answer>div{min-height:0;overflow:hidden}
+#credit-hub .la-faq-answer p{font-size:16px!important;line-height:1.7!important;color:var(--muted)!important;margin:0!important;padding:0 42px 22px 0}
+@media(prefers-reduced-motion:reduce){#credit-hub .la-faq-answer,#credit-hub .la-faq-item button svg{transition:none}}
+@media(max-width:900px){#credit-hub .la-faq{gap:30px;grid-template-columns:1fr 2fr}}
+@media(max-width:640px){#credit-hub .la-faq{grid-template-columns:1fr;gap:16px;padding:16px 0 36px}#credit-hub .la-faq h2{margin:0!important}#credit-hub .la-faq-item button{font-size:16px!important}#credit-hub .la-faq-answer p{font-size:14px!important;padding-right:20px}}
 @media(max-width:1100px){#credit-hub .la-areas{gap:24px}#credit-hub .la-area-media{border-radius:20px}}
 @media(max-width:900px){#credit-hub .la-purpose,#credit-hub .la-journey{gap:30px}#credit-hub .la-areas{grid-template-columns:1fr;gap:40px}#credit-hub .la-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:28px}#credit-hub .la-area-media{margin:0}#credit-hub .la-area h2{font-size:26px!important;min-height:0}#credit-hub .la-area-description{min-height:0}#credit-hub .la-area-copy{padding:0}}
 @media(max-width:640px){#credit-hub .la-purpose,#credit-hub .la-journey,#credit-hub .la-areas{grid-template-columns:1fr;gap:30px}#credit-hub .la-purpose{padding:36px 0}#credit-hub .la-areas{padding-bottom:36px;gap:44px}#credit-hub .la-area{display:flex;gap:0}#credit-hub .la-area-media{margin:0 0 22px}#credit-hub .la-area-copy{padding:0 4px}#credit-hub .la-journey{padding:24px}#credit-hub .la-hero{aspect-ratio:1.7;border-radius:18px}#credit-hub .la-intro{padding-top:16px}#credit-hub .la-intro>p:last-child{font-size:16px!important}}
