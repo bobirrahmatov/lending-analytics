@@ -1,3 +1,0 @@
-26 October 2026 — shared table frame correction
-The managed table CSS previously removed box-shadow, with a restoration scoped only to expanded tables. All managed cards, including main registers and drill-down records, now use the same card-frame-shadow, 16px corner radius and white inner card. No internal table borders or controls were added.
-Local browser verification: Covenant details computed shadow has pale 5px surround and 6px outer border, radius 16px; ten rows remain visible by default. Screenshot Shared-Register-Frame.png. Built all 13 page pairs and verified production fragment, shared CSS and attachment limits. Live Confluence not verified.

@@ -1,9 +1,0 @@
-Verified 26 October 2026, illustrative local preview.
-
-Covenant activity expansions (Deferred/Waived/Deleted activity and Activity by Region entry points) now use the shared three-card desktop row: Monthly Activity Trend, Activity by Region, What needs attention. Existing aging expansions keep Aging Severity by Region, Aging Mix, What needs attention.
-Expanded KPI groups use the shared pale frame, compact cards, fixed heading slots and aligned values. Unavailable comparisons use neutral pills; missing historical comparisons are not fabricated.
-Each expanded/drill-down header has exactly one prominent Back to dashboard action. No return buttons are inserted into tables. Nested drills close the expansion and restore the dashboard with its existing filters.
-
-Browser: 1280px viewport, all three activity cards at y=369.34 and height=471.40px; all four KPI values at y=254px. Clicked activity Events KPI, confirmed 115 source records and one return action, then returned successfully to dashboard. No browser console errors.
-Automated: 13 pages / 57 expansions passed; 79 chart series cohorts across 11 analytical pages passed, with nested return behavior, full exports, search, null fields and empty selections. Covenant field, aging, facility balance and association checks passed. Production package checks passed.
-Proof: Expanded-Activity-Aligned.png and Single-Dashboard-Return.png. Internal Confluence installation remains unverified.

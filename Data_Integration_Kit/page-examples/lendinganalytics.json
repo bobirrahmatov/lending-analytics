@@ -1,9 +1,0 @@
-{
-  "is_demo": true,
-  "page": "lendingAnalytics",
-  "title": "Lending Analytics",
-  "primary_dataset": null,
-  "eligible_sample_rows": 0,
-  "note": "Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.",
-  "rows": []
-}

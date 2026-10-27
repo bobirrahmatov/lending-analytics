@@ -10,3 +10,34 @@ __pycache__/
 /Data_Integration_Kit.zip
 /SHA256SUMS
 /Confluence_With_Header_Macro.html
+
+# Generated delivery copies; build with npm run package or use GitHub Releases.
+/Data_Integration_Kit/
+/demo-comparison/pages/
+/Dashboard_Preview.html
+
+# Local production inputs, exports, backups and development output stay off Git.
+/data/
+/raw-data/
+/uploads/
+/exports/
+/backups/
+/local/
+/qa/fixtures/
+/qa/screenshots/
+*.log
+*.zip
+*.tmp
+*.pem
+*.key
+*.p12
+*.accdb
+*.mdb
+
+# Retired one-time generators and old browser harnesses.
+/tools/build_data.py
+/tools/capture_covenants_fixture.cjs
+/tools/add_contract_validation.py
+/tools/build_qa_fixtures.py
+/tools/test_dashboard.mjs
+/tools/test_production_loader.mjs

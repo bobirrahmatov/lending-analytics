@@ -12,21 +12,48 @@ with ZipFile(P/'Confluence_Deployment.zip','w',ZIP_DEFLATED) as z:
   f=P/'attachments'/name;assert f.stat().st_size<10_000_000;z.write(f,'attachments/'+name)
  for f in sorted((P/'confluence-pages').glob('*.html')):z.write(f,'confluence-pages/'+f.name)
  for name in ['Space_File_Drop_Guard.html','INSTALL.txt','LICENSES.txt','Covenants_Field_Parity.txt','Covenants_Risk_Reporting.txt','All_Pages_Data_Handoff.txt','Lending_Analytics_Deployment.txt']:z.write(P/name,name)
-keep_qa={'Data_Linkage_Verification.json','Navigation_Data_Handoff_Verification.txt','Monitoring-Sidebar-Expanded.png','Full-Width-Drill-Details.png','Full_Width_Drill_Verification.txt','Covenants-KPI-Full-Analysis.png','Covenants-Expanded-Chart-Pair.png','Covenants-KPI-Chart-Pair.png','Expanded_KPI_Layout_Verification.txt','Unified_Summary_Verification.txt','Rounded-Search-Focus.png','Compact_Summary_Activity_Verification.txt','Expanded-Table-Pagination.png','Terminal-Supporting-Records.png','Expanded_Controls_Verification.txt','Shared_Related_Data_Verification.txt','Drill_Section_Grouping_Verification.txt','Drill_Table_Breadcrumb_Verification.txt','Complete_Drill_Verification.txt','Dynamic_Drill_Layout_Verification.txt','Analysis_Overlay_Verification.txt','Portfolio_Journey_Verification.txt','Inline_Drill_Verification.txt','Selection_Explorer_Verification.txt','Aligned-Table-Info.png','Table_Info_Alignment_Verification.txt','Workload-Aging-Priorities.png','Workload_Priorities_Verification.txt','Shared-Register-Frame.png','Shared_Table_Frame_Verification.txt','Expanded-Aging-Attention.png','Expanded_Navigation_Verification.txt','Covenants-Compact-KPIs.png','Covenants-Equal-Activity.png','Covenants_Compact_Layout_Verification.txt','Unified-Table-Record.png','Unified_Table_Record_Verification.txt','Drill_Down_Verification.txt','Aligned-Pills-CCM.png','Drill-Down-CCM.png','Deep-Dive-Redesign.png','Deep-Dive-Search.png','Deep_Dive_Refinement_Verification.txt','Deep_Dive_Entry_Verification.txt','Deep-Dive-Empty.png','Deep-Dive-Sample.png','Semantic_Pills_Verification.txt','Semantic-Pills-Trends.png','Semantic-Pills-CCM.png','Semantic-Pills-Covenants.png','Stable_Controls_Verification.txt','Stable-Trends-Controls.png','stable-controls-browser.json','Table_Tabs_Pills_Verification.txt','Table-Tabs-Pills.png','Controls_PAL_Verification.txt','Controls-Deep-Dive.png','Controls-Trends.png','Controls-Table.png','controls-browser.json','Bento_Verification.txt','Bento-covenant-kpis.png','Bento-activity.png','Bento-expanded.png','bento-browser.json','All_Pages_Verification.txt','all-pages-browser.json','All-pages-covenant-kpis.png','All-pages-expanded.png','Contract-Monitoring.png','Contract-Portfolio.png','Contract-Field_Dictionary.png','Covenants-exposure-kpis.png','Covenants-exposure-expanded.png','Covenants_Exposure_Verification.txt','Covenants-risk-layout.png','Covenants-facility-analysis.png','Covenants-coming-layout.png','Covenants_Risk_Verification.txt','Covenants-overview.png','Covenants-expanded.png','Covenants-methodology.png','Covenants_Verification.txt','Table-fill-card.png','Expanded-table-card-frame.png','Expanded-simple-summaries.png','Expanded_Table_Views_Verification.txt','Five-band-table-views.png','Coming_Due_Verification.txt','Coming-due-aging-tables.png','Portfolio-compact-tables-restored.png','Table-flush-expiry-tabs.png','Table-pagination.png','Table-column-filters.png','Table_Controls_Verification.txt','Expanded-equal-expiry.png','Expanded_Layout_Verification.txt','Expanded-balanced-approvals.png','Expanded-table-methodology.png','Monitoring_Summary_Verification.txt','Portfolio-priorities-pair.png','Combined_Chart_Verification.txt','Portfolio-equal-deal-cards.png','Portfolio-combined-relationships.png','Coverage_Donut_Verification.txt','Portfolio-coverage-row.png','Portfolio-donut-labels.png','Action_Snapshot_Verification.txt','Portfolio-action-snapshot.png','Expanded-colored-kpis.png','PAL_Expanded_Verification.txt','pal-expanded-results.json','PAL-portfolio-refinements.png','PAL-expanded-new-deals.png','Framed_Layout_Verification.txt','framed-layout-results.json','Portfolio-framed-layout.png','Workload-framed-layout.png','Daily_Portfolio_Verification.txt','Portfolio-daily-overview.png','Portfolio_Refinement_Verification.txt','Portfolio-refined-overview.png','Portfolio-refined-new-deals.png','Portfolio-refined-methodology.png','Chart_Workspace_Verification.txt','chart-workspace-results.json','Chart-workspace-overview.png','Chart-workspace-expanded.png','Chart-workspace-methodology.png','Portfolio_Verification.txt','Portfolio-overview.png','Portfolio-filters.png','Portfolio-applied.png','Native_Pages_Verification.txt','native-page-results.json','Native-pages-overview.png','Native-pages-widgets.png','Native-pages-register.png','PAL_Chart_Traceability.txt','Verification.txt'}
-# Keep current screenshot evidence in the upload archive; older proofs stay on disk.
-keep_qa={name for name in keep_qa if not name.endswith('.png')}|{'Layout_Repair_Verification.txt','Layout_Regression_Browser.json','layout-regression.html','Summary-Chart-Layout-Fixed.png','Portfolio-Approvals-Coverage-Fixed.png','Portfolio-Covenants-CCM-Fixed.png','Underwriters-Summary-Restored.png','Portfolio-Retained.png','View_Identity_Verification.txt','Lending-Analytics-Landing.png','Monitoring-Sidebar-Expanded.png','Performance_75000.json','Lending_Analytics_Verification.txt','performance-75000.html'}
-keep_qa |= {'Table_Drill_Adaptive_Verification.txt','Adaptive-Drill-Donut.png','Expanded-Table-Inline-Drill.png'}
-keep_qa |= {'Reset_Tab_Performance_Verification.txt','Related_Scope_Performance.txt','Reset_Tabs_Browser.json','Reset-Tabs-Verified.png'}
-keep_qa |= {'Portfolio_Three_Card_Row_Verification.txt','Portfolio-Three-Card-Row.png'}
-keep_qa |= {'Table_Typography_Verification.txt','Table_Typography_Browser.json','Table-Typography-Portfolio.png'}
-keep_qa |= {'Final_Release_Verification.txt','Landing_Excel_Verification.txt','Lending-Analytics-Editorial.png','Lending-Analytics-Mobile.png','Excel-Runtime-Portfolio.png','excel-runtime.html','responsive-landing.html','Landing_Cards_Verification.txt','landing-cards-responsive.html','Lending-Analytics-Cards.png','Lending-Analytics-Cards-Mobile.png'}
-keep_qa |= {'native-sidebar-fixture.html','Standalone_Dashboard_Verification.txt','Standalone-Dashboard-Portfolio.png','Standalone-Dashboard-Expanded.png'}
-keep_qa |= {'Landing_FAQ_Verification.txt','Landing-FAQs.png','Landing-FAQs-Mobile.png','Landing-Centered-Intro.png'}
+# Keep only current validation evidence and maintained browser fixtures.
+keep_qa = {
+ 'Data_Linkage_Verification.json',
+ 'Landing-Centered-Intro.png',
+ 'Landing-FAQs-Mobile.png',
+ 'Landing-FAQs.png',
+ 'Landing_Cards_Verification.txt',
+ 'Landing_FAQ_Verification.txt',
+ 'Layout_Regression_Browser.json',
+ 'Lending-Analytics-Cards-Mobile.png',
+ 'Lending-Analytics-Cards.png',
+ 'PAL_Chart_Traceability.txt',
+ 'Performance_75000.json',
+ 'Portfolio-Three-Card-Row.png',
+ 'Portfolio_Three_Card_Row_Verification.txt',
+ 'README.txt',
+ 'Reset-Tabs-Verified.png',
+ 'Reset_Tab_Performance_Verification.txt',
+ 'Reset_Tabs_Browser.json',
+ 'Standalone-Dashboard-Expanded.png',
+ 'Standalone-Dashboard-Portfolio.png',
+ 'Standalone_Dashboard_Verification.txt',
+ 'Table-Typography-Portfolio.png',
+ 'Table_Drill_Adaptive_Verification.txt',
+ 'Table_Typography_Browser.json',
+ 'Table_Typography_Verification.txt',
+ 'excel-runtime.html',
+ 'landing-cards-responsive.html',
+ 'layout-regression.html',
+ 'native-sidebar-fixture.html',
+ 'performance-75000.html',
+}
+# A complete source archive must not sweep up unrelated local exports or backups.
+package_dirs={'attachments','confluence-pages','pages','source','tools','excel','demo-comparison','Data_Integration_Kit','.github','qa'}
+package_root_files={'README.md','AGENTS.md','.gitignore','.nvmrc','package.json','package-lock.json','Start_Here.html','Space_File_Drop_Guard.html','Confluence_Macro.html','Credit_Monitoring_Demo.html','INSTALL.txt','LICENSES.txt','Covenants_Field_Parity.txt','Covenants_Risk_Reporting.txt','All_Pages_Data_Handoff.txt','Lending_Analytics_Deployment.txt'}
 with ZipFile(P/'Credit_Monitoring_Package.zip','w',ZIP_DEFLATED) as z:
  for f in sorted(P.rglob('*')):
   if not f.is_file():continue
   rel=f.relative_to(P)
-  if any(x in rel.parts for x in ['.git','node_modules','__pycache__','fixtures','styles']) or f.suffix in ['.ndjson','.pyc','.zip'] or f.name in ['.DS_Store','Credit_Monitoring_Package.zip','Confluence_With_Header_Macro.html','SHA256SUMS']:continue
+  if (len(rel.parts)==1 and rel.name not in package_root_files) or (len(rel.parts)>1 and rel.parts[0] not in package_dirs):continue
+  if rel.parts[:2]==('demo-comparison','pages'):continue
+  if any(x in rel.parts for x in ['.git','node_modules','__pycache__','fixtures','styles']) or f.suffix.lower() in ['.ndjson','.pyc','.zip','.log','.tmp','.pem','.key','.p12','.accdb','.mdb'] or f.name in ['.DS_Store','Credit_Monitoring_Package.zip','Confluence_With_Header_Macro.html','SHA256SUMS']:continue
   if f.name=='.env' or f.name.startswith('.env.'):continue
   if rel.parts[0]=='qa' and f.name not in keep_qa:continue
   z.write(f,rel.as_posix())

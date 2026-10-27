@@ -1,8 +1,0 @@
-COVENANTS / FIXED PUBLISHED LAYOUT — 2026-10-26
-
-Local illustrative preview at 1280px: activity chart and regional summary each 589px wide and 441.398px high. Four headline KPI cards each 200.844px high. Existing card frames preserved.
-KPI facility counts, relationships, TFA, OSUC and previous-snapshot comparisons remain in methodology; source-row drill-down retains facility fields.
-Layout/Widgets and per-card customization removed across pages. Old localStorage preferences ignored. Fixed published composition applies to all viewers; responsive stacking still applies on smaller displays.
-No authenticated Confluence per-user preference store exists in this macro package. Browser-local persistence does not follow an account across browsers/devices. A future account-backed implementation needs verified target-platform API support and permissions.
-Passed: covenant calculation/association/financial-variance tests; all-page expansion checks; 79 chart-series drill-down cohort tests; local-control and trend baseline tests. Browser console errors: none observed.
-Verification uses local illustrative data, not a live Confluence deployment.

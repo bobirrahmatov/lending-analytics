@@ -1,3 +1,8 @@
+HISTORICAL SOURCE MAPPING — retained for chart lineage only.
+Deployment/tooling references describe the original prototype and are superseded
+by Lending_Analytics_Deployment.txt and tools/README.txt. Older QA reports cited
+below are archived locally; current regression tests are in tools/test_*.cjs.
+
 PAL RESTORATION — 23 OCTOBER 2026, schema 2
 Original source: LPTM-Hub/PAL-dashboard.html (unmodified)
 Presentation: attachments/credit-pal.js; all charts use bundled Highcharts12.4.0.

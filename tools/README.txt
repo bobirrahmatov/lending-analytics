@@ -81,16 +81,21 @@ the build they tested, not a current live deployment. Local checks do not prove
 Confluence hosting/network behavior. The recorded 75,000-row JSON processing
 benchmark is not a five-second end-to-end Excel/network guarantee.
 
-HISTORICAL GENERATORS
+REPOSITORY CONTENTS
 
-build_data.py and capture_covenants_fixture.cjs refer to original source artifacts
-outside this repository and are not routine build steps. The generated schemas
-and illustrative datasets are already supplied. build_comparison_demo.py updates
-synthetic comparison records and needs review/validation before publication.
-add_contract_validation.py is a historical one-time rewrite; never run it as a
-repeated build step. Legacy .mjs browser harnesses target a retired shell and are
-not release checks. Current CJS tests and current browser fixtures are the
-maintained checks. Do not run every generator merely because it exists.
+Data_Integration_Kit/ is generated locally by npm run package and is deliberately
+not tracked in Git; the complete release ZIP includes it. The per-page excerpts
+under demo-comparison/pages/ and Dashboard_Preview.html are optional generated
+inspection output and remain ignored. Core comparison inputs are retained for
+current tests and integration-kit generation.
+
+Retired one-time source import/rewrite generators and old browser harnesses were
+removed from the maintained repository. The checked-in schemas and fixture inputs
+let normal builds run without the original external workspace. Current CJS/Python
+tests and retained browser fixtures are the maintained validation path.
+
+build_comparison_demo.py authors synthetic comparison fixtures only and needs
+review/validation before publication. Do not use it to prepare live records.
 
 DEPLOYMENT
 

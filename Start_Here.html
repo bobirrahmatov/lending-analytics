@@ -33,9 +33,9 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 <ul>
 <li><a href="Lending_Analytics_Deployment.txt">Current deployment contract</a>: page structure, native navigation, macros, cache behavior, attachment publication and validation limits.</li>
 <li><a href="confluence-pages/lendinganalytics.html">Lending Analytics page macro</a>, <a href="attachments/">application attachments</a>. The separate Confluence_Deployment.zip contains these assets and all matching page fragments. The optional <a href="Space_File_Drop_Guard.html">space file-drop guard</a> is independent of the dashboard.</li>
-<li><a href="Data_Integration_Kit/index.html">Data integration guide</a>: each page's sources, primary keys, joins, field dictionaries, examples and remaining ETL gaps.</li>
+<li><a href="Data_Integration_Kit/index.html">Data integration guide</a> (run <code>npm run package</code> when using a Git checkout): each page's sources, primary keys, joins, field dictionaries, examples and remaining ETL gaps.</li>
 <li><a href="excel/runtime/README.txt">Excel attachment samples</a>: six fixed-name workbooks, a manifest and previous snapshot, ready for an explicitly configured sample walkthrough. Each file retains its sample marker.</li>
-<li><a href="tools/README.txt">Build and tooling guide</a>: maintained build commands, release validation and clearly identified historical generators.</li>
+<li><a href="tools/README.txt">Build and tooling guide</a>: maintained build commands and release validation.</li>
 <li><a href="LICENSES.txt">Licensing and supplied asset notices</a>.</li>
 </ul>
 </section>
@@ -84,7 +84,7 @@ python3 tools/package_release.py</pre>
 <section>
 <h2>Verification evidence</h2>
 <ul>
-<li><a href="qa/Landing_Excel_Verification.txt">Current landing, Excel loading and Confluence configuration checks</a>.</li>
+<li><a href="qa/Standalone_Dashboard_Verification.txt">Current standalone dashboard, Excel loading and native macro checks</a>.</li>
 <li><a href="qa/Table_Typography_Verification.txt">Shared table typography</a> and <a href="qa/Table-Typography-Portfolio.png">current Portfolio table screenshot</a>.</li>
 <li><a href="qa/Portfolio_Three_Card_Row_Verification.txt">Portfolio three-card row and responsive layout</a>.</li>
 <li><a href="qa/Reset_Tab_Performance_Verification.txt">Reset, tab scheduling and chart lifecycle regression checks</a>.</li>
