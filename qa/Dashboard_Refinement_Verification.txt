@@ -138,3 +138,31 @@ waits for the HTML list as well as the six remaining Portfolio Highcharts plots.
 These checks use local previews/fixtures; live Confluence was not inspected.
 Update application attachments and matching generated script pairs. Existing
 page macros, header include, data workbooks and manifest are unchanged.
+
+
+Underwriter Workload and terminology follow-up
+Visible accountable-staff wording now uses Underwriter in shared filters, tables,
+charts, methodology, drills and landing copy. Existing owner_id/owner_name fields,
+source data and workbook schemas are unchanged.
+Workload by Underwriter is limited to ten exact-ID groups, ranked by current
+actionable count, then display name and ID. Duplicate names are disambiguated;
+missing IDs remain a separate group. Comparison counts use the same selected
+IDs. Page totals and the source register continue to include every underwriter.
+Monitoring-area priorities is one full-width stacked column chart with a four-
+statistic summary, critical counts in red above other actions in blue, segment
+labels and column totals. Summary/stack counts reconcile without double-counting.
+The 45-command regression suite passed after correcting the new span-12 shared
+layout rule and rerunning the all-page expansion check. Focused workload,
+monitoring-presentation and bento checks passed after the final color change.
+The new synthetic regression covers duplicate names, missing IDs, deterministic
+top-ten ties, matching current/prior ID scopes, full register/expanded records,
+zero/all-critical cases, summary reconciliation and exact segment drills.
+All 12 responsive browser cases passed for Summary, Portfolio and Workload at
+390/900/1280/1920px. The Workload preview shows ten names, four summary counts
+(240 actions = 105 critical + 135 other, six areas), and a 55-record Covenants
+critical drill. Reset and the full methodology drawer were checked. A simulated
+Confluence dark theme confirmed readable totals and summary surfaces; the mobile
+summary wraps into two columns without page overflow.
+These checks use local previews and host fixtures; live Confluence was not edited.
+Replace the application attachments and all matching generated page script pairs.
+The existing header include, page macro fragments and data attachments are unchanged.

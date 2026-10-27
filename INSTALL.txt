@@ -160,6 +160,18 @@ Every new document load revalidates through the current Confluence session.
 No retained financial cache bypasses a permission error or sign-in response.
 
 PUBLISHED DASHBOARD LAYOUT
+User-facing accountable-staff labels use Underwriter throughout filters, tables,
+charts, methodology and drills. Existing owner_id/owner_name source fields and
+attachment schemas keep their names; no workbook migration is needed.
+Underwriter Workload shows the top ten current underwriters by actionable record
+count, grouped by exact ID, with display-name/ID tie ordering. Missing IDs remain
+a separate group. The prior comparison uses the same selected IDs. The page
+totals and source register retain every underwriter. Monitoring-area priorities
+uses one full-width stacked column chart: blue other actions plus red critical
+actions, with segment counts, column totals and four summary statistics. Counts
+are mutually exclusive source obligations, not unique facilities or utilization.
+Both views preserve exact source drills, expanded supporting records and their
+methodology. The summary wraps to two columns on narrow screens.
 Underwriters Summary uses two equal-width chart pairs and a full-width action
 register. Portfolio coverage is a full-width row immediately below the KPI cards,
 with four large, clickable statistics and full-height vertical dividers. Each

@@ -12,11 +12,11 @@
 <h1>Dashboard layout regression checks</h1>
 <p>Local QA only. This fixture loads the real generated preview pages in a same-origin frame and reads their rendered geometry. It does not change dashboard filters, data or application functions.</p>
 <div class="toolbar">
-  <label>Page<select id="page"><option value="overview">Underwriters Summary</option><option value="portfolio">Portfolio</option></select></label>
+  <label>Page<select id="page"><option value="overview">Underwriters Summary</option><option value="portfolio">Portfolio</option><option value="workload">Underwriter Workload</option></select></label>
   <label>Frame width<select id="width"><option value="390">390 px</option><option value="900">900 px</option><option value="1280" selected>1280 px</option><option value="1920">1920 px</option></select></label>
   <button id="show">Show page</button>
   <button id="check">Check shown page</button>
-  <button id="all" class="primary">Run all 8 layout checks</button>
+  <button id="all" class="primary">Run all 12 layout checks</button>
 </div>
 <p id="status" role="status" aria-live="polite">Loading Summary at 1280 px…</p>
 <details open><summary>Check results</summary><pre id="results">No checks have run yet.</pre></details>
@@ -25,7 +25,7 @@
 <script>
 'use strict';
 const frame=document.getElementById('preview'),pageSelect=document.getElementById('page'),widthSelect=document.getElementById('width'),status=document.getElementById('status'),results=document.getElementById('results'),caption=document.getElementById('frame-caption');
-const pages=['overview','portfolio'],widths=[390,900,1280,1920],controls=[...document.querySelectorAll('.toolbar button,.toolbar select')];
+const pages=['overview','portfolio','workload'],widths=[390,900,1280,1920],controls=[...document.querySelectorAll('.toolbar button,.toolbar select')];
 const portfolioOrder=['pal-snapshot','facilityTrendChart','creditClassificationChart','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let shown=null,busy=false;
@@ -36,7 +36,7 @@ function compact(r){return Object.fromEntries(Object.entries(r).map(([key,value]
 function visible(element){const r=element.getBoundingClientRect();return !element.hidden&&r.width>0&&r.height>0;}
 async function painted(){await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(()=>frame.contentWindow.requestAnimationFrame(resolve)));}
 async function waitReady(page){
-  const deadline=Date.now()+20000,expected=page==='overview'?4:6;
+  const deadline=Date.now()+20000,expected=page==='overview'?4:page==='workload'?5:6;
   while(Date.now()<deadline){
     const doc=frame.contentDocument,content=doc?.getElementById('ch-content'),error=doc?.querySelector('.ch-error');
     if(error)throw Error(error.textContent.trim());
@@ -52,7 +52,7 @@ async function show(page,width){
   shown=null;frame.style.width=width+'px';frame.width=width;
   const url=new URL('../pages/'+page+'.html',location.href);
   progress('Loading '+page+' at '+width+' px…');
-  caption.textContent=(page==='overview'?'Underwriters Summary':'Portfolio')+' · '+width+' px frame · '+url.pathname;
+  caption.textContent=({overview:'Underwriters Summary',portfolio:'Portfolio',workload:'Underwriter Workload'}[page])+' · '+width+' px frame · '+url.pathname;
   await new Promise((resolve,reject)=>{
     const timer=setTimeout(()=>{frame.onload=null;frame.onerror=null;reject(Error('Preview frame load timed out.'));},20000);
     frame.onload=()=>{clearTimeout(timer);frame.onload=null;frame.onerror=null;resolve();};
@@ -89,6 +89,16 @@ function inspect(page,width){
       check('Summary has two distinct chart rows',chartCards.length===4&&byId('mon-overview-chart-2').y>byId('mon-overview-chart-0').y+2);
       check('Summary desktop chart cards are not skinny columns',chartCards.every(card=>card.width>=gridBox.width*.4),{gridWidth:Math.round(gridBox.width),widths:chartCards.map(card=>Math.round(card.width))});
     }else check('Summary charts stack at full width',chartCards.every(full));
+  }else if(page==='workload'){
+    const priorities=byId('mon-workload-chart-4'),stats=[...doc.querySelectorAll('.mon-priority-stats>div')];
+    check('Monitoring priorities fills its own row',full(priorities));
+    check('Priority summary has four visible counts within its card',stats.length===4&&stats.every(el=>{const r=rect(el);return visible(el)&&r.x>=priorities.x&&r.right<=priorities.right;}));
+    check('Workload shows exactly ten underwriters',doc.querySelectorAll('#mon-workload-chart-0 .highcharts-xaxis-labels text').length===10);
+    const points=[...doc.querySelectorAll('#mon-workload-chart-4 .highcharts-series')].filter(el=>el.classList.contains('highcharts-column-series')).map(el=>[...el.querySelectorAll('.highcharts-point')].map(rect));
+    check('Critical and other segments share category columns',points.length===2&&points[0].length===6&&points[0].every((r,i)=>near(r.x+r.width/2,points[1][i].x+points[1][i].width/2)));
+    check('Critical segments sit above other actions',points.length===2&&points[0].every((r,i)=>points[1][i].bottom<=r.y+2));
+    if(width>1000){sameRow(['mon-workload-chart-0','mon-workload-chart-1'],'Workload and region share first row');sameRow(['mon-workload-chart-2','mon-workload-chart-3'],'Team and aging share second row');}
+    else check('Workload cards stack at full width',geometry.every(full));
   }else{
     check('Portfolio preserves its published card order',JSON.stringify(geometry.map(card=>card.id))===JSON.stringify(portfolioOrder),geometry.map(card=>card.id));
     const coverage=byId('pal-snapshot'),stats=[...doc.querySelectorAll('#pal-snapshot .pal-coverage-stat')],kpis=rect(doc.querySelector('.pal-metrics'));
@@ -111,7 +121,7 @@ function inspect(page,width){
       sameRow(['covenantMonitoringChart','ccmRegionalChart'],'Covenants and CCM share a row');
     }else check('Portfolio cards stack at full width',geometry.every(full));
   }
-  return {page,width,pass:checks.every(item=>item.pass),build:new URL([...doc.scripts].find(script=>/credit-(overview|portfolio)Page\.js/.test(script.src)).src).searchParams.get('v'),checks,grid:compact(gridBox),cards:geometry.map(({id,...r})=>({id,...compact({x:r.x,y:r.y,width:r.width,height:r.height})}))};
+  return {page,width,pass:checks.every(item=>item.pass),build:new URL([...doc.scripts].find(script=>/credit-(overview|portfolio|workload)Page\.js/.test(script.src)).src).searchParams.get('v'),checks,grid:compact(gridBox),cards:geometry.map(({id,...r})=>({id,...compact({x:r.x,y:r.y,width:r.width,height:r.height})}))};
 }
 async function act(fn){if(busy)return;lock(true);try{await fn();}catch(error){progress(error.message,'fail');results.textContent=JSON.stringify({pass:false,error:error.message},null,2);}finally{lock(false);}}
 document.getElementById('show').onclick=()=>act(async()=>{await show(pageSelect.value,Number(widthSelect.value));progress('Preview ready. Use Check shown page to inspect its layout.');});
@@ -128,7 +138,7 @@ document.getElementById('all').onclick=()=>act(async()=>{
   report.completedAt=new Date().toISOString();report.pass=report.cases.every(item=>item.pass);results.textContent=JSON.stringify(report,null,2);
   const passed=report.cases.filter(item=>item.pass).length;progress(passed+' / '+report.cases.length+' layout cases passed.',report.pass?'pass':'fail');
 });
-act(async()=>{await show('overview',1280);progress('Preview ready. Use Check shown page or Run all 8 layout checks.');});
+act(async()=>{await show('overview',1280);progress('Preview ready. Use Check shown page or Run all 12 layout checks.');});
 </script>
 </body>
 </html>

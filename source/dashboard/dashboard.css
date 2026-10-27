@@ -585,6 +585,18 @@
  #credit-hub .pal-deal-current{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
  #credit-hub .pal-deal-label{padding:10px 12px;gap:6px;font-size:12px!important}
 }
+#credit-hub .mon-priority-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:4px 22px 8px!important;padding:0!important;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--page);color:var(--ink)}
+#credit-hub .mon-priority-stats>div{min-width:0;padding:20px 24px;border-right:1px solid var(--line)}
+#credit-hub .mon-priority-stats>div:last-child{border-right:0}
+#credit-hub .mon-priority-stats dt{margin:0!important;color:var(--muted);font-size:14px!important;font-weight:400!important;line-height:1.5!important}
+#credit-hub .mon-priority-stats dd{margin:6px 0 0!important;color:var(--ink)!important;font-size:30px!important;font-weight:700!important;line-height:1.2!important;font-variant-numeric:tabular-nums}
+#credit-hub .highcharts-stack-labels text{fill:var(--ink)!important;color:var(--ink)!important}
+@container credit-dashboard (max-width:650px){
+ #credit-hub .mon-priority-stats{grid-template-columns:repeat(2,minmax(0,1fr));margin:4px 14px 8px!important}
+ #credit-hub .mon-priority-stats>div{padding:14px 16px}
+ #credit-hub .mon-priority-stats>div:nth-child(2){border-right:0}
+ #credit-hub .mon-priority-stats>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
 #credit-hub .cd-chart-slot .pal-pipeline-table{max-height:320px;overflow:auto}
 #credit-hub .cd-takeaways{display:flex;flex-direction:column}
 #credit-hub .cd-takeaways dl{margin:0;padding:0 22px;flex:1}
@@ -867,6 +879,7 @@
  #credit-hub .cw-widget-grid[data-preset=balanced]>[data-bento-span="6"],#credit-hub .cd-analysis-grid>[data-bento-span="6"]{grid-column:span 6}
  #credit-hub .cw-widget-grid[data-preset=balanced]>[data-bento-span="7"],#credit-hub .cd-analysis-grid>[data-bento-span="7"]{grid-column:span 7}
  #credit-hub .cw-widget-grid[data-preset=balanced]>[data-bento-span="8"],#credit-hub .cd-analysis-grid>[data-bento-span="8"]{grid-column:span 8}
+ #credit-hub .cw-widget-grid[data-preset=balanced]>[data-bento-span="12"],#credit-hub .cd-analysis-grid>[data-bento-span="12"]{grid-column:span 12}
  #credit-hub .cw-widget-grid[data-preset=balanced]:has(>[data-bento-span])>.cw-widget-wide{grid-column:1/-1}
  #credit-hub[data-view=COVENANTS] .cw-widget-grid[data-preset=balanced]>[data-widget=cov-aging]{grid-column:span 5}
  #credit-hub[data-view=COVENANTS] .cw-widget-grid[data-preset=balanced]>[data-widget=cov-regional]{grid-column:span 7}
@@ -884,9 +897,10 @@
 #credit-hub .cov-kpi-line .cov-variance:not(.unavailable){font-size:15px;line-height:1.3}
 #credit-hub .cov-kpi-facilities .cov-variance.unchanged,#credit-hub .cov-kpi-exposures .cov-variance.unchanged,#credit-hub .cov-kpi-line .cov-variance.unchanged{color:var(--muted)}
 @media(min-width:1001px){
- #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-0"]{grid-column:span 7;grid-row:span 2}
- #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-1"],#credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-2"]{grid-column:span 5}
- #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-3"],#credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-4"]{grid-column:span 6}
+ #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-0"]{grid-column:span 7}
+ #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-1"]{grid-column:span 5}
+ #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-2"],#credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-3"]{grid-column:span 6}
+ #credit-hub[data-view=workload] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-workload-chart-4"]{grid-column:1/-1}
  #credit-hub[data-view=activity] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-activity-chart-0"]{grid-column:span 8}
  #credit-hub[data-view=activity] .cw-widget-grid[data-preset=balanced]>[data-widget="mon-activity-chart-1"]{grid-column:span 4}
  #credit-hub[data-view=activity] .cw-widget-grid[data-preset=balanced]>:is([data-widget="mon-activity-chart-2"],[data-widget="mon-activity-chart-3"]){grid-column:span 6}

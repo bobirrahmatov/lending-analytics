@@ -85,7 +85,7 @@ function openFilter(anchor,c,rows,state,onChange){
 // Every caller supplies the actual source cohort; displayed cell text is never a join key.
 function rowLabel(row){
  if(Array.isArray(row))return String(row[0]??'Selected group');
- const candidates=[['event_id','Event'],['covenant_id','Covenant'],['facility_id','Facility'],['relationship_id','Relationship'],['owner_name','Owner'],['source_id','Source'],['history_id','Snapshot'],['item_id','Record']];
+ const candidates=[['event_id','Event'],['covenant_id','Covenant'],['facility_id','Facility'],['relationship_id','Relationship'],['owner_name','Underwriter'],['source_id','Source'],['history_id','Snapshot'],['item_id','Record']];
  const found=candidates.find(([key])=>text(row?.[key]));return found?found[1]+' '+row[found[0]]:'Selected record';
 }
 function bindRows({table,rows,resolve=row=>[row],label=rowLabel,onSelect}){
