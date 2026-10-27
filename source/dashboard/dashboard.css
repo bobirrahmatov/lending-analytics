@@ -1712,4 +1712,5 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
    before the host stylesheet finished loading. */
 #credit-ui.credit-ui-host{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
 #credit-ui #credit-hub :is(h1,h2,h3,h4,h5,h6,p,button,input,select,textarea,table,th,td){font-family:inherit!important}
+#credit-ui #credit-hub :is(h1,.font-display){font-family:var(--credit-space-display-font,var(--credit-resolved-space-display-font,inherit))!important}
 #credit-ui :is(.highcharts-container,.highcharts-root,.highcharts-text-outline,.highcharts-container text){font-family:inherit!important}

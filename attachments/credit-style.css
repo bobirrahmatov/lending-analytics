@@ -180,11 +180,17 @@
 
 /* Native sidebar skin, installed per dashboard or by the wcs space include.
  * Confluence retains widths, content offsets, tree handlers and permissions. */
-.credit-native-navigation{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
+.credit-native-navigation{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
 /* Paint nested native panels too: the outer wrapper alone cannot override an
- * opaque host sidebar/content/footer. Match the resolved native page canvas;
+ * opaque host sidebar/content/footer. Match the resolved dashboard surface;
  * --credit-sidebar-background remains an optional space override. */
-.credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.acs-side-bar-footer,.acs-side-bar-bottom){background:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important;color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
+.credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.credit-native-footer,.credit-native-surface){color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
+/* The native body ID protects against Confluence's important footer rules.
+ * Paint only structural surfaces; menu layers and interactive states stay native. */
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation),
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) :is(.acs-side-bar,.acs-side-bar-content,.credit-native-footer,.credit-native-surface){background:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-toolbar-control:not(:hover):not(:focus-visible){background:transparent!important;color:inherit!important}
+.credit-native-navigation .credit-native-toolbar-control:not(.aui-icon):not([class*="aui-iconfont-"]){font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
 .credit-native-navigation :is(ul,ol,li){list-style:none!important}
 .credit-native-navigation li::marker{content:""!important}
 .credit-native-navigation :is(.plugin_pagetree_children_span>a,a[data-credit-native-page-link]){display:inline-flex;align-items:baseline;gap:7px;min-width:0;padding:5px 7px;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;text-decoration:none!important;border-radius:6px;line-height:1.6;font-size:13px!important;transition:background-color .16s,color .16s}
@@ -1945,4 +1951,5 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
    before the host stylesheet finished loading. */
 #credit-ui.credit-ui-host{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
 #credit-ui #credit-hub :is(h1,h2,h3,h4,h5,h6,p,button,input,select,textarea,table,th,td){font-family:inherit!important}
+#credit-ui #credit-hub :is(h1,.font-display){font-family:var(--credit-space-display-font,var(--credit-resolved-space-display-font,inherit))!important}
 #credit-ui :is(.highcharts-container,.highcharts-root,.highcharts-text-outline,.highcharts-container text){font-family:inherit!important}

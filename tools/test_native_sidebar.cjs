@@ -1,14 +1,16 @@
 const fs = require('fs'), path = require('path'), assert = require('assert/strict'), {JSDOM} = require('jsdom');
 const source = fs.readFileSync(path.resolve(__dirname, '../attachments/credit-native-sidebar.js'), 'utf8');
-const dom = new JSDOM(`<head><style id="native-canvas-theme">#main{background-color:rgb(240,245,249)}</style></head><body class="citi-hide-sidebar"><aside class="acs-side-bar" style="width: 286px;">
+const textFont = '"Citi Sans Text", "Citi-Sans-Text", sans-serif';
+const displayFont = '"Citi Sans Display", "Citi-Sans-Display", sans-serif';
+const dom = new JSDOM(`<head><style>body,p{font-family:${textFont}}h1,.font-display{font-family:${displayFont}}</style><style id="native-canvas-theme">#main{background-color:rgb(240,245,249)}#credit-ui{background-color:rgb(255,255,255)}</style></head><body id="com-atlassian-confluence" class="citi-hide-sidebar"><aside class="acs-side-bar" style="width: 286px;">
 <button id="toggle">Collapse sidebar</button><ul>
 <li class="plugin_pagetree_current"><a id="portfolio" href="/confluence/pages/viewpage.action?pageId=101" aria-current="page" aria-describedby="help">Portfolio · WCS 101</a></li>
 <li><a href="/confluence/pages/viewpage.action?pageId=102">Underwriter Summary</a></li>
 <li><button id="branch" aria-expanded="false">Resources</button><ul id="children" hidden><li><span class="plugin_pagetree_children_span" id="childrenspan103-node"><a href="/confluence/display/wcs/Activity">Covenant activity</a></span></li></ul></li>
 <li id="unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Blogs"><span class="existing-icon"></span>Blogs · WCS 999</a><a href="https://external.test/confluence/pages/viewpage.action?pageId=101">External portfolio</a><a href="/confluence/pages/viewpage.action?pageId=101#section">Section</a><a role="button" href="/confluence/pages/viewpage.action?pageId=101" aria-expanded="false">Native branch</a></li>
-</ul><div class="acs-side-bar-footer"><button id="space-tools" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="/confluence/pages/viewpage.action?pageId=101">Footer</a><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-expanded="true" aria-label="Sidebar"></a></div>
+</ul><div id="native-footer" class="native-toolbar-shell"><div class="native-toolbar-surface"><button id="space-tools" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="/confluence/pages/viewpage.action?pageId=101">Footer</a><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-expanded="true" aria-label="Sidebar"></a></div></div>
 <aui-dropdown-menu id="space-tools-menu" class="aui-dropdown2 aui-layer" role="menu" tabindex="-1" hidden><ul><li><a id="menu-portfolio" href="/confluence/pages/viewpage.action?pageId=101">Portfolio settings</a></li><li><a href="#configuration">Configure sidebar</a></li></ul></aui-dropdown-menu>
-</aside><main id="main" class="ia-splitter-right" style="font-family: Arial, sans-serif;"><div class="wiki-content" style="font-family: Georgia, serif;"><div id="credit-ui" style="color: navy;"><div id="credit-hub"></div></div></div></main></body>`, {
+</aside><h1 id="title-heading">Dashboard page</h1><main id="main" class="ia-splitter-right" style="font-family: Arial, sans-serif;"><div class="wiki-content" style="font-family: Georgia, serif;"><div id="credit-ui" style="color: navy;"><div id="credit-hub"></div></div></div></main></body>`, {
   url: 'https://example.test/confluence/pages/viewpage.action?pageId=101', runScripts: 'outside-only', pretendToBeVisual: true
 });
 const w = dom.window, d = w.document;
@@ -33,9 +35,9 @@ pageKeys.forEach((key, i) => { const id = String(200 + i); w.CREDIT_CONFIG.pageI
 const toggleFn = toggle.onclick, branchFn = branch.onclick, originalHrefs = [...d.querySelectorAll('a')].map(a => a.getAttribute('href'));
 const nativeToggleFn = nativeToggle.onclick, spaceToolsFn = spaceTools.onclick, menuHTML = menu.outerHTML;
 const originalLabels = [...d.querySelectorAll('a')].map(a => a.textContent), unrelated = d.querySelector('#unrelated'), unrelatedHTML = unrelated.outerHTML;
-const footerHTML = d.querySelector('.acs-side-bar-footer').outerHTML, sidebarStyle = sidebar.getAttribute('style');
+const footerHTML = d.querySelector('#native-footer').outerHTML, sidebarStyle = sidebar.getAttribute('style');
 const ui = d.querySelector('#credit-ui'), uiStyle = ui.getAttribute('style');
-const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-sidebar-background']);
+const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-space-display-font', '--credit-resolved-sidebar-background']);
 const nativeStyle = element => Array.from(element.style).filter(name => !ownedPresentation.has(name)).map(name => [name, element.style.getPropertyValue(name), element.style.getPropertyPriority(name)]);
 const originalNativeStyle = nativeStyle(sidebar), originalUIStyle = nativeStyle(ui);
 w.eval(source);
@@ -46,24 +48,38 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(d.querySelectorAll('aside').length, 1); assert.equal(d.body.className, '', 'Native sidebar is revealed through the existing theme class');
   assert.deepEqual(nativeStyle(sidebar), originalNativeStyle, 'Only owned presentation variables change; native dimensions stay untouched');
   assert.deepEqual(nativeStyle(ui), originalUIStyle, 'Existing dashboard inline styling stays untouched');
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif');
-  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Dashboard uses the native space content font');
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)', 'Sidebar uses the native page canvas colour');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), textFont);
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), textFont, 'Dashboard uses the space body text family instead of Confluence content overrides');
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-display-font'), displayFont, 'Dashboard keeps the separate space display family');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(255, 255, 255)', 'Sidebar matches the dashboard panel rather than the outer page gutter');
+  // Typography must work for independently embedded dashboards without any native rail.
+  const sidebarNext = sidebar.nextSibling;
+  sidebar.remove(); await tick();
+  d.body.style.fontFamily = '"Replacement Space", serif'; await tick();
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), '"Replacement Space", serif', 'Dashboard font sync does not depend on a native sidebar');
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-display-font'), displayFont);
+  d.body.style.removeProperty('font-family');
+  if (!d.body.getAttribute('style')) d.body.removeAttribute('style');
+  d.body.insertBefore(sidebar, sidebarNext); await tick();
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), textFont);
   assert.equal(themeListeners.size, 1, 'System theme changes have one listener');
   const nativeCanvasTheme = d.getElementById('native-canvas-theme');
   // A system-theme stylesheet changes without a root class/data/style attribute.
   // Replacing the rule text also invalidates JSDOM's computed-style cache.
-  nativeCanvasTheme.textContent = '#main{background-color:rgb(37,42,49)}'; await tick();
+  nativeCanvasTheme.textContent = '#main{background-color:rgb(37,42,49)}#credit-ui{background-color:rgb(29,33,37)}'; await tick();
   assert.equal(w.getComputedStyle(d.getElementById('main')).backgroundColor, 'rgb(37, 42, 49)');
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)', 'Stylesheet mutation alone does not provide an attribute-based refresh');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(255, 255, 255)', 'Stylesheet mutation alone does not provide an attribute-based refresh');
   systemTheme.matches = true; systemTheme.dispatchEvent(new w.Event('change')); await tick();
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(37, 42, 49)', 'Media-query change resolves the new native canvas colour');
-  nativeCanvasTheme.textContent = '#main{background-color:rgb(240,245,249)}';
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(29, 33, 37)', 'Media-query change resolves the dark dashboard panel colour');
+  nativeCanvasTheme.textContent = '#main{background-color:rgb(240,245,249)}#credit-ui{background-color:rgb(255,255,255)}';
   systemTheme.matches = false; systemTheme.dispatchEvent(new w.Event('change')); await tick();
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(255, 255, 255)');
   assert.equal(unrelated.outerHTML, unrelatedHTML, 'Unconfigured, external, fragment and branch links are not decorated or rewritten');
-  assert.ok(d.querySelector('.acs-side-bar-footer').classList.contains('credit-native-footer'));
+  assert.ok(d.querySelector('#native-footer').classList.contains('credit-native-footer'), 'Alternate native footer is identified by its existing Space tools and collapse controls');
+  assert.ok(d.querySelector('.native-toolbar-surface').classList.contains('credit-native-surface'), 'Nested native toolbar surface receives the same owned background');
+  assert.equal(d.querySelector('#portfolio').closest('.credit-native-footer,.credit-native-surface'), null, 'Derived footer paths stop before the page tree container');
   assert.equal(menu.outerHTML, menuHTML, 'Native dropdown content is never decorated, even when a menu link uses a configured dashboard URL');
+  assert.ok(spaceTools.classList.contains('credit-native-toolbar-control'), 'Native Space tools trigger shares the sidebar surface without replacing its handler');
   assert.ok(nativeToggle.classList.contains('credit-native-toggle-path'), 'Actual Confluence expand-collapse trigger stays available in the footer');
   assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
@@ -133,16 +149,18 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const meta = d.createElement('meta'); meta.name = 'ajs-space-key'; meta.content = 'wcs'; d.head.append(meta); await tick();
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Header include skins ordinary space pages');
   assert.ok(sidebar.querySelector('.credit-native-compact-path'));
-  // A dashboard-to-ordinary-page switch keeps the native content font even when
-  // the macro is absent and the ancestor main element has a different family.
+  // A dashboard-to-ordinary-page switch keeps the space body text family even
+  // when the macro is absent and native content wrappers have other families.
   const spaceContent = ui.parentElement;
   ui.append(hub); await tick(); ui.remove(); await tick();
   assert.equal(d.getElementById('credit-ui'), null);
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Ordinary wcs pages prefer .wiki-content over the ancestor #main font');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), textFont, 'Ordinary wcs pages retain the space body text family');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)', 'Ordinary pages without a dashboard use the native page canvas');
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Ordinary-page switch keeps the configured native links');
   spaceContent.append(ui); await tick();
-  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Returning to a dashboard restores its space typography');
-  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif');
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), textFont, 'Returning to a dashboard restores its space text typography');
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-display-font'), displayFont, 'Returning to a dashboard restores its space display typography');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), textFont);
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Returning does not duplicate navigation icons');
   meta.content = 'OTHER'; await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null, 'Other spaces stay untouched');
   assert.equal(d.querySelector('.credit-native-compact-path'), null, 'Owned rail paths are restored');
@@ -188,7 +206,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(themeListeners.size, 0, 'Destroy removes the system-theme listener');
   systemTheme.dispatchEvent(new w.Event('change')); await tick();
   assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(sidebar.hasAttribute('data-credit-native-compact'), false);
-  assert.equal(d.querySelector('.acs-side-bar-footer').outerHTML, footerHTML, 'Footer is fully restored on teardown');
+  assert.equal(d.querySelector('#native-footer').outerHTML, footerHTML, 'Unknown nested native footer is fully restored on teardown');
   assert.equal(menu.outerHTML, menuHTML, 'Native dropdown remains exactly restored on teardown');
   assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.equal(sidebar.className, 'acs-side-bar'); assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn);
@@ -197,5 +215,5 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(d.body.className, 'citi-hide-sidebar'); assert.equal(sidebar.getAttribute('style'), sidebarStyle); assert.equal(unrelated.outerHTML, unrelatedHTML);
   assert.equal(ui.getAttribute('style'), uiStyle, 'Owned typography variables restore exactly on teardown');
   assert.equal(first.getAttribute('aria-describedby'), 'help'); assert.equal(first.hasAttribute('aria-label'), false);
-  console.log('PASS native dashboard navigation: configured tree links only, native menus excluded during relocation, native titles/URLs/handlers/dimensions preserved, footer menu and real collapse trigger, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
+  console.log('PASS native dashboard navigation: configured tree links only, native menus excluded during relocation, native titles/URLs/handlers/dimensions preserved, nested footer menu and real collapse trigger, body/display typography without a sidebar, panel/canvas surface selection, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => dom.window.close());

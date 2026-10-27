@@ -9,8 +9,10 @@ const marker='/* Confluence host protection.';
 assert.equal(source.split(marker).length,2,'one shared host-protection block');
 const css=marker+source.split(marker)[1];
 const dom=new JSDOM(`<!doctype html><html><head><style>${css}</style></head><body>
- <nav id="native"><button>Confluence</button><h2>Native heading</h2></nav>
+ <nav id="native"><button>Confluence</button><h2>Native heading</h2><span class="aui-icon" style="font-family:'Atlassian Icons'">Icon</span></nav>
  <div id="credit-ui" class="credit-ui-host"><main id="credit-hub">
+  <h1 id="page-title">Lending Analytics</h1><div class="font-display" id="display-text">Wealth Credit Services</div>
+  <span class="aui-icon" id="native-glyph" style="font-family:'Atlassian Icons'">Icon</span>
   <section class="ch-card"><header class="ch-card-head"><h2 id="title">Facilities</h2><p class="ch-card-sub" id="subtitle">Current portfolio</p></header>
    <strong class="ch-kpi-value" id="kpi">120</strong><div class="credit-data-table-scroll" id="table-scroll"><table class="credit-data-table"><thead><tr><th id="heading">Category</th></tr></thead><tbody><tr>
     <td class="ct-category-cell" id="category"><button class="ch-row-link">Aircraft Finance</button></td>
@@ -38,7 +40,17 @@ protectedValue('table-scroll','overflow-x','auto');
 protectedValue('dialog-scroll','overflow-y','auto');
 assert.equal(matching('dialog','overflow').length,0,'modal shell remains clipped by its existing rule');
 for(const id of ['severity','delta','chart-label','chart-series'])assert.equal(matching(id,'color').length,0,`${id} retains its own semantic colour`);
-const spaceFontFamilies=new Set(['inherit','var(--credit-space-font,var(--credit-resolved-space-font,inherit))']);
+const textFamily='var(--credit-space-font,var(--credit-resolved-space-font,inherit))';
+const displayFamily='var(--credit-space-display-font,var(--credit-resolved-space-display-font,inherit))';
+const spaceFontFamilies=new Set(['inherit',textFamily,displayFamily]);
+protectedValue('credit-ui','font-family',textFamily);
+for(const id of ['page-title','display-text'])protectedValue(id,'font-family',displayFamily);
+for(const id of ['title','subtitle','search','heading','category']){
+ protectedValue(id,'font-family','inherit');
+ assert.equal(matching(id,'font-family').some(r=>r.style.getPropertyValue('font-family')===displayFamily),false,`${id} retains the space text font rather than the display font`);
+}
+assert.equal(matching('native-glyph','font-family').length,0,'Dashboard font protection does not overwrite a native AUI icon font');
+assert.equal(dom.window.getComputedStyle(element('native-glyph')).fontFamily.replace(/["']/g,''),'Atlassian Icons','Existing native icon-family declaration remains intact');
 for(const rule of rules){
  const family=rule.style.getPropertyValue('font-family');
  if(family)assert.ok(spaceFontFamilies.has(family.replace(/\s+/g,'')),`the space owns font families; unexpected family: ${family}`);
@@ -56,4 +68,4 @@ assert.equal(webkit[0].style.getPropertyValue('width'),'10px');
 d.querySelector('#credit-hub').remove();
 assert.equal(matching('filter-popup','scrollbar-width').length,0,'shared dashboard popovers outside Lending Analytics keep their own styles');
 dom.window.close();
-console.log('PASS: scoped Confluence typography/scrollbar priorities, host theme aliases, inherited fonts, native chrome isolation and preserved semantic chart/table colours (CSSOM contract; browser paint checked separately).');
+console.log('PASS: scoped Confluence text/display typography and scrollbar priorities, host theme aliases, preserved native icon fonts, native chrome isolation and semantic chart/table colours (CSSOM contract; browser paint checked separately).');

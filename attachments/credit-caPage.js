@@ -7,7 +7,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   'use strict';
   if (w.CreditSidebar) { w.CreditSidebar.refresh(); return; }
   var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false, revealOwned = false;
-  var decorations = new Map(), presentation = new Map();
+  var decorations = new Map(), createdClassAttributes = new Set(), presentation = new Map(), nativeFooters = new Set();
   var systemTheme = w.matchMedia?.('(prefers-color-scheme: dark)');
   var links = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
   // Filled SVG paths from the supplied TailAdmin sidebar (see LICENSES.txt).
@@ -64,9 +64,27 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   // rerenders, retargeted links and editor transitions can restore them exactly.
   var sidebarToggle = '.acs-side-bar-toggle,.ia-toggle-button,.expand-collapse-trigger,[aria-label="Expand sidebar"],[aria-label="Collapse sidebar"],[title="Expand sidebar"],[title="Collapse sidebar"]';
   var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
+  var spaceToolsTrigger = '[aria-controls="space-tools-menu"],[aria-owns="space-tools-menu"],#space-tools-menu-trigger';
   var nativeMenu = 'aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role="menu"],[role="listbox"],[role="dialog"]';
+  function findFooters() {
+    nativeFooters = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
+    var controls = Array.from(host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger)).filter(function (el) { return !el.closest(nativeMenu); });
+    var toggle = controls.find(function (el) { return el.matches(sidebarToggle); });
+    var tools = controls.find(function (el) { return el.matches(spaceToolsTrigger); });
+    var common = tools?.parentElement;
+    while (common && common !== host && toggle && !common.contains(toggle)) common = common.parentElement;
+    controls.forEach(function (control) {
+      var footer = control.closest(sidebarFooter) || (toggle && tools && common !== host ? common : control.parentElement);
+      if (footer && footer !== host) nativeFooters.add(footer);
+    });
+  }
   function eligibleLink(a) {
-    return !a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') && !a.closest(sidebarFooter + ',' + nativeMenu);
+    return !a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') && !a.closest(sidebarFooter + ',' + nativeMenu) && !Array.from(nativeFooters).some(function (footer) { return footer.contains(a); });
+  }
+  function restoreClassAttribute(el) {
+    if (!createdClassAttributes.has(el)) return;
+    if (el.getAttribute('class') === '') el.removeAttribute('class');
+    createdClassAttributes.delete(el);
   }
   function setPresentation(el, name, value) {
     if (!el || !value || el.style.getPropertyValue(name) === value) return;
@@ -77,15 +95,23 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   }
   function syncPresentation() {
     var ui = d.getElementById('credit-ui');
-    // The space content owns typography. Native navigation often has its own
-    // AUI font rules, so inherit the content family rather than a branded guess.
-    var content = ui?.closest('.wiki-content,#main-content') || d.querySelector('.wiki-content') || d.getElementById('main-content') || d.getElementById('main') || d.querySelector('.ia-splitter-right') || ui?.parentElement || d.body;
-    var family = w.getComputedStyle(content).fontFamily;
+    // The supplied space stylesheet assigns its text stack to body/p. Sampling
+    // .wiki-content would copy Confluence's competing AUI font instead.
+    var family = w.getComputedStyle(d.body).fontFamily;
     setPresentation(host, '--credit-resolved-space-font', family);
     setPresentation(ui, '--credit-resolved-space-font', family);
-    // Match the native page canvas behind the dashboard, including transparent
-    // containers. Do not sample a card's white surface or change host geometry.
-    var canvas = d.querySelector('.ia-splitter-right,#main') || ui?.parentElement || d.body;
+    var nativeTitle = Array.from(d.querySelectorAll('h1,.font-display')).find(function (el) { return !el.closest('#credit-ui,.credit-native-navigation'); });
+    var displayFamily = nativeTitle ? w.getComputedStyle(nativeTitle).fontFamily : family;
+    // Reuse the Display face already registered by the space; never copy font
+    // files or attachment URLs. A native title supplies the generic fallback.
+    if (d.fonts?.forEach) d.fonts.forEach(function (face) {
+      var name = face.family.replace(/["']/g, '');
+      if (/^citi[ -]sans[ -]display$/i.test(name)) displayFamily = JSON.stringify(name) + ', ' + family;
+    });
+    setPresentation(ui, '--credit-resolved-space-display-font', displayFamily);
+    // Match the main dashboard panel, with the native canvas as the fallback
+    // on ordinary space pages. The entire rail/footer uses this one surface.
+    var canvas = ui || d.querySelector('.ia-splitter-right,#main') || d.body;
     var background = '';
     for (var el = canvas; el; el = el.parentElement) {
       var color = w.getComputedStyle(el).backgroundColor;
@@ -118,7 +144,18 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     });
     // Confluence themes can put the configuration action beside the native
     // toggle, or use a bottom section instead of the standard footer wrapper.
-    var footers = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
+    var footers = new Set(nativeFooters);
+    // Native themes use different footer wrappers. Derive those paths from the
+    // existing controls, stopping before any container holding the page tree.
+    host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
+      if (control.closest(nativeMenu)) return;
+      mark(control, 'credit-native-toolbar-control');
+      for (var parent = control.parentElement; parent && parent !== host && !parent.querySelector('[data-credit-native-page-link]'); parent = parent.parentElement) {
+        if (parent.matches(nativeMenu)) break;
+        footers.add(parent);
+        mark(parent, 'credit-native-surface');
+      }
+    });
     host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
       if (el.closest(nativeMenu)) return;
       var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
@@ -136,11 +173,12 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     });
     decorations.forEach(function (names, el) {
       names.forEach(function (name) { if (!desired.get(el)?.has(name)) { el.classList.remove(name); names.delete(name); } });
-      if (!names.size) decorations.delete(el);
+      if (!names.size) { decorations.delete(el); restoreClassAttribute(el); }
     });
     desired.forEach(function (names, el) {
       names.forEach(function (name) {
         if (el.classList.contains(name)) return;
+        if (!el.hasAttribute('class')) createdClassAttributes.add(el);
         el.classList.add(name); if (!decorations.has(el)) decorations.set(el, new Set()); decorations.get(el).add(name);
       });
     });
@@ -220,19 +258,19 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (ownsHostClass) host.classList.remove('credit-native-navigation');
     }
     links.forEach(function (record, a) { restoreLink(a, record); });
-    decorations.forEach(function (names, el) { names.forEach(function (name) { el.classList.remove(name); }); }); decorations.clear();
+    decorations.forEach(function (names, el) { names.forEach(function (name) { el.classList.remove(name); }); restoreClassAttribute(el); }); decorations.clear();
     if (revealOwned) { d.body.classList.add('citi-hide-sidebar'); revealOwned = false; }
     presentation.forEach(function (properties, el) {
       properties.forEach(function (original, name) { if (original[0]) el.style.setProperty(name, original[0], original[1]); else el.style.removeProperty(name); });
       if (!el.getAttribute('style')) el.removeAttribute('style');
     }); presentation.clear();
-    host = null; ownsHostClass = false;
+    nativeFooters.clear(); host = null; ownsHostClass = false;
   }
   function refresh() {
     if (destroyed || !d.body) return;
     if (!active()) { reset(); return; }
     var native = d.querySelector('.ia-fixed-sidebar,.acs-side-bar,#sidebar');
-    if (!native) { reset(); return; }
+    if (!native) { if (host) reset(); syncPresentation(); return; }
     if (host !== native) {
       reset(); host = native; ownsHostClass = !host.classList.contains('credit-native-navigation'); host.classList.add('credit-native-navigation');
       host.addEventListener('mouseover', showTooltip); host.addEventListener('focusin', showTooltip);
@@ -240,7 +278,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); var rail = host.querySelector('.acs-side-bar'); if (rail) resizeObserver.observe(rail); }
     }
     if (d.body.classList.contains('citi-hide-sidebar')) { revealOwned = true; d.body.classList.remove('citi-hide-sidebar'); }
-    syncPresentation(); enhance(); compactState();
+    syncPresentation(); findFooters(); enhance(); compactState();
   }
   function schedule() { if (!queued && !destroyed) { queued = true; Promise.resolve().then(function () { queued = false; refresh(); }); } }
   function start() {
@@ -2428,5 +2466,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="1a99285d8bf7:CA";
+window.CREDIT_PAGE_BUILD="f8e078218439:CA";
 })();

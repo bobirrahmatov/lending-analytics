@@ -324,8 +324,8 @@ local fixtures cover nested rails, shared toggle footers and hostile host CSS.
 PAGE AND SIDEBAR SURFACES
 Page shells use a restrained 10 px radius (the shared --credit-page-radius token).
 The native sidebar wrapper, inner panel and footer follow the computed background
-of the right-hand native page canvas, including light/dark theme changes. This
-avoids a separate white sidebar block against a grey page. An optional
+of the main dashboard panel, including light/dark theme changes. Ordinary space
+pages without a dashboard use the native page canvas. An optional
 --credit-sidebar-background space CSS variable overrides that match. Dashboard
 card surfaces retain their theme tokens. Child-page hierarchy is preserved.
 
@@ -342,10 +342,24 @@ decoration. Compact-tree CSS also excludes native menu layers. This prevents the
 hidden dropdown from becoming a full-width strip while retaining its native
 open/close behavior. The native expand-collapse-trigger remains usable.
 
-The adapter reads the space content's computed font family and applies it to
-dashboard text, charts and configured sidebar labels. It does not hardcode a
-brand font or override native icon fonts. Theme/style changes refresh the
-resolved presentation values; teardown restores any prior inline values.
+The space stylesheet shown for this deployment assigns Citi Sans Text /
+Citi-Sans-Text to body and paragraphs, and Citi Sans Display / Citi-Sans-Display
+to h1 and .font-display. The adapter reads the body's computed text stack, not
+the inner .wiki-content container where Confluence may specify Arial. Dashboard
+text, charts and sidebar labels share that body stack. Display titles separately
+reuse the existing registered Citi Display face or the native title's family.
+No font files, private attachment URLs or new @font-face declarations are shipped.
+Typography also resolves when no native sidebar is present. Native icon fonts
+are preserved. Optional --credit-space-font and --credit-space-display-font
+variables can override the two roles. Theme/style changes refresh the resolved
+presentation values; teardown restores any prior inline values.
+
+The adapter discovers footer wrappers from the existing Space tools and collapse
+controls, including themes without the standard footer class. All structural
+footer layers share the dashboard surface; idle toolbar backgrounds are clear.
+Native hover/focus, menu visibility, handlers and sidebar geometry are preserved.
+The browser fixture deliberately uses local font stand-ins under the Citi names
+to verify CSS roles; it does not validate intranet font downloads or Citi glyphs.
 
 Upload credit-native-sidebar.js, credit-style.css and every matching generated
 Page.js/HTMLPage.js pair from this build, then hard reload. Existing header and

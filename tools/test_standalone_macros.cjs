@@ -15,12 +15,17 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 25));
 
 async function mountMacro(page, pageId) {
   const macro = fs.readFileSync(path.join(project, 'confluence-pages', page + '.html'), 'utf8');
-  const dom = new JSDOM(`<!doctype html><html><head><meta name="ajs-space-key" content="wcs"></head><body>
-    <header id="native-header"><button id="native-action">Native action</button></header>
+  const dom = new JSDOM(`<!doctype html><html><head><meta name="ajs-space-key" content="wcs"><style>
+    body,p{font-family:"Citi Sans Text","Citi-Sans-Text",sans-serif}
+    h1,.font-display{font-family:"Citi Sans Display","Citi-Sans-Display",sans-serif}
+    .wiki-content,.acs-side-bar,.acs-side-bar a{font-family:Arial,sans-serif}
+    .aui-icon{font-family:"Atlassian Icons"}
+  </style></head><body>
+    <header id="native-header"><h1>Native page title</h1><button id="native-action">Native action</button><span class="aui-icon" id="native-icon">Icon</span></header>
     <aside class="acs-side-bar" style="width:286px"><button id="native-toggle">Collapse</button>
       <a href="/confluence/pages/viewpage.action?pageId=${pageId}">Current dashboard</a>
       <div id="native-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999">Other space content</a></div>
-    </aside><main id="native-content">${macro}</main></body></html>`, {
+    </aside><main id="native-content" class="wiki-content">${macro}</main></body></html>`, {
     url: 'https://confluence.example.test/confluence/pages/viewpage.action?pageId=' + pageId,
     runScripts: 'outside-only', pretendToBeVisual: true
   });
@@ -29,7 +34,7 @@ async function mountMacro(page, pageId) {
   const native = d.getElementById('native-header'), unrelated = d.getElementById('native-unrelated');
   const nativeHTML = native.innerHTML, unrelatedHTML = unrelated.outerHTML;
   const toggle = d.getElementById('native-toggle'), sidebar = d.querySelector('aside');
-  const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-sidebar-background']);
+  const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-space-display-font', '--credit-resolved-sidebar-background']);
   const nativeStyle = () => Array.from(sidebar.style).filter(name => !ownedPresentation.has(name)).map(name => [name, sidebar.style.getPropertyValue(name), sidebar.style.getPropertyPriority(name)]);
   const originalNativeStyle = nativeStyle();
   let nativeClicks = 0, overlaysCreated = 0;
@@ -125,6 +130,14 @@ async function mountMacro(page, pageId) {
       assert.equal(unrelated.outerHTML, unrelatedHTML);
       assert.equal(toggle.onclick, nativeHandler);
       assert.deepEqual(nativeStyle(), originalNativeStyle, 'Native geometry and styling stay unchanged; only owned font/background variables are allowed');
+      const bodyFamily = w.getComputedStyle(d.body).fontFamily;
+      assert.notEqual(bodyFamily,w.getComputedStyle(d.getElementById('native-content')).fontFamily,'The host fixture reproduces a conflicting Confluence content font');
+      assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'),bodyFamily,'The sidebar uses the space body font stack');
+      assert.equal(d.getElementById('credit-ui').style.getPropertyValue('--credit-resolved-space-font'),bodyFamily,'A standalone macro uses the space body font despite the content-container override');
+      const displayFamily = d.getElementById('credit-ui').style.getPropertyValue('--credit-resolved-space-display-font');
+      assert.match(displayFamily,/Citi[- ]Sans[- ]Display/,'A standalone macro resolves the space display font');
+      assert.notEqual(displayFamily,bodyFamily,'The display role remains distinct from the text role');
+      assert.equal(w.getComputedStyle(d.getElementById('native-icon')).fontFamily.replace(/["']/g,''),'Atlassian Icons','Native icon fonts remain intact');
       assert.equal(d.querySelectorAll('aside').length, 1);
     };
     checkNative(); toggle.click(); assert.equal(nativeClicks, 1);

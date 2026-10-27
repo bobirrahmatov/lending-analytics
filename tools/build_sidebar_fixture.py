@@ -27,9 +27,15 @@ sidebar = '''<div class="ia-fixed-sidebar"><aside class="acs-side-bar" aria-labe
 <div class="plugin_pagetree_childtoggle_container"><button id="native-branch" aria-label="Toggle Lending Analytics pages" aria-expanded="true">⌄</button></div>
 <div class="plugin_pagetree_children_container"><ul id="native-children">''' + links + '''</ul></div></li>
 <li id="fixture-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Space resources"><span aria-hidden="true">◇</span><span class="fixture-native-label">Space resources</span></a></li>
-</ul></aside><div class="acs-side-bar-bottom"><button id="fixture-space-tools" class="aui-dropdown2-trigger" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-label="Sidebar" aria-expanded="true" data-tooltip="Collapse sidebar">«</a></div>
+</ul></aside><div id="fixture-native-footer" class="fixture-native-toolbar-shell"><div class="fixture-native-toolbar-surface"><button id="fixture-space-tools" class="aui-dropdown2-trigger" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-label="Sidebar" aria-expanded="true" data-tooltip="Collapse sidebar">«</a></div></div>
 <aui-dropdown-menu id="space-tools-menu" class="aui-dropdown2 aui-layer" role="menu" tabindex="-1" hidden><ul><li><a href="#configure-sidebar" id="fixture-configure">Configure sidebar</a></li><li><a href="/confluence/pages/viewpage.action?pageId=101">Portfolio settings</a></li></ul></aui-dropdown-menu></div>'''
 styles = '''<style>
+/* Fixture-only aliases exercise the space's Citi family names without bundling
+   or claiming access to the actual proprietary fonts. */
+@font-face{font-family:"Citi-Sans-Text";src:local("Arial");font-style:normal;font-weight:400}
+@font-face{font-family:"Citi-Sans-Display";src:local("Georgia");font-style:normal;font-weight:400}
+body,p{font-family:"Citi Sans Text","Citi-Sans-Text",Arial,sans-serif}
+h1,.font-display{font-family:"Citi Sans Display","Citi-Sans-Display",Georgia,serif}
 /* Deliberately conflicting host rules reproduce Confluence decoration/overrides. */
 .acs-side-bar .plugin_pagetree_children_span::before{content:"•";display:inline-block}
 .acs-side-bar .aui-icon::before{content:"▣"}
@@ -38,14 +44,16 @@ styles = '''<style>
 #credit-ui .ch-main{width:100vw;min-width:1200px}
 .ch-card{border:12px solid red!important;border-radius:45px!important;background:pink!important;box-shadow:0 0 0 14px pink!important}
 .acs-side-bar li::before{content:"•"}
-.acs-side-bar{background:#eee!important}.acs-side-bar-bottom{background:#ddd!important}
+.acs-side-bar{background:#eee!important}
+#fixture-native-footer,#fixture-native-footer .fixture-native-toolbar-surface,#fixture-native-footer :is(button,a){background:linear-gradient(#fff,#f7f8fa)!important;background-color:#fff!important}
 .acs-side-bar,.acs-side-bar a,.wiki-content h2,.wiki-content h3{font-family:Arial,sans-serif}
-.wiki-content{font-family:Georgia,serif}.ia-splitter-right{background-color:#eef2f6}
+.wiki-content{font-family:Arial,sans-serif}.ia-splitter-right{background-color:#eef2f6}
 html[data-color-mode="dark"] .ia-splitter-right{background-color:#252a31}
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
 .ia-fixed-sidebar{min-width:0;position:sticky;top:10px;align-self:start}.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}
-.acs-side-bar-bottom{display:flex!important;justify-content:space-between;min-width:240px!important;padding:12px!important;border-top:1px solid #dce6ef;white-space:nowrap;background:#eee}
+.fixture-native-toolbar-shell{min-width:240px!important;border-top:1px solid #dce6ef;white-space:nowrap}
+.fixture-native-toolbar-surface{display:flex!important;justify-content:space-between;padding:12px!important}
 /* Native AUI menus are separate layers, not part of the compact page-tree rail.
    This viewport-wide layer reproduces the bottom strip if rail CSS forces flex. */
 .aui-dropdown2{display:none;position:fixed;inset:auto 0 12px;z-index:50;box-sizing:border-box;width:100vw;padding:10px 20px;background:var(--ds-surface,#fff);border:1px solid #dce6ef;box-shadow:0 4px 12px #17355f22}
@@ -90,7 +98,7 @@ document.getElementById('native-branch').onclick=function(){
 </script>'''
 s = (P / ('pages/'+page+'.html')).read_text()
 s = s.replace('</head>', '<meta name="ajs-space-key" content="wcs">' + styles + '</head>', 1)
-s = s.replace('<body class="credit-preview">', '<body class="credit-preview"><button id="fixture-theme">Toggle theme</button> <button id="fixture-space">Ordinary space page</button><p class="fixture-heading">QA fixture only — simulated native host tree; no production sidebar is created</p><h1 id="title-heading">Native dashboard page title</h1><div class="fixture-shell">' + sidebar + '<div class="fixture-content ia-splitter-right"><div class="wiki-content">', 1)
+s = s.replace('<body class="credit-preview">', '<body id="com-atlassian-confluence" class="credit-preview"><button id="fixture-theme">Toggle theme</button> <button id="fixture-space">Ordinary space page</button><p class="fixture-heading">QA fixture only — simulated host and local stand-in Citi font families; no production sidebar or font is created</p><h1 id="title-heading">Native dashboard page title</h1><div class="fixture-shell">' + sidebar + '<div class="fixture-content ia-splitter-right"><div class="wiki-content">', 1)
 s = s.replace('<script>window.CREDIT_CONFIG=', '</div></div></div>' + handlers + '<script>window.CREDIT_CONFIG=', 1)
 s, replacements = re.subn(r'(page:\s*[\'\"][A-Za-z]+[\'\"],)', lambda match: match.group(1) + 'pageIds:' + json.dumps(ids) + ',', s, count=1)
 if replacements != 1:
