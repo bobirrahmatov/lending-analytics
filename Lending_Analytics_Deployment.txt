@@ -302,11 +302,19 @@ page pairs together. Space_Navigation.html is unchanged; retain its existing
 space-header installation. Attaching files alone does not install that include.
 
 CARD FRAMES
-Chart and table frames use a 2px theme-aware ring with a 1px outer edge, replacing
-an oversized 6px treatment. Scoped important border, radius, background and
+KPI groups, expanded-analysis metrics, chart and table frames share a 2px
+theme-aware frame with a 1px outer edge. Portfolio's KPI group uses the same
+frame as the other pages. Scoped important border, radius, background and
 shadow rules protect these surfaces from Confluence CSS. Internal table/drill
 padding and chart layouts remain component-owned. The hidden dashboard h1
 remains available to assistive technology; chart titles stay visible.
+
+Page breadcrumbs follow the Citi reference: blue parent links, a plain slash
+separator and a normal-weight, theme-aware current-page label in the space font.
+All dashboard pages share this component; the landing retains its centered
+introduction without an extra breadcrumb. Local chart drill paths retain their
+existing controls. Upload credit-style.css and matching generated page pairs;
+the space header and content macro fragments do not require changes.
 
 NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
 The shared native-sidebar adapter recognizes collapsed inner rails inside a

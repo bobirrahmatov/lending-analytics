@@ -238,7 +238,7 @@
 
 /* Lending Analytics dashboard components */
 /* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
-#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
+#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-width:2px;--card-frame-shadow:0 1px 2px #17355f08,0 0 0 var(--card-frame-width) var(--card-frame-color),0 0 0 calc(var(--card-frame-width) + 1px) var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
 :is(#credit-hub,.credit-ui-surface) * { box-sizing:border-box }
 :is(#credit-hub,.credit-ui-surface) [hidden] { display:none!important }
 :is(#credit-hub,.credit-ui-surface) :is(h1,h2,h3,p) { margin:0 }
@@ -683,7 +683,7 @@
 #credit-hub .cd-pal-analysis .cd-expanded-card .ch-chart-summary,#credit-hub .cd-pal-analysis .cd-expanded-card .pal-deal-totals{display:none}
 #credit-hub .cd-chart-slot{margin:6px 6px 28px}
 #credit-hub .cd-analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px;margin:26px 6px}
-#credit-hub .cd-insight-card{margin:0;padding:0;overflow:hidden;min-width:0;border-radius:16px;box-shadow:0 0 0 5px var(--pale),0 0 0 6px var(--line)}
+#credit-hub .cd-insight-card{margin:0;padding:0;overflow:hidden;min-width:0;border-radius:16px;box-shadow:var(--card-frame-shadow)}
 #credit-hub .cd-insight-card .ch-card-head{padding:20px;margin:0}
 #credit-hub .cd-insight-card h3{font-size:15px;line-height:1.4;color:var(--navy)}
 #credit-hub .cd-insight-card .credit-data-table-scroll{border:0;border-radius:0}
@@ -1681,13 +1681,16 @@
 #credit-hub .cd-expanded-summary dl p{margin:0;color:#687b93;font-size:12px}
 @media(min-width:1100px){#credit-hub .cd-analysis-grid.cd-summary-above>.cd-insight-visual,#credit-hub .cd-analysis-grid.cd-summary-above>.cd-chart-slot{grid-column:span 6!important}}
 
-/* Lending Analytics content breadcrumb: Lending Analytics typography and chevron pattern. */
-#credit-hub .ch-breadcrumbs{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 20px;font-size:12px;line-height:1.6;color:var(--muted);min-width:0}
-#credit-hub .ch-breadcrumbs a{color:var(--ink);text-decoration:none}
-#credit-hub .ch-breadcrumbs a:hover{color:var(--blue);text-decoration:underline}
-#credit-hub .ch-breadcrumbs a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
-#credit-hub .ch-breadcrumbs svg{width:12px;height:12px;flex:none}
-#credit-hub .ch-breadcrumbs [aria-current]{font-weight:600;overflow-wrap:anywhere}
+/* Citi page breadcrumbs: blue destinations, plain slashes and a neutral current
+   page. Keep the space font and the shared toolbar's responsive positioning. */
+#credit-ui #credit-hub .ch-breadcrumbs{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:6px 14px!important;margin:0 0 20px;padding:0!important;min-width:0;font-size:14px!important;font-weight:400!important;line-height:1.6!important;color:var(--ink)!important}
+#credit-ui #credit-hub .ch-breadcrumbs>a{color:var(--ds-link,var(--credit-theme-link,var(--blue)))!important;text-decoration:none!important}
+#credit-ui #credit-hub .ch-breadcrumbs>a:hover{text-decoration:underline!important;text-underline-offset:4px}
+#credit-ui #credit-hub .ch-breadcrumbs>a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
+#credit-ui #credit-hub .ch-breadcrumbs>span{color:var(--ink)!important}
+#credit-ui #credit-hub .ch-breadcrumbs>:is(a,span){font-family:inherit!important;font-size:inherit!important;font-weight:400!important;line-height:inherit!important}
+#credit-ui #credit-hub .ch-breadcrumb-separator{flex:none;user-select:none}
+#credit-ui #credit-hub .ch-breadcrumbs [aria-current]{min-width:0;overflow-wrap:anywhere}
 /* Dashboard content and the native navigation skin share the host surface.
    Confluence tokens win. Explicit host mode wins over the OS fallback. */
 :where(body.credit-preview,#credit-ui.credit-ui-host,.credit-native-navigation,.credit-native-sidebar-tooltip){
@@ -1807,7 +1810,8 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-ui #credit-hub :is(.cw-framed-card,.ct-table-card){box-shadow:var(--card-frame-shadow)!important}
 #credit-ui #credit-hub .ch-card:not(.cw-framed-card):not(.ct-table-card),
 #credit-ui #credit-hub :is(.ch-kpi,.pal-metric){box-shadow:0 1px 2px #17355f08!important}
-#credit-ui #credit-hub .ch-kpis{padding:3px!important;border:1px solid var(--line)!important;border-radius:17px!important;background:var(--card-frame-color)!important}
+#credit-ui #credit-hub :is(.ch-kpis,.pal-metrics,.cd-analysis-kpis){box-sizing:border-box!important;padding:var(--card-frame-width)!important;border:1px solid var(--line)!important;border-radius:17px!important;background:var(--card-frame-color)!important;box-shadow:none!important}
+#credit-ui #credit-hub .cd-analysis-kpis>.cd-analysis-metric{border:1px solid var(--line)!important;border-radius:14px!important;background:var(--page)!important}
 
 /* Confluence host protection. Preserve the space's font family and theme, while
    keeping dashboard typography and genuine scroll surfaces readable. No host
@@ -1831,7 +1835,6 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-hub :is(.pal-metric-value strong,.pj-metric-value,.cd-explorer-kpi>strong){font-size:28px!important;line-height:1.2!important;font-weight:600!important;color:var(--ink)!important}
 #credit-hub .cov-kpi .ch-kpi-value{font-size:30px!important}
 #credit-hub .cov-kpi-line .ch-kpi-value{font-size:29px!important;line-height:1.15!important}
-#credit-hub .ch-breadcrumbs{font-size:12px!important;line-height:1.6!important;color:var(--muted)!important}
 #credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button{font-size:14px!important;font-weight:600!important;line-height:1.5!important}
 #credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button[aria-current]{font-weight:700!important;color:var(--ink)!important}
 

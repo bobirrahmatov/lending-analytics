@@ -2396,7 +2396,7 @@ function pageBreadcrumb(){
  const id=String(config.pageIds?.lendingAnalytics||''),context=(config.contextPath||'/confluence').replace(/\/$/,'');
  const href=config.mode==='demo'?'./lendinganalytics.html':/^[1-9]\d*$/.test(id)?context+'/pages/viewpage.action?pageId='+id:null;
  const parent=href?'<a href="'+esc(href)+'">Lending Analytics</a>':'<span>Lending Analytics</span>';
- return '<nav class="ch-breadcrumbs" aria-label="Breadcrumb">'+parent+'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg><span data-breadcrumb-current aria-current="page"></span></nav>';
+ return '<nav class="ch-breadcrumbs" aria-label="Breadcrumb">'+parent+'<span class="ch-breadcrumb-separator" aria-hidden="true">/</span><span data-breadcrumb-current aria-current="page"></span></nav>';
 }
 function updateNav(){const view=$('#ch-portfolio-view');if(view){view.hidden=state.tab!=='portfolio';view.querySelectorAll('[data-portfolio-view]').forEach(b=>{b.classList.toggle('active',b.dataset.portfolioView===portfolioView);b.setAttribute('aria-selected',String(b.dataset.portfolioView===portfolioView));});} $$('[data-count-for]').forEach(b=>{b.textContent=categories[b.dataset.countFor]?filtered(data.monitoring).filter(r=>r.category===b.dataset.countFor&&r.action_required).length:'';});$('#ch-title').textContent=nav.find(x=>x[0]===state.tab)[1];$('[data-breadcrumb-current]').textContent=$('#ch-title').textContent;for(const k of ['owner_id','team_lead'])$('#ch-'+k).disabled=state.tab==='trends';}
 async function render(targets){
@@ -2466,5 +2466,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="f8e078218439:FACILITY";
+window.CREDIT_PAGE_BUILD="a4288f80c65e:FACILITY";
 })();
