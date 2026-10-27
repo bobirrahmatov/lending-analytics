@@ -1,9 +1,11 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSDOM}=require('jsdom');
 const A=path.resolve(__dirname,'../attachments'),read=n=>fs.readFileSync(path.join(A,n),'utf8');
+const expectedNativeIds=['3977008171','3977008237','3977008198','3977008221','3977008265','3977008280','3977008303','3977008325','3977008340','3977008348','3977008352'];
 (async()=>{
- for(const scenario of ['demo','configured','unconfigured','failure']){
+ for(const scenario of ['demo','configured','confirmed','unconfigured','failure']){
   const dom=new JSDOM('<button id="origin">Origin</button><div id="credit-hub"></div>',{url:'http://localhost/pages/lendinganalytics.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,root=d.getElementById('credit-hub');
-  w.CREDIT_CONFIG={page:'lendingAnalytics',mode:scenario==='demo'?'demo':'production',contextPath:'/confluence',pageIds:scenario==='configured'?{portfolio:'123',deepdive:'124'}:{}};
+  if(scenario==='confirmed')w.eval(read('credit-pages.js'));
+  w.CREDIT_CONFIG={page:'lendingAnalytics',mode:scenario==='demo'?'demo':'production',contextPath:'/confluence',baseUrl:'/confluence/download/attachments/3845862527/',pageIds:scenario==='confirmed'?w.CREDIT_PAGE_IDS:scenario==='configured'?{portfolio:'123',deepdive:'124'}:{}};
   w.WCSUI={enhance(){if(scenario==='failure')throw Error('Test failure');}};
   w.eval(read('wcspedia-loading-overlay.js'));const early=w.WCSLoadingOverlay.create({target:d.createElement('div')});early.show('Loading WCSpedia…');
   let claimed=0,maximum=1;w.WCSHeaderLoading={claim(target){claimed++;early.adoptTarget(target);return early;}};
@@ -13,8 +15,27 @@ const A=path.resolve(__dirname,'../attachments'),read=n=>fs.readFileSync(path.jo
   assert.equal(claimed,1);assert.equal(maximum,1);assert.equal(d.querySelector('.wcs-loading-overlay'),null);assert.equal(root.hasAttribute('inert'),false);assert.equal(d.body.style.overflow,'');
   if(scenario==='demo')assert.equal(root.querySelectorAll('a.la-page-link').length,11);
   if(scenario==='configured'){assert.equal(root.querySelectorAll('a.la-page-link').length,2);assert.equal(root.querySelector('a').getAttribute('href'),'/confluence/pages/viewpage.action?pageId=123');}
+  if(scenario==='confirmed'){
+   assert.deepEqual([...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href')),expectedNativeIds.map(id=>'/confluence/pages/viewpage.action?pageId='+id),'all eleven confirmed native destinations remain unchanged');
+   assert.deepEqual([...root.querySelectorAll('article.la-area')].map(card=>card.querySelectorAll('a.la-page-link').length),[2,2,7],'every dashboard remains visible in its subject group');
+  }
   if(scenario==='unconfigured')assert.equal(root.querySelectorAll('a.la-page-link').length,0);
   if(scenario==='failure')assert.ok(root.querySelector('[role=alert]'));
+  else{
+   const cards=[...root.querySelectorAll('article.la-area')],hrefs=[...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href'));
+   assert.equal(cards.length,3,'three subject cards');
+   for(const card of cards){
+    assert.equal(card.closest('a,button,[role=link]'),null,'the card shell does not compete with its contained links');
+    const images=card.querySelectorAll('.la-area-media img');assert.equal(images.length,1,'one image per subject card');
+    const img=images[0],figure=img.closest('figure');assert.ok(figure?.classList.contains('la-area-media'));assert.equal(img.getAttribute('loading'),'lazy');
+    assert.ok(new URL(img.src).pathname.startsWith('/confluence/download/attachments/3845862527/'));assert.equal(new URL(img.src).search,'','card images use fixed attachment filenames');
+    img.dispatchEvent(new w.Event('error'));
+    assert.equal(figure.hidden,true,'failed image hides its own media figure');assert.equal(card.closest('[hidden]'),null,'failed image does not hide its card');
+    for(const link of card.querySelectorAll('a.la-page-link'))assert.equal(link.closest('[hidden],a a'),null,'dashboard links remain available after an image fails');
+   }
+   assert.deepEqual([...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href')),hrefs,'image failures retain all dashboard destinations');
+   assert.equal(root.querySelector('.la-hero').hidden,false,'card image errors leave the hero unchanged');
+  }
   if(scenario==='configured'){early.show('Loading…');w.eval(read('credit-lendinganalyticsHTMLPage.js'));assert.match(root.textContent,/Load the matching dashboard logic/);assert.equal(d.querySelector('.wcs-loading-overlay'),null);}
   console.log('PASS landing:',scenario);dom.window.close();
  }

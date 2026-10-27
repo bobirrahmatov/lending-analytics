@@ -3,7 +3,7 @@ from pathlib import Path
 from zipfile import ZipFile,ZIP_DEFLATED
 import hashlib
 P=Path(__file__).resolve().parents[1]
-assets=['wcspedia-style.css','wcspedia-ui.js','credit-pages.js','wcspedia-loading-overlay.js','highcharts.js','highcharts-accessibility.js','xlsx.full.min.js','SheetJS-LICENSE.txt','credit-file-drop-guard.js','lending-analytics-hero.jpg']
+assets=['wcspedia-style.css','wcspedia-ui.js','credit-pages.js','wcspedia-loading-overlay.js','highcharts.js','highcharts-accessibility.js','xlsx.full.min.js','SheetJS-LICENSE.txt','credit-file-drop-guard.js','lending-analytics-hero.jpg','lending-portfolio.jpg','lending-underwriting.jpg','lending-monitoring.jpg']
 assets += [f.name for f in sorted((P/'attachments').glob('credit-*Page.js')) if f.name!='credit-dashboardHTMLPage.js']
 instructions=(P/'Lending_Analytics_Deployment.txt').read_text()
 (P/'INSTALL.txt').write_text(instructions)
@@ -19,7 +19,7 @@ keep_qa |= {'Table_Drill_Adaptive_Verification.txt','Adaptive-Drill-Donut.png','
 keep_qa |= {'Reset_Tab_Performance_Verification.txt','Related_Scope_Performance.txt','Reset_Tabs_Browser.json','Reset-Tabs-Verified.png'}
 keep_qa |= {'Portfolio_Three_Card_Row_Verification.txt','Portfolio-Three-Card-Row.png'}
 keep_qa |= {'Table_Typography_Verification.txt','Table_Typography_Browser.json','Table-Typography-Portfolio.png'}
-keep_qa |= {'Final_Release_Verification.txt','Landing_Excel_Verification.txt','Lending-Analytics-Editorial.png','Lending-Analytics-Mobile.png','Excel-Runtime-Portfolio.png','excel-runtime.html','responsive-landing.html'}
+keep_qa |= {'Final_Release_Verification.txt','Landing_Excel_Verification.txt','Lending-Analytics-Editorial.png','Lending-Analytics-Mobile.png','Excel-Runtime-Portfolio.png','excel-runtime.html','responsive-landing.html','Landing_Cards_Verification.txt','landing-cards-responsive.html','Lending-Analytics-Cards.png','Lending-Analytics-Cards-Mobile.png'}
 with ZipFile(P/'Credit_Monitoring_Package.zip','w',ZIP_DEFLATED) as z:
  for f in sorted(P.rglob('*')):
   if not f.is_file():continue

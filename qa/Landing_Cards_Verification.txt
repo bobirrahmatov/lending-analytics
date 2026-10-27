@@ -1,0 +1,37 @@
+LENDING ANALYTICS — CITI INSIGHTS-STYLE SUBJECT CARDS
+27 October 2026 • release 1.1.1 • build dcad37f6df35
+
+Three editorial subject cards replace the plain numbered landing columns.
+Rounded Citi photographs, category labels, concise descriptions and full-width
+link rows use the existing space font and scoped global stylesheet. Cards have
+separate destinations rather than a whole-card click handler or nested anchors.
+All 11 links remain in their original 2 / 2 / 7 groups; no destinations are hidden.
+Images use fixed attachment filenames and lazy loading. Failed media hides its
+own figure; navigation remains available and text spans the tablet grid.
+
+Validation:
+- npm test: all 39 local regression commands passed, including all dashboards,
+  expanded charts, shared table/drill controls and loading/cache contracts.
+- Landing regression checks include the exact 11 confirmed native page IDs,
+  3 subject cards, 2 / 2 / 7 links, image-failure isolation and startup cleanup.
+- Final CSS spacing refinement rebuilt successfully with verify_page_package.py.
+- Browser review: 1440px desktop fixture, 847px actual in-app preview and 375px
+  phone fixture. Three desktop columns, image/text tablet rows, stacked phone
+  cards, readable text, all monitoring destinations visible and no clipping.
+- Actual preview: all 3 card images loaded, no horizontal overflow at 847px,
+  Portfolio Overview link opened its dashboard successfully.
+- Keyboard Tab reached Appraisals on the phone and tablet layouts with a visible
+  focus outline. All links keep ordinary anchor navigation and accessible names.
+- Screenshot evidence: Lending-Analytics-Cards.png and
+  Lending-Analytics-Cards-Mobile.png. Reproduce with
+  qa/landing-cards-responsive.html?width=1440 (or width=375).
+
+Deployment:
+Upload the rebuilt global CSS, matching page-script pairs and the three new
+lending-portfolio.jpg, lending-underwriting.jpg and lending-monitoring.jpg
+attachments from Confluence_Deployment.zip. Existing header include, page IDs,
+financial datasets, sidebar and per-page dashboard layouts retain their roles.
+Image sources and usage scope are recorded in LICENSES.txt.
+
+Limits: local browser and automated verification do not establish live Confluence
+permissions, host cache freshness or production page rendering.

@@ -48,9 +48,12 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    complete preview HTML document into a Confluence HTML macro.
 5. The actual landing is pages/lendinganalytics.html in local preview and the
    lendinganalytics.html native fragment in Confluence. It explains Lending
-   Analytics with an editorial layout, a supplied Citi wealth image attachment
-   and simple text links. The sidebar owns the full page navigation. It has no
-   dashboard-navigation card grid and downloads no financial records/Highcharts.
+   Analytics with an editorial layout, a Citi wealth hero and three subject cards
+   for portfolio, underwriting and monitoring. Each card uses a rounded Citi
+   attachment image and separate links to its dashboards (11 links in total).
+   The existing sidebar remains available. The landing downloads no financial
+   records or Highcharts. Upload lending-analytics-hero.jpg, lending-portfolio.jpg,
+   lending-underwriting.jpg and lending-monitoring.jpg with the application assets.
    Start_Here.html remains a developer/operator handoff index, not the landing.
 6. Attachment references use their exact stable filenames. Do not append ?v=,
    version strings, hash suffixes or release IDs to the default asset/workbook

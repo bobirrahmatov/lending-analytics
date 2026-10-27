@@ -18,3 +18,14 @@ Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/63adb4559bf
 Saved unchanged as attachments/lending-analytics-hero.jpg for the requested internal Citi deployment.
 Citi retains rights to the photograph. No broader redistribution rights are asserted.
 Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030
+
+Lending Analytics subject-card photographs (Citi Wealth)
+Source page: https://www.citigroup.com/global/businesses/wealth
+Portfolio: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/63adacdc79ffe46e5c8f4d99.jpg
+Saved unchanged as attachments/lending-portfolio.jpg.
+Underwriting: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/65b27ce7cfbaba088dd324b1.jpg
+Saved unchanged as attachments/lending-underwriting.jpg.
+Monitoring: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/65c64f7e493dd1658485e037.jpg
+Saved unchanged as attachments/lending-monitoring.jpg.
+Citi retains rights to these photographs. Included for the requested internal
+Citi deployment; no broader redistribution rights are asserted.
