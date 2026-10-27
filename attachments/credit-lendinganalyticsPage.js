@@ -10,6 +10,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var decorations = new Map(), createdClassAttributes = new Set(), presentation = new Map(), nativeFooters = new Set();
   var systemTheme = w.matchMedia?.('(prefers-color-scheme: dark)');
   var links = new Map(), toggles = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
+  var topToggle = null, topToggleSlot = null, topToggleTarget = null;
   var requestedFonts = new Set(), chartFonts = new WeakMap(), fontGeneration = 0;
   // Filled SVG paths from the supplied TailAdmin sidebar (see LICENSES.txt).
   var iconPaths = {
@@ -67,6 +68,11 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
   var spaceToolsTrigger = '[aria-controls="space-tools-menu"],[aria-owns="space-tools-menu"],#space-tools-menu-trigger';
   var nativeMenu = 'aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role="menu"],[role="listbox"],[role="dialog"]';
+  function nativeControls(selector) {
+    return Array.from(host.querySelectorAll(selector)).filter(function (el) {
+      return !el.closest(nativeMenu + ',[data-credit-sidebar-owned]');
+    });
+  }
   function isSpaceTools(control) {
     if (control.matches(sidebarToggle) || control.closest(nativeMenu)) return false;
     var name = (control.getAttribute('aria-label') || control.getAttribute('title') || control.textContent).trim().replace(/\s+/g, ' ');
@@ -81,8 +87,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     toggles.forEach(function (record, control) {
       if (!host.contains(control) || !control.matches(sidebarToggle) || control.closest(nativeMenu)) restoreToggle(control, record);
     });
-    host.querySelectorAll(sidebarToggle).forEach(function (control) {
-      if (control.closest(nativeMenu)) return;
+    nativeControls(sidebarToggle).forEach(function (control) {
       var record = toggles.get(control);
       if (!record) {
         var icon = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -96,9 +101,35 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (record.icon.parentElement !== control) control.append(record.icon);
     });
   }
+  function removeTopToggle() {
+    topToggleSlot?.remove(); topToggle = null; topToggleSlot = null; topToggleTarget = null;
+  }
+  function enhanceTopToggle() {
+    var controls = nativeControls(sidebarToggle);
+    var target = controls.find(function (el) { return el.matches('.expand-collapse-trigger'); }) || controls[0];
+    if (!target) { removeTopToggle(); return; }
+    topToggleTarget = target;
+    if (!topToggle) {
+      topToggleSlot = d.createElement('div'); topToggleSlot.className = 'credit-native-toggle-slot';
+      topToggleSlot.setAttribute('data-credit-sidebar-owned', 'true');
+      topToggle = d.createElement('button'); topToggle.type = 'button'; topToggle.className = 'credit-native-top-toggle';
+      var icon = toggles.get(target).icon.cloneNode(true);
+      var label = d.createElement('span'); label.className = 'credit-native-top-toggle-label';
+      topToggle.append(icon, label); topToggleSlot.append(topToggle);
+      topToggle.addEventListener('click', function () {
+        // Keep Confluence's native handler, persisted preference and layout work.
+        // The original control remains mounted in its now-hidden footer.
+        if (topToggleTarget?.isConnected && host?.contains(topToggleTarget)) {
+          topToggleTarget.click(); schedule();
+        }
+      });
+    }
+    var rail = host.matches('.acs-side-bar') ? host : host.querySelector('.acs-side-bar') || host;
+    if (topToggleSlot.parentElement !== rail || rail.firstElementChild !== topToggleSlot) rail.prepend(topToggleSlot);
+  }
   function findFooters() {
     nativeFooters = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
-    var controls = Array.from(host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger)).filter(function (el) { return !el.closest(nativeMenu); });
+    var controls = nativeControls(sidebarToggle + ',' + spaceToolsTrigger);
     var toggle = controls.find(function (el) { return el.matches(sidebarToggle); });
     var tools = controls.find(function (el) { return el.matches(spaceToolsTrigger); });
     var common = tools?.parentElement;
@@ -181,10 +212,12 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   function decorateTree() {
     var desired = new Map();
     function mark(el, name) { if (!el) return; if (!desired.has(el)) desired.set(el, new Set()); desired.get(el).add(name); }
-    links.forEach(function (_, a) {
+    if (topToggle) mark(host, 'credit-native-has-top-toggle');
+    links.forEach(function (record, a) {
       if (!eligibleLink(a)) return;
       for (var parent = a.parentElement; parent && parent !== host; parent = parent.parentElement) mark(parent, 'credit-native-compact-path');
       mark(a.closest('li'), 'credit-native-link-row');
+      if (topToggle && record.key === 'lendingAnalytics') mark(a.closest('.plugin_pagetree_children_content') || a, 'credit-native-landing-label');
       // Hide only redundant native decoration, never a native interactive control.
       a.querySelectorAll('.credit-native-page-label :is(svg,img,.icon,.aui-icon,[class*="aui-iconfont-"])').forEach(function (el) {
         if (!el.closest('button,[role=button]') && !el.querySelector('a,button,[role=button]')) mark(el, 'credit-native-replaced-icon');
@@ -206,8 +239,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     var footers = new Set(nativeFooters);
     // Native themes use different footer wrappers. Derive those paths from the
     // existing controls, stopping before any container holding the page tree.
-    host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
-      if (control.closest(nativeMenu)) return;
+    nativeControls(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
       mark(control, 'credit-native-toolbar-control');
       if (control.matches(sidebarToggle)) mark(control, 'credit-native-sidebar-toggle');
       if (isSpaceTools(control)) mark(control, 'credit-native-space-tools');
@@ -217,8 +249,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         mark(parent, 'credit-native-surface');
       }
     });
-    host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
-      if (el.closest(nativeMenu)) return;
+    nativeControls('a,button,[role="button"]').forEach(function (el) {
       if (isSpaceTools(el)) mark(el, 'credit-native-space-tools');
       var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
       if (!/^configure sidebar$/i.test(name) || el.matches(sidebarToggle)) return;
@@ -287,7 +318,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       var selected = a.matches('[aria-current="page"]') || !!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current') || !!row && row.matches('.plugin_pagetree_current');
       if (a.getAttribute('data-credit-native-current') !== String(selected)) a.setAttribute('data-credit-native-current', String(selected));
     });
-    enhanceToggles(); decorateTree();
+    enhanceToggles(); enhanceTopToggle(); decorateTree();
   }
   function showTooltip(event) {
     var a = event.target.closest?.('a[data-credit-native-page-link]');
@@ -317,9 +348,18 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         record.generatedLabel = label;
       }
     });
+    if (topToggle) {
+      var label = compact ? 'Expand sidebar' : 'Collapse sidebar';
+      if (topToggle.getAttribute('aria-label') !== label) {
+        topToggle.setAttribute('aria-label', label); topToggle.title = label;
+        topToggle.querySelector('.credit-native-top-toggle-label').textContent = label;
+      }
+      if (topToggle.getAttribute('aria-expanded') !== String(!compact)) topToggle.setAttribute('aria-expanded', String(!compact));
+    }
   }
   function reset() {
     hideTooltip(); resizeObserver?.disconnect(); resizeObserver = null;
+    removeTopToggle();
     if (host) {
       host.removeEventListener('mouseover', showTooltip); host.removeEventListener('focusin', showTooltip);
       host.removeEventListener('mouseout', leaveTooltip); host.removeEventListener('focusout', leaveTooltip);
@@ -429,5 +469,5 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="a7c21e1ab951:lendingAnalytics";
+window.CREDIT_PAGE_BUILD="4ee77c5fc39f:lendingAnalytics";
 })();

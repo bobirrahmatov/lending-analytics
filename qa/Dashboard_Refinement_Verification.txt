@@ -13,10 +13,10 @@ After final chart changes, Portfolio view, summary table drill, PortfolioJourney
 monitoring presentation and bento expansion checks also passed.
 
 Browser checks
-- Native sidebar: collapsed SVG expand control visible; expansion changes content
-  width without document overflow. Space tools hidden. Dark sidebar/footer and
+- Native sidebar: top expand/collapse control visible; expansion changes content
+  width without document overflow. Footer and Space tools hidden. Dark sidebar and
   main dashboard resolve to the same background. Labels use Citi Text stack.
-- Portfolio: three first-row cards retained; four clickable coverage statistics.
+- Portfolio: full-width four-stat coverage row below KPIs; equal expiry/approval pair.
 - Activity: owner and regional cards both 589 px at a 1280 px browser viewport.
 - CCM: date area and queue both 589 px; automatic date ticks avoid label overlap.
 - Insurances: region and workload both 589 px; All specialists selects correctly
@@ -46,3 +46,21 @@ interpolation changes the connecting stroke, not point values or source cohorts.
 Local browser inspection confirmed cubic curve paths for CCM and Appraisals,
 including expanded Appraisal analysis. Gradient fill and point markers remain.
 Focused monitoring presentation, PortfolioJourney and bento checks passed.
+
+Coverage, priorities and sidebar follow-up
+44 local regression commands passed. Browser geometry checks passed for Summary
+and Portfolio at 390, 900, 1280 and 1920 px (8 cases): correct card order, coverage
+row width, desktop statistic alignment, paired chart widths and no page overflow.
+Coverage drill opened 24 expired-CA relationships and reset restored the row.
+Monitoring priorities now uses three ranked marker series. Browser verification
+confirmed all 18 count labels visible (including zeros), category names in the
+accessible point labels, and an exact 55-record Covenants critical-action drill.
+New deals period opened directly to four options without search; MTD selection
+updated through the existing handler. Searchable filters retain their search.
+Native host fixture: top toggle expands/collapses through the native handler;
+compact parent grid icon and complete footer are hidden. Expanded parent link
+remains available. Sidebar and dashboard backgrounds match in dark mode, the top
+control uses the resolved Citi Text stack, and neither state causes page overflow.
+These are local-fixture results, not confirmation of the live Confluence theme.
+For this follow-up, replace application attachments and all matching generated
+page script pairs. Existing header include and page macro fragments stay valid.

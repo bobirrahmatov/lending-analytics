@@ -161,15 +161,19 @@ No retained financial cache bypasses a permission error or sign-in response.
 
 PUBLISHED DASHBOARD LAYOUT
 Underwriters Summary uses two equal-width chart pairs and a full-width action
-register. Portfolio pairs New deals with Pending Closure, Relationships with
-Monitoring priorities, and Covenants with CCM. At desktop widths of 1200 px and
-above, the first row contains CAs & Facilities Expiring, New Facilities Approved
-and smaller Portfolio coverage
-in 5/4/3 column proportions. Expiry columns form close pairs within each month;
-Portfolio coverage uses four compact, clickable statistics in its smaller card,
-retaining the same exact source cohorts and drill actions. Narrower screens wrap
-and stack. Inline drilling temporarily fills a row; Reset restores the normal
-arrangement. Expanded charts retain their modal dialogs.
+register. Portfolio coverage is a full-width row immediately below the KPI cards,
+with four large, clickable statistics and vertical dividers. It retains all four
+exact source cohorts. The following row pairs CAs & Facilities Expiring with
+New Facilities Approved at equal widths. Portfolio also pairs New deals with
+Pending Closure, Relationships with Monitoring priorities, and Covenants with
+CCM. Narrow screens wrap and stack without horizontal page overflow.
+Monitoring priorities uses a ranked dot chart: critical actions, other actions
+and upcoming items have separate shapes, colors and counts. Selecting a marker
+retains its exact source population. Period dropdowns (New deals, Approvals and
+Pending Closure) show their four choices directly without a search field;
+searchable filters and larger view menus retain search.
+Inline drilling temporarily fills a row; Reset restores the normal arrangement.
+Expanded charts retain their modal dialogs.
 
 SHARED TABLE AND CHART DRILLING
 The redundant three-part insight strip has been removed from Underwriters
@@ -332,18 +336,22 @@ landing fragment for image preloading; see UPGRADING FROM THE PREVIOUS PACKAGE.
 
 NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
 The shared native-sidebar adapter recognizes collapsed inner rails inside a
-fixed sidebar wrapper. It marks both footer/bottom structures and the native
-Configure sidebar action. In compact mode the configuration chrome disappears;
-the native expand control in that same footer receives a visible SVG chevron
-and an Expand sidebar/Collapse sidebar accessible label. The original control
-and handler remain in place. Space tools is hidden in both reader states without
-hiding the toggle. Teardown restores all dashboard-owned classes and glyphs.
+fixed sidebar wrapper. A top Expand sidebar/Collapse sidebar button forwards
+activation to the original native control, preserving Confluence's handler and
+saved preference. The original control remains mounted. When the top button is
+available, the footer wrapper is hidden entirely in both reader states, removing
+Space tools, Configure sidebar and the empty bottom strip. If no native toggle
+exists, the adapter does not add a nonfunctional button or hide the footer.
+In compact mode the top button replaces the Lending Analytics grid link; the
+expanded parent link and native child-page branch controls remain available.
+Teardown removes the added button and restores owned classes and attributes.
 Dashboard grids use the actual available content width, so opening the native
 sidebar reflows cards and charts without changing Confluence widths or offsets.
-The existing Space_Navigation.html header include remains unchanged; only the
-landing page fragment gains an image preload in this release. Validate against
-the live host theme; local fixtures cover nested rails, an empty native AUI
-icon-font anchor, shared toggle footers and competing host CSS.
+The existing Space_Navigation.html header include and page macros remain
+unchanged for this follow-up. Upload the updated shared CSS, native sidebar
+module and matching generated Page.js/HTMLPage.js pairs. Validate against the
+live host theme; local fixtures cover nested rails, an empty native AUI anchor,
+shared toggle footers, replacement native controls and competing host CSS.
 
 PAGE AND SIDEBAR SURFACES
 Page shells use a restrained 10 px radius (the shared --credit-page-radius token).
@@ -364,7 +372,7 @@ had acquired the compact page-tree class. Dashboard destinations inside native
 menus, dropdown layers, dialogs and sidebar footers are now excluded from link
 decoration. Compact-tree CSS also excludes native menu layers. This prevents the
 hidden dropdown from becoming a full-width strip while retaining its native
-open/close behavior. The native expand-collapse-trigger remains usable.
+open/close behavior. The top toggle forwards activation to the native expand-collapse-trigger.
 
 The space stylesheet shown for this deployment assigns Citi Sans Text /
 Citi-Sans-Text to body and paragraphs, and Citi Sans Display / Citi-Sans-Display
@@ -382,8 +390,9 @@ variables can override the two roles. Theme/style changes refresh the resolved
 presentation values; teardown restores any prior inline values.
 
 The adapter discovers footer wrappers from the existing Space tools and collapse
-controls, including themes without the standard footer class. All structural
-footer layers share the dashboard surface; idle toolbar backgrounds are clear.
+controls, including themes without the standard footer class. Those footer
+layers are hidden when the top toggle is available; fallback surfaces share
+the dashboard background.
 Native handlers, hover/focus and sidebar geometry are preserved. The Space tools
 trigger is hidden in reader mode; its menu layer is never turned into tree content.
 The browser fixture deliberately uses local font stand-ins under the Citi names

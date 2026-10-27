@@ -26,7 +26,7 @@
 'use strict';
 const frame=document.getElementById('preview'),pageSelect=document.getElementById('page'),widthSelect=document.getElementById('width'),status=document.getElementById('status'),results=document.getElementById('results'),caption=document.getElementById('frame-caption');
 const pages=['overview','portfolio'],widths=[390,900,1280,1920],controls=[...document.querySelectorAll('.toolbar button,.toolbar select')];
-const portfolioOrder=['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
+const portfolioOrder=['pal-snapshot','facilityTrendChart','creditClassificationChart','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let shown=null,busy=false;
 function lock(value){busy=value;controls.forEach(control=>control.disabled=value);}
@@ -90,22 +90,19 @@ function inspect(page,width){
     }else check('Summary charts stack at full width',chartCards.every(full));
   }else{
     check('Portfolio preserves its published card order',JSON.stringify(geometry.map(card=>card.id))===JSON.stringify(portfolioOrder),geometry.map(card=>card.id));
-    const coverageScroll=doc.querySelector('#pal-snapshot .credit-data-table-scroll');
-    check('Coverage table fits without horizontal scrolling',coverageScroll.scrollWidth<=coverageScroll.clientWidth+2);
+    const coverage=byId('pal-snapshot'),stats=[...doc.querySelectorAll('#pal-snapshot .pal-coverage-stat')],kpis=rect(doc.querySelector('.pal-metrics'));
+    check('Coverage is the first full-width row below KPIs',full(coverage)&&geometry[0]===coverage&&coverage.y>=kpis.bottom);
+    check('All four coverage statistics fit the card',stats.length===4&&stats.every(el=>{const r=rect(el);return visible(el)&&r.x>=coverage.x&&r.right<=coverage.right;}));
+    if(width>=1280)check('Coverage statistics form one horizontal row',stats.every(el=>near(rect(el).y,rect(stats[0]).y)));
     const expirySeries=[...doc.querySelectorAll('#facilityTrendChart .highcharts-series-group>.highcharts-series.highcharts-column-series')].map(series=>[...series.querySelectorAll('.highcharts-point')].map(rect));
     const pairGaps=expirySeries[0]?.map((bar,i)=>expirySeries[1]?.[i]?.x-bar.right)||[];
     check('Expiry bars form close pairs within each month',pairGaps.length===3&&pairGaps.every(gap=>gap>=0&&gap<=8),pairGaps.map(gap=>Math.round(gap*10)/10));
-    if(width>900){
-      sameRow(['creditClassificationChart','pal-snapshot'],'Approvals and Portfolio coverage share a row');
+    if(width>1000){
+      sameRow(['facilityTrendChart','creditClassificationChart'],'Expiry and approvals share an equal-width row');
+      check('Expiry and approval cards have equal widths',near(byId('facilityTrendChart').width,byId('creditClassificationChart').width));
       sameRow(['newDealsChart','pal-pipeline'],'New deals and Pending Closure share a row');
       sameRow(['relationshipChart','monitoringPriorityChart'],'Relationships and monitoring priorities share a row');
       sameRow(['covenantMonitoringChart','ccmRegionalChart'],'Covenants and CCM share a row');
-      if(width>=1200){
-        sameRow(['facilityTrendChart','creditClassificationChart','pal-snapshot'],'Desktop starts with expiry, approvals and coverage on one row');
-        check('Portfolio coverage is narrower than both charts',byId('pal-snapshot').width<byId('facilityTrendChart').width&&byId('pal-snapshot').width<byId('creditClassificationChart').width);
-        check('First row fills both grid edges',near(byId('facilityTrendChart').x,gridBox.x)&&near(byId('pal-snapshot').right,gridBox.right));
-      }
-      else check('Expiry fills its own row at medium desktop width',full(byId('facilityTrendChart')));
     }else check('Portfolio cards stack at full width',geometry.every(full));
   }
   return {page,width,pass:checks.every(item=>item.pass),build:new URL([...doc.scripts].find(script=>/credit-(overview|portfolio)Page\.js/.test(script.src)).src).searchParams.get('v'),checks,grid:compact(gridBox),cards:geometry.map(({id,...r})=>({id,...compact({x:r.x,y:r.y,width:r.width,height:r.height})}))};

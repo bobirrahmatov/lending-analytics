@@ -1,5 +1,6 @@
 const fs = require('fs'), path = require('path'), assert = require('assert/strict'), {JSDOM} = require('jsdom');
 const source = fs.readFileSync(path.resolve(__dirname, '../attachments/credit-native-sidebar.js'), 'utf8');
+const styles = fs.readFileSync(path.resolve(__dirname, '../source/dashboard/controls.css'), 'utf8');
 const textFont = '"Citi Sans Text", "Citi-Sans-Text", sans-serif';
 const displayFont = '"Citi Sans Display", "Citi-Sans-Display", sans-serif';
 const dom = new JSDOM(`<head><style>body,p{font-family:${textFont}}h1,.font-display{font-family:${displayFont}}</style><style id="native-canvas-theme">#main{background-color:rgb(240,245,249)}#credit-ui{background-color:rgb(255,255,255)}</style></head><body id="com-atlassian-confluence" class="citi-hide-sidebar"><aside class="acs-side-bar" style="width: 286px;">
@@ -14,6 +15,9 @@ const dom = new JSDOM(`<head><style>body,p{font-family:${textFont}}h1,.font-disp
   url: 'https://example.test/confluence/pages/viewpage.action?pageId=101', runScripts: 'outside-only', pretendToBeVisual: true
 });
 const w = dom.window, d = w.document;
+const sidebarStyleRules = d.createElement('style');
+sidebarStyleRules.textContent = styles.slice(styles.indexOf("/* Put the reader's sidebar control"));
+d.head.append(sidebarStyleRules);
 const systemTheme = new w.EventTarget(), themeListeners = new Set();
 const addThemeListener = systemTheme.addEventListener.bind(systemTheme), removeThemeListener = systemTheme.removeEventListener.bind(systemTheme);
 systemTheme.media = '(prefers-color-scheme: dark)'; systemTheme.matches = false;
@@ -31,9 +35,9 @@ w.CREDIT_CONFIG = {pageIds: {portfolio: '101', overview: '102', activity: '103'}
 w.fetch = () => { throw new Error('Sidebar must not request data or permissions.'); };
 const sidebar = d.querySelector('aside'), toggle = d.querySelector('#toggle'), branch = d.querySelector('#branch');
 const nativeToggle = d.querySelector('.expand-collapse-trigger'), spaceTools = d.querySelector('#space-tools'), menu = d.querySelector('#space-tools-menu');
-let calls = 0;
+let calls = 0, nativeToggleCalls = 0;
 toggle.onclick = () => { calls++; sidebar.classList.toggle('acs-side-bar-collapsed'); };
-nativeToggle.onclick = event => { event.preventDefault(); const collapsed = sidebar.classList.toggle('acs-side-bar-collapsed'); nativeToggle.setAttribute('aria-expanded', String(!collapsed)); };
+nativeToggle.onclick = event => { nativeToggleCalls++; event.preventDefault(); const collapsed = sidebar.classList.toggle('acs-side-bar-collapsed'); nativeToggle.setAttribute('aria-expanded', String(!collapsed)); };
 let menuCalls = 0;
 spaceTools.onclick = () => { menuCalls++; menu.hidden = !menu.hidden; spaceTools.setAttribute('aria-expanded', String(!menu.hidden)); };
 branch.onclick = () => { const children = d.querySelector('#children'); children.hidden = !children.hidden; branch.setAttribute('aria-expanded', String(!children.hidden)); };
@@ -52,6 +56,35 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 (async () => {
   await tick();
   assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn); assert.equal(calls, 0, 'No forced collapse');
+  const topButton = () => sidebar.querySelector('.credit-native-top-toggle');
+  assert.equal(topButton().getAttribute('aria-label'), 'Collapse sidebar');
+  assert.equal(topButton().parentElement, sidebar.firstElementChild, 'Owned control appears above the original tree');
+  assert.equal(nativeToggleCalls, 0, 'Mounting does not invoke the native control');
+  assert.equal(w.getComputedStyle(d.getElementById('native-footer')).display, 'none', 'The original footer consumes no bottom strip');
+  for (let i = 0; i < 3; i++) {
+    topButton().click(); await tick();
+    assert.equal(sidebar.dataset.creditNativeCompact, 'true');
+    assert.equal(topButton().getAttribute('aria-label'), 'Expand sidebar');
+    assert.equal(topButton().getAttribute('aria-expanded'), 'false');
+    assert.equal(w.getComputedStyle(sidebar.querySelector('[data-credit-native-page-link="lendingAnalytics"]')).display, 'none', 'Top control replaces the landing grid in compact mode');
+    assert.equal(w.getComputedStyle(d.getElementById('native-footer')).display, 'none');
+    assert.equal(w.getComputedStyle(topButton()).display, 'flex', 'Expand stays visible while the footer is hidden');
+    topButton().click(); await tick();
+    assert.equal(sidebar.dataset.creditNativeCompact, 'false');
+    assert.equal(topButton().getAttribute('aria-label'), 'Collapse sidebar');
+    assert.notEqual(w.getComputedStyle(sidebar.querySelector('[data-credit-native-page-link="lendingAnalytics"]')).display, 'none', 'Expanded navigation keeps its native landing link');
+  }
+  assert.equal(nativeToggleCalls, 6, 'Each top click forwards exactly once to the native preference handler');
+  assert.equal(sidebar.querySelectorAll('.credit-native-top-toggle').length, 1, 'State changes never duplicate the top control');
+  assert.equal(nativeToggle.parentElement.className.includes('native-toolbar-surface'), true, 'Native control remains mounted in its original parent');
+  const nativeParentAtMount = nativeToggle.parentElement;
+  nativeToggle.remove(); await tick();
+  assert.equal(topButton(), null, 'No inert replacement is shown when the native action is unavailable');
+  assert.notEqual(w.getComputedStyle(d.getElementById('native-footer')).display, 'none', 'Native footer is only hidden when its replacement is usable');
+  nativeParentAtMount.append(nativeToggle); await tick();
+  assert.equal(sidebar.querySelectorAll('.credit-native-top-toggle').length, 1, 'Late native controls receive a single usable top button');
+  assert.equal(nativeToggle.onclick, nativeToggleFn, 'Native re-mount retains its handler');
+  assert.equal(w.getComputedStyle(d.getElementById('native-footer')).display, 'none');
   assert.equal(d.querySelectorAll('aside').length, 1); assert.equal(d.body.className, '', 'Native sidebar is revealed through the existing theme class');
   assert.deepEqual(nativeStyle(sidebar), originalNativeStyle, 'Only owned presentation variables change; native dimensions stay untouched');
   assert.deepEqual(nativeStyle(ui), originalUIStyle, 'Existing dashboard inline styling stays untouched');
@@ -153,7 +186,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   w.CREDIT_CONFIG.pageIds.trends = '209'; w.CreditSidebar.refresh();
   // Entering editor mode removes only dashboard-owned markup, and leaving restores it.
   const editor = d.createElement('form'); editor.id = 'editpageform'; d.body.append(editor); await tick();
-  assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(unrelated.outerHTML, unrelatedHTML);
+  assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(d.querySelector('.credit-native-toggle-slot'), null, 'Editor transition removes the owned top control'); assert.equal(unrelated.outerHTML, unrelatedHTML);
   editor.remove(); await tick(); assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
   // Removing the dashboard deactivates the adapter on ordinary space pages.
   const hub = d.querySelector('#credit-hub'); hub.remove(); await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null);
@@ -241,6 +274,8 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   systemTheme.dispatchEvent(new w.Event('change')); await tick();
   assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(sidebar.hasAttribute('data-credit-native-compact'), false);
   assert.equal(d.querySelector('#native-footer').outerHTML, footerHTML, 'Unknown nested native footer is fully restored on teardown');
+  assert.equal(d.querySelector('.credit-native-toggle-slot'), null);
+  assert.notEqual(w.getComputedStyle(d.getElementById('native-footer')).display, 'none', 'Native footer visibility returns outside the dashboard scope');
   assert.equal(menu.outerHTML, menuHTML, 'Native dropdown remains exactly restored on teardown');
   assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.equal(sidebar.className, 'acs-side-bar'); assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn);
@@ -249,5 +284,5 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(d.body.className, 'citi-hide-sidebar'); assert.equal(sidebar.getAttribute('style'), sidebarStyle); assert.equal(unrelated.outerHTML, unrelatedHTML);
   assert.equal(ui.getAttribute('style'), uiStyle, 'Owned typography variables restore exactly on teardown');
   assert.equal(first.getAttribute('aria-describedby'), 'help'); assert.equal(first.hasAttribute('aria-label'), false);
-  console.log('PASS native dashboard navigation: configured tree links only, native menus excluded during relocation, native titles/URLs/handlers/dimensions preserved, hidden Space tools with preserved native handler, restored SVG collapse control, registered space face loading and scoped chart remeasure, body/display typography without a sidebar, panel/canvas surface selection, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
+  console.log('PASS native dashboard navigation: configured tree links only, native menus excluded during relocation, native titles/URLs/handlers/dimensions preserved, hidden Space tools with preserved native handler, visible top control forwards native preferences, no bottom footer row, compact landing icon replaced and expanded link retained, restored SVG collapse control, registered space face loading and scoped chart remeasure, body/display typography without a sidebar, panel/canvas surface selection, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => dom.window.close());

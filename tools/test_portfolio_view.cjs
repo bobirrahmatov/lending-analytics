@@ -14,14 +14,14 @@ const period=(key,value)=>d.querySelector(`[data-pal-period="${key}"][data-value
 pal.overview(rows);
 assert.deepEqual(values(),[2,2]);assert.equal(pal.getRows('newDealsChart').length,4);
 assert.match(d.querySelector('.pal-variance').textContent,/unavailable/);
-assert.equal(d.querySelector('#ch-content').children[0].className,'pal-metrics');assert.equal(d.querySelector('.pal-summary'),null);assert.equal(d.querySelector('#creditClassificationChart').closest('.ch-card').nextElementSibling.id,'pal-snapshot','Coverage follows New Facilities Approved');
+assert.equal(d.querySelector('#ch-content').children[0].className,'pal-metrics');assert.equal(d.querySelector('.pal-summary'),null);assert.equal(d.querySelector('.pal-metrics').nextElementSibling.id,'pal-snapshot','Coverage follows KPI cards');
 assert.equal(d.querySelector('#newDealsChart').closest('.ch-card').nextElementSibling.id,'pal-pipeline','New deals and Pending Closure remain adjacent');
 assert.equal(root._exportRows.length,5);assert.equal(d.querySelector('#ch-download').disabled,false);assert.equal(d.querySelectorAll('#pal-snapshot [data-pal-rows]').length,4);
 assert.ok(d.querySelector('#pal-pipeline > .credit-data-table-scroll > .credit-data-table'));
 assert.equal(d.querySelectorAll('#pal-snapshot .pal-coverage-stat').length,4);
 for(const [key,expected,count] of [['facilities',rows,5],['relationships',rows,5],['caexpired',[rows[0]],1],['expired',[rows[1]],1]]){const stat=d.querySelector('#pal-snapshot [data-pal-rows="'+key+'"]');assert.equal(Number(stat.querySelector('strong').textContent),count);stat.click();assert.equal(clicked[0],key);assert.deepEqual(clicked[1],expected,key+' keeps the exact source cohort');assert.equal(clicked[3],stat,'Coverage opens from its own card');}
 assert.equal(d.querySelectorAll('[data-pal-navigate]').length,0);assert.equal(pal.getRows('pal-pipeline').length,2);
-assert.deepEqual([...d.querySelectorAll('#ch-content section.ch-card')].map(el=>el.querySelector('.ch-chart')?.id||el.id),['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends']);
+assert.deepEqual([...d.querySelectorAll('#ch-content section.ch-card')].map(el=>el.querySelector('.ch-chart')?.id||el.id),['pal-snapshot','facilityTrendChart','creditClassificationChart','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends']);
 assert.equal(d.querySelector('#relationshipChart').previousElementSibling.querySelector('strong').textContent,'$500');
 assert.equal(d.querySelector('#rotceChart'),null);assert.equal(configs.relationshipChart.series[1].type,'scatter');assert.equal(configs.relationshipChart.series[1].yAxis,1);assert.equal(configs.relationshipChart.yAxis[1].plotLines[0].value,.12);assert.equal(configs.newDealsChart.chart.type,'bar');
 period('dealPeriod','mtd');assert.deepEqual(values(),[1,1]);period('dealPeriod','qtd');assert.deepEqual(values(),[1,1]);period('dealPeriod','wtd');assert.deepEqual(values(),[1,1]);
@@ -58,12 +58,19 @@ const newPoint=configs.newDealsChart.series[0].data[0];configs.newDealsChart.plo
 monitoring[0].coming_due=true;monitoring[1].coming_due=true;monitoring[2].action_required=true;
 pal.overview(rows);
 const summary=configs.monitoringPriorityChart;
-assert.equal(summary.chart.type,'bar');assert.equal(summary.plotOptions.series.stacking,undefined);assert.equal(summary.plotOptions.bar.dataLabels.enabled,true);assert.equal(summary.plotOptions.bar.dataLabels.formatter.call({y:3}),'3');assert.equal(configs.relationshipChart.plotOptions.bar.dataLabels.enabled,false,'Mixed financial relationship chart does not inherit count labels');assert.equal(summary.xAxis.categories.length,6);
+assert.equal(summary.chart.type,'scatter');assert.equal(summary.chart.inverted,true);assert.equal(summary.plotOptions.series.stacking,undefined);assert.equal(summary.plotOptions.scatter.dataLabels.enabled,true);assert.equal(summary.plotOptions.scatter.dataLabels.formatter.call({y:3}),'3');assert.equal(configs.relationshipChart.plotOptions.bar.dataLabels.enabled,false,'Mixed financial relationship chart does not inherit count labels');assert.equal(summary.xAxis.categories.length,6);
+assert.deepEqual(Array.from(summary.series,s=>s.marker.symbol),['diamond','circle','square'],'Priority shapes distinguish the three cohorts without relying only on color');
+summary.series.forEach((series,i)=>series.data.forEach((p,index)=>{assert.equal(p.x,index+(i-1)*.3);assert.equal(p.name,summary.xAxis.categories[index],'Accessible point names use the monitoring area, not its visual offset');assert.equal(p.marker.enabled,true);assert.equal(p.y,p.custom.rows.length);}));
+assert.equal(summary.yAxis.min,0,'All three populations use the same zero-based count axis');
+assert.ok(summary.chart.height>=460,'Priority markers have enough vertical room for every series label');
+assert.equal(summary.plotOptions.scatter.dataLabels.padding,0);assert.equal(summary.plotOptions.scatter.dataLabels.style.fontSize,'11px');
+assert.equal(summary.plotOptions.scatter.dataLabels.formatter.call({y:0}),'0','Zero cohorts remain visible and labeled');
+assert.equal(configs.newDealsChart.plotOptions.bar.dataLabels.formatter.call({y:0}),null,'Other bar charts retain their zero-label behavior');
 assert.deepEqual(Array.from(summary.series,s=>s.data.reduce((n,p)=>n+p.y,0)),[1,1,1]);
 assert.equal(pal.getRows('monitoringPriorityChart').length,3);
 const item=summary.series[0].data.find(p=>p.y);summary.plotOptions.series.point.events.click.call({options:item,index:summary.series[0].data.indexOf(item),series:{name:'Critical actions'}});assert.equal(clicked[0],'monitoringPriorityChart');assert.equal(clicked[1].length,1);
 scope='NAM';pal.overview(rows);assert.equal(pal.getRows('monitoringPriorityChart').length,2);scope='';
-console.log('PASS: grouped and labeled six-domain priority summary, exclusive segments, shared filters and point records.');
+console.log('PASS: labeled six-domain priority dot plot, distinct markers, exclusive cohorts, shared filters and exact point records.');
 
 // Five exact aging bands, authoritative file categories and safe legacy fallbacks.
 const aging=w.CreditCovenantAging;

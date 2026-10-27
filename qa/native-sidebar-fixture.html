@@ -23,10 +23,10 @@ html[data-color-mode="dark"] .ia-splitter-right{background-color:#252a31}
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
 .ia-fixed-sidebar{min-width:0;position:sticky;top:10px;align-self:start}.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}
-.fixture-native-toolbar-shell{min-width:240px!important;border-top:1px solid #dce6ef;white-space:nowrap}
+.fixture-native-toolbar-shell{display:block!important;min-width:240px!important;border-top:1px solid #dce6ef;white-space:nowrap}
 .fixture-native-toolbar-surface{display:flex!important;justify-content:space-between;padding:12px!important}
-/* Actual Confluence toggle is an empty icon-font anchor. Native compact styles
-   can hide its wrapper and glyph; the skin must reveal only its control path. */
+/* Actual Confluence toggle is an empty icon-font anchor. The skin
+   keeps this native target mounted and forwards clicks from its top button. */
 .expand-collapse-trigger::before{content:""!important}
 .fixture-shell.collapsed .fixture-native-toolbar-surface{visibility:hidden;opacity:0}
 .fixture-shell.collapsed .expand-collapse-trigger{display:none;visibility:hidden;opacity:0}

@@ -1311,23 +1311,15 @@
 @media(min-width:901px){
  #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px}
  #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget{grid-column:span 6;min-width:0}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart],#credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget-wide{grid-column:1/-1}
+ #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget-wide{grid-column:1/-1}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active)){display:flex!important;flex-wrap:wrap;align-items:stretch;gap:24px}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active))>.ch-card{flex:1 1 calc(50% - 12px);width:auto;max-width:100%;min-width:0;grid-row:auto!important;order:0}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active))>:is(.cw-widget-wide,.cd-source-card,.pj-inline-active,.cd-inline-active){flex-basis:100%}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid)>:is(.pj-inline-active,.cd-inline-active){order:-10!important}
 }
 @media(min-width:1200px){
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart]{grid-column:span 5}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=creditClassificationChart]{grid-column:span 4}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=pal-snapshot]{grid-column:span 3}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart]>.cw-donut-layout{grid-template-columns:minmax(120px,.8fr) minmax(0,1.2fr);gap:12px;padding:0}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart] .cw-donut-row{gap:8px;padding:16px 0}
-}
-@media(min-width:1200px) and (max-width:1599px){
- #credit-ui #credit-hub #pal-snapshot .credit-data-table :is(th,td){padding:16px 12px;font-size:12px}
- #credit-hub #pal-snapshot .ch-row-link{font-size:14px;gap:6px}
- #credit-hub #pal-snapshot .pal-snapshot-label{gap:6px}
 }
 #credit-hub .pj-leaf{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;justify-content:stretch;align-items:stretch;text-align:left;min-height:0;padding:0}
 #credit-hub .pj-leaf-heading{margin:0;font-size:19px;font-weight:700;line-height:1.4;color:var(--ch-ink,#193963)}
@@ -1678,8 +1670,7 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
  #credit-hub[data-view] .ch-main{padding:20px}
  #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>[data-widget]{grid-column:auto!important;grid-row:auto!important}
- #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>:is(.cw-widget-wide,.pj-inline-active,.cd-inline-active),
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart]{grid-column:1/-1!important}
+ #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>:is(.cw-widget-wide,.pj-inline-active,.cd-inline-active){grid-column:1/-1!important}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart]>.cw-donut-layout{grid-template-columns:minmax(0,1fr)}
  #credit-hub .cw-widget-grid .ch-card-head{flex-wrap:wrap}
  #credit-hub .cw-widget-grid .cw-donut-layout{grid-template-columns:minmax(0,1fr)}
@@ -1735,17 +1726,25 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-hub .mon-chart-select select{width:100%;min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--page);color:var(--ink)}
 #credit-hub .ch-card-head:has(.mon-chart-select){align-items:flex-start;flex-wrap:wrap}
 #credit-hub .mon-chart-select{margin-left:auto!important}
-/* Compact, clickable coverage statistics retain the four exact source cohorts. */
-#credit-hub .pal-coverage-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0 18px 18px;gap:0;flex:1;align-content:start}
-#credit-hub .pal-coverage-stat{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;min-width:0;min-height:144px;padding:20px 14px;border:0;border-radius:0;background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
-#credit-hub .pal-coverage-stat:nth-child(even){border-left:1px solid var(--line)}
-#credit-hub .pal-coverage-stat:nth-child(n+3){border-top:1px solid var(--line)}
-#credit-hub .pal-coverage-stat>span{font-size:13px!important;font-weight:600!important;line-height:1.4!important;color:var(--ink)!important}
-#credit-hub .pal-coverage-stat>strong{font-size:30px!important;font-weight:700!important;line-height:1.2!important;font-variant-numeric:tabular-nums;color:var(--ink)!important}
+/* Full-width coverage row below the KPIs; each statistic retains its source drill. */
+#credit-hub .pal-coverage-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 18px 18px;gap:0;flex:1;align-content:start}
+#credit-hub .pal-coverage-stat{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;min-width:0;min-height:150px;padding:20px 24px;border:0;border-radius:0;background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+#credit-hub .pal-coverage-stat+.pal-coverage-stat{border-left:1px solid var(--line)}
+#credit-hub .pal-coverage-stat>span{font-size:15px!important;font-weight:600!important;line-height:1.4!important;color:var(--ink)!important}
+#credit-hub .pal-coverage-stat>strong{font-size:36px!important;font-weight:700!important;line-height:1.2!important;font-variant-numeric:tabular-nums;color:var(--ink)!important}
 #credit-hub .pal-coverage-stat>small{font-size:11px!important;color:var(--muted)!important}
 #credit-hub .pal-coverage-stat>svg{position:absolute;right:10px;bottom:20px;width:16px!important;height:16px!important;color:var(--blue)}
 #credit-hub .pal-coverage-stat:hover{background:var(--pale)}
 #credit-hub .pal-coverage-stat:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+@container credit-dashboard (max-width:800px){
+ #credit-hub .pal-coverage-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #credit-hub .pal-coverage-stat:nth-child(odd){border-left:0}
+ #credit-hub .pal-coverage-stat:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@container credit-dashboard (max-width:480px){
+ #credit-hub .pal-coverage-stats{grid-template-columns:minmax(0,1fr)}
+ #credit-hub .pal-coverage-stat+.pal-coverage-stat{border-left:0;border-top:1px solid var(--line)}
+}
 /* Size editorial media against the content column, including native sidebar changes. */
 #credit-hub .la-landing{width:100%!important;min-width:0!important;max-width:1440px!important;box-sizing:border-box!important;padding:0 clamp(16px,2cqw,28px) 24px}
 #credit-hub .la-intro :is(h1,h2){font-size:clamp(32px,4.5cqw,60px)!important}

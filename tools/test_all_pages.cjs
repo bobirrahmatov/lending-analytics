@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSD
 const A=path.resolve(__dirname,'../attachments');
 const sharedCSS=fs.readFileSync(path.resolve(__dirname,'../source/dashboard/dashboard.css'),'utf8');
 const sharedRules=[...sharedCSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
-const portfolioOrder=['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
+const portfolioOrder=['pal-snapshot','facilityTrendChart','creditClassificationChart','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
 (async()=>{
 for(const page of ['portfolio','trends','deepdive','overview','workload','COVENANTS','CA','FACILITY','CCM','INSURANCE','APPRAISALS','activity']){
  const dom=new JSDOM('<div id="credit-hub"></div>',{url:'http://localhost/pages/'+page.toLowerCase()+'.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,root=d.querySelector('#credit-hub');
@@ -35,7 +35,7 @@ for(const page of ['portfolio','trends','deepdive','overview','workload','COVENA
  }
  if(page==='portfolio'||page==='trends'){
   assert.equal(root.querySelector('#ch-title').textContent,'Portfolio Overview');
-  assert.deepEqual([...root.querySelector('.cw-widget-grid').children].map(card=>card.dataset.widget),portfolioOrder,'Portfolio keeps approvals/coverage, deals/pending, relationships/priorities and Covenants/CCM in their published order');
+  assert.deepEqual([...root.querySelector('.cw-widget-grid').children].map(card=>card.dataset.widget),portfolioOrder,'Portfolio places full-width coverage below KPIs, then expiry/approvals, deals/pending, relationships/priorities and Covenants/CCM');
  }
  assert.equal(root.querySelector('a[href$="sources.html"]'),null);
  const chartIds=[...root.querySelectorAll('[data-chart-expand]')].map(b=>b.dataset.chartExpand);

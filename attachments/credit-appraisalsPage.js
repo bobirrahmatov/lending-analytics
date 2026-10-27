@@ -10,6 +10,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var decorations = new Map(), createdClassAttributes = new Set(), presentation = new Map(), nativeFooters = new Set();
   var systemTheme = w.matchMedia?.('(prefers-color-scheme: dark)');
   var links = new Map(), toggles = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
+  var topToggle = null, topToggleSlot = null, topToggleTarget = null;
   var requestedFonts = new Set(), chartFonts = new WeakMap(), fontGeneration = 0;
   // Filled SVG paths from the supplied TailAdmin sidebar (see LICENSES.txt).
   var iconPaths = {
@@ -67,6 +68,11 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
   var spaceToolsTrigger = '[aria-controls="space-tools-menu"],[aria-owns="space-tools-menu"],#space-tools-menu-trigger';
   var nativeMenu = 'aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role="menu"],[role="listbox"],[role="dialog"]';
+  function nativeControls(selector) {
+    return Array.from(host.querySelectorAll(selector)).filter(function (el) {
+      return !el.closest(nativeMenu + ',[data-credit-sidebar-owned]');
+    });
+  }
   function isSpaceTools(control) {
     if (control.matches(sidebarToggle) || control.closest(nativeMenu)) return false;
     var name = (control.getAttribute('aria-label') || control.getAttribute('title') || control.textContent).trim().replace(/\s+/g, ' ');
@@ -81,8 +87,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     toggles.forEach(function (record, control) {
       if (!host.contains(control) || !control.matches(sidebarToggle) || control.closest(nativeMenu)) restoreToggle(control, record);
     });
-    host.querySelectorAll(sidebarToggle).forEach(function (control) {
-      if (control.closest(nativeMenu)) return;
+    nativeControls(sidebarToggle).forEach(function (control) {
       var record = toggles.get(control);
       if (!record) {
         var icon = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -96,9 +101,35 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (record.icon.parentElement !== control) control.append(record.icon);
     });
   }
+  function removeTopToggle() {
+    topToggleSlot?.remove(); topToggle = null; topToggleSlot = null; topToggleTarget = null;
+  }
+  function enhanceTopToggle() {
+    var controls = nativeControls(sidebarToggle);
+    var target = controls.find(function (el) { return el.matches('.expand-collapse-trigger'); }) || controls[0];
+    if (!target) { removeTopToggle(); return; }
+    topToggleTarget = target;
+    if (!topToggle) {
+      topToggleSlot = d.createElement('div'); topToggleSlot.className = 'credit-native-toggle-slot';
+      topToggleSlot.setAttribute('data-credit-sidebar-owned', 'true');
+      topToggle = d.createElement('button'); topToggle.type = 'button'; topToggle.className = 'credit-native-top-toggle';
+      var icon = toggles.get(target).icon.cloneNode(true);
+      var label = d.createElement('span'); label.className = 'credit-native-top-toggle-label';
+      topToggle.append(icon, label); topToggleSlot.append(topToggle);
+      topToggle.addEventListener('click', function () {
+        // Keep Confluence's native handler, persisted preference and layout work.
+        // The original control remains mounted in its now-hidden footer.
+        if (topToggleTarget?.isConnected && host?.contains(topToggleTarget)) {
+          topToggleTarget.click(); schedule();
+        }
+      });
+    }
+    var rail = host.matches('.acs-side-bar') ? host : host.querySelector('.acs-side-bar') || host;
+    if (topToggleSlot.parentElement !== rail || rail.firstElementChild !== topToggleSlot) rail.prepend(topToggleSlot);
+  }
   function findFooters() {
     nativeFooters = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
-    var controls = Array.from(host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger)).filter(function (el) { return !el.closest(nativeMenu); });
+    var controls = nativeControls(sidebarToggle + ',' + spaceToolsTrigger);
     var toggle = controls.find(function (el) { return el.matches(sidebarToggle); });
     var tools = controls.find(function (el) { return el.matches(spaceToolsTrigger); });
     var common = tools?.parentElement;
@@ -181,10 +212,12 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   function decorateTree() {
     var desired = new Map();
     function mark(el, name) { if (!el) return; if (!desired.has(el)) desired.set(el, new Set()); desired.get(el).add(name); }
-    links.forEach(function (_, a) {
+    if (topToggle) mark(host, 'credit-native-has-top-toggle');
+    links.forEach(function (record, a) {
       if (!eligibleLink(a)) return;
       for (var parent = a.parentElement; parent && parent !== host; parent = parent.parentElement) mark(parent, 'credit-native-compact-path');
       mark(a.closest('li'), 'credit-native-link-row');
+      if (topToggle && record.key === 'lendingAnalytics') mark(a.closest('.plugin_pagetree_children_content') || a, 'credit-native-landing-label');
       // Hide only redundant native decoration, never a native interactive control.
       a.querySelectorAll('.credit-native-page-label :is(svg,img,.icon,.aui-icon,[class*="aui-iconfont-"])').forEach(function (el) {
         if (!el.closest('button,[role=button]') && !el.querySelector('a,button,[role=button]')) mark(el, 'credit-native-replaced-icon');
@@ -206,8 +239,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     var footers = new Set(nativeFooters);
     // Native themes use different footer wrappers. Derive those paths from the
     // existing controls, stopping before any container holding the page tree.
-    host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
-      if (control.closest(nativeMenu)) return;
+    nativeControls(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
       mark(control, 'credit-native-toolbar-control');
       if (control.matches(sidebarToggle)) mark(control, 'credit-native-sidebar-toggle');
       if (isSpaceTools(control)) mark(control, 'credit-native-space-tools');
@@ -217,8 +249,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         mark(parent, 'credit-native-surface');
       }
     });
-    host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
-      if (el.closest(nativeMenu)) return;
+    nativeControls('a,button,[role="button"]').forEach(function (el) {
       if (isSpaceTools(el)) mark(el, 'credit-native-space-tools');
       var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
       if (!/^configure sidebar$/i.test(name) || el.matches(sidebarToggle)) return;
@@ -287,7 +318,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       var selected = a.matches('[aria-current="page"]') || !!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current') || !!row && row.matches('.plugin_pagetree_current');
       if (a.getAttribute('data-credit-native-current') !== String(selected)) a.setAttribute('data-credit-native-current', String(selected));
     });
-    enhanceToggles(); decorateTree();
+    enhanceToggles(); enhanceTopToggle(); decorateTree();
   }
   function showTooltip(event) {
     var a = event.target.closest?.('a[data-credit-native-page-link]');
@@ -317,9 +348,18 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         record.generatedLabel = label;
       }
     });
+    if (topToggle) {
+      var label = compact ? 'Expand sidebar' : 'Collapse sidebar';
+      if (topToggle.getAttribute('aria-label') !== label) {
+        topToggle.setAttribute('aria-label', label); topToggle.title = label;
+        topToggle.querySelector('.credit-native-top-toggle-label').textContent = label;
+      }
+      if (topToggle.getAttribute('aria-expanded') !== String(!compact)) topToggle.setAttribute('aria-expanded', String(!compact));
+    }
   }
   function reset() {
     hideTooltip(); resizeObserver?.disconnect(); resizeObserver = null;
+    removeTopToggle();
     if (host) {
       host.removeEventListener('mouseover', showTooltip); host.removeEventListener('focusin', showTooltip);
       host.removeEventListener('mouseout', leaveTooltip); host.removeEventListener('focusout', leaveTooltip);
@@ -596,7 +636,11 @@ global.CreditControls=(()=>{
   if(!compact){if(record){if(record.originalRole===null)group.removeAttribute('role');else group.setAttribute('role',record.originalRole);if(hadFocus&&record.host.contains(previousFocus))buttons.find(b=>b.matches('[aria-pressed=true],[aria-selected=true]'))?.focus({preventScroll:true});}return;}
   if(!record){
    const host=document.createElement('span'),field=document.createElement('select');host.className='cc-segment-select';
-   field.setAttribute('aria-label',group.getAttribute('aria-label')||'View');field.setAttribute('data-searchable','');host.append(field);group.append(host);
+   field.setAttribute('aria-label',group.getAttribute('aria-label')||'View');
+   // Fixed reporting-period choices are quicker to pick directly. Keep search
+   // for longer record/view menus and all drawer filters.
+   if(!buttons.every(button=>/period$/i.test(button.dataset.palPeriod||'')))field.setAttribute('data-searchable','');
+   host.append(field);group.append(host);
    record={host,field,signature:'',originalRole:group.getAttribute('role')};dropdowns.set(group,record);
    field.addEventListener('change',()=>{
     const button=choices(group)[Number(field.value)];if(!button||button.disabled)return;
@@ -720,7 +764,7 @@ global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
  function paint(){if(!grid)return;grid.dataset.preset='balanced';for(const w of widgets){w.el.hidden=false;w.el.classList.toggle('cw-widget-wide',w.full);}requestAnimationFrame(reflow);}
  function apply(nextTab,targets){UI.closePopover();if(targets&&nextTab===tab&&grid?.isConnected){for(const w of widgets){if([...targets].some(id=>w.el.id===id||w.el.querySelector('[id="'+id+'"]'))){w.title=w.el.querySelector('h2')?.textContent||w.title;}}if(targets.has('relationshipChart')||targets.has('monitoringPriorityChart'))requestAnimationFrame(reflow);return;}tab=nextTab;root.dataset.view=tab;paintFilters();
  widgets=[];grid=null;const content=$('#ch-content');content.querySelectorAll(':scope > .cw-widget-grid').forEach(g=>g.replaceWith(...g.children));content.querySelectorAll('.cw-widget-menu').forEach(b=>b.remove());const deep=content.querySelector('#pal-deep-content');if(deep)deep.replaceWith(...deep.children);content.querySelectorAll(':scope > .ch-grid').forEach(row=>row.replaceWith(...row.children));const candidates=[...content.children].filter(el=>el.classList.contains('ch-card')&&!el.classList.contains('pal-relationship-picker')&&!el.classList.contains('pal-deep-empty'));
- if(candidates.length){grid=document.createElement('div');grid.className='cw-widget-grid';candidates[0].before(grid);const used=new Set();candidates.forEach((el,index)=>{const title=el.querySelector('h2')?.textContent||'Relationship selection';let id=el.querySelector('.ch-chart[id]')?.id||el.id||title.toLowerCase().replace(/[^a-z0-9]+/g,'-');if(used.has(id))id+='-'+index;used.add(id);const full=el.id==='ch-register'||!!el.querySelector('.pal-trends-table')||el.classList.contains('pal-relationship-picker');el.dataset.widget=id;el.classList.add('cw-widget');if(el.querySelector('.ch-chart')||['pal-pipeline','pal-snapshot'].includes(el.id))el.classList.add('cw-framed-card');const w={id,title,el,index,full};widgets.push(w);grid.append(el);});[...content.children].filter(el=>el.classList.contains('pal-section-head')).forEach(el=>{el.classList.add('cw-ranking-controls');const target=grid.querySelector('[data-widget=relationshipChart] .ch-card-head');if(target)target.after(el);else grid.before(el);});}
+ if(candidates.length){grid=document.createElement('div');grid.className='cw-widget-grid';candidates[0].before(grid);const used=new Set();candidates.forEach((el,index)=>{const title=el.querySelector('h2')?.textContent||'Relationship selection';let id=el.querySelector('.ch-chart[id]')?.id||el.id||title.toLowerCase().replace(/[^a-z0-9]+/g,'-');if(used.has(id))id+='-'+index;used.add(id);const full=el.id==='ch-register'||el.id==='pal-snapshot'||!!el.querySelector('.pal-trends-table')||el.classList.contains('pal-relationship-picker');el.dataset.widget=id;el.classList.add('cw-widget');if(el.querySelector('.ch-chart')||['pal-pipeline','pal-snapshot'].includes(el.id))el.classList.add('cw-framed-card');const w={id,title,el,index,full};widgets.push(w);grid.append(el);});[...content.children].filter(el=>el.classList.contains('pal-section-head')).forEach(el=>{el.classList.add('cw-ranking-controls');const target=grid.querySelector('[data-widget=relationshipChart] .ch-card-head');if(target)target.after(el);else grid.before(el);});}
  content.querySelectorAll('.pal-metric,.ch-kpi').forEach((el,i)=>{if(el.querySelector('.cw-metric-icon'))return;const marker=document.createElement('span');marker.className='cw-metric-icon cw-metric-'+i%4;marker.innerHTML=icon(['wallet','chart','shield','trend'][i%4]);el.prepend(marker);});
  content.querySelectorAll('.pal-detail').forEach(b=>b.innerHTML='View data '+icon('arrow'));root.querySelectorAll('select:not([aria-label])').forEach(f=>{const label=[...(f.closest('label')?.childNodes||[])].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();if(label)f.setAttribute('aria-label',label);});paint();UI.enhance(root);
  }
@@ -1695,10 +1739,10 @@ global.CreditPAL=function(ctx){
  function card(id,title,sub,controls=''){return '<section class="ch-card pal-card"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2><p class="ch-card-sub">'+esc(sub)+'</p></div><button class="pal-detail" data-pal-detail="'+id+'" aria-label="View '+esc(title)+' data">View data ↗</button></div>'+controls+'<div id="'+id+'" class="ch-chart"></div></section>';}
  function trendTabs(key,label,options){return '<div class="pal-trend-control"><span class="pal-control-label">'+esc(label)+'</span><div class="pal-segments" role="group" aria-label="'+esc(label)+'">'+options.map(([v,t])=>'<button type="button" data-pal-tab="'+key+'" data-value="'+esc(v)+'" aria-pressed="'+(String(settings[key])===String(v))+'">'+esc(t)+'</button>').join('')+'</div></div>';}
  function simpleTable(headers,rows,key){if(key)tableRows.set(key,rows);return '<div class="credit-data-table-scroll"><table class="credit-data-table"'+(key?' data-pal-table="'+key+'"':'')+'><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="'+(i?'num':'')+'">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((v,i)=>'<td class="'+(i?'num':'')+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
- function chart(id,type,cats,series,rows,{kind='count',target=null,onPoint=null,height=310,axes=null,paired=false}={}){
+ function chart(id,type,cats,series,rows,{kind='count',target=null,onPoint=null,height=310,axes=null,paired=false,dotPlot=false}={}){
   details[id]=rows;if(ctx.shouldDraw&&!ctx.shouldDraw(id))return;const el=$('#'+id);el.style.height=height+'px';if(!rows.length){el.innerHTML='<p class="ch-empty">No eligible records in this selection.</p>';return;}if(!global.Highcharts){el.innerHTML='<p class="ch-empty">Chart library unavailable. Use View data.</p>';return;}
-  const countLabels={enabled:kind==='count',inside:false,crop:false,overflow:'allow',formatter:function(){return this.y?num(this.y):null;},style:{fontWeight:'normal',textOutline:'none',color:getComputedStyle(root).color}};
-  const c=global.Highcharts.chart(el,{chart:{type,height,...(paired?{marginTop:65,marginBottom:75}:{}),alignTicks:!axes,backgroundColor:'transparent',animation:false,style:{fontFamily:getComputedStyle(root).fontFamily},spacing:kind==='count'?[22,30,8,6]:[16,16,8,6]},title:{text:null},credits:{enabled:false},colors:COLORS,accessibility:{description:ctx.state().tab==='portfolio'?'Select a chart point to explore that population locally; other charts remain unchanged.':'Select a chart point to inspect its source records.'},xAxis:{categories:cats,lineColor:'#E1E8EF',tickLength:0,labels:{formatter:function(){return global.CreditDates?.label(this.value)||this.value;},style:{color:'#697586',fontSize:'11px'}}},yAxis:axes||{...(kind==='count'?{maxPadding:.18}:{}),title:{text:null},gridLineColor:'#E8ECF2',gridLineDashStyle:'Dash',allowDecimals:kind!=='count',labels:{formatter:function(){return format(this.value,kind);},style:{color:'#697586',fontSize:'10px'}},plotLines:target===null?[]:[{value:target,color:'#0F1632',width:1,dashStyle:'Dash',zIndex:5,label:{text:'12% target',style:{fontSize:'10px',color:'#0F1632'}}}]},legend:{enabled:id!=='creditClassificationChart'&&(type==='pie'||series.length>1),align:'center',verticalAlign:'bottom',itemStyle:{fontWeight:'normal',fontSize:'11px',color:'#697586'},symbolRadius:2},tooltip:{useHTML:false,formatter:function(){const p=this.point;if(id==='monitoringPriorityChart')return '<b>'+esc(cats[p.index])+'</b><br>'+esc(this.series.name)+': '+num(this.y)+'<br>Source dates: '+esc(p.custom.dates.join(', ')||'No records in current scope');if(id==='relationshipChart')return '<b>'+esc(cats[p.index]||p.name||'')+'</b><br>'+esc(measures[settings.measure])+': '+money(p.custom.exposure)+'<br>ROTCE: '+(p.custom.rotce===null?'Unavailable':pct(p.custom.rotce))+'<br>Target: 12%';return '<b>'+esc(p.name||cats[p.index]||'')+'</b><br>'+esc(this.series.name)+': '+format(this.y,kind)+(p.custom?.count!==undefined?'<br>Facilities: '+num(p.custom.count):'');}},plotOptions:{series:{animation:false,borderWidth:0,cursor:'pointer',point:{events:{click:function(){if(onPoint)onPoint(this);else ctx.openChart(id,this.options.custom?.rows||rows,(this.name||cats[this.index]||'Selected group')+' · '+this.series.name);}}}},column:id==='facilityTrendChart'?{borderRadius:3,groupPadding:.28,pointPadding:.04,dataLabels:countLabels}:{borderRadius:3,maxPointWidth:34,dataLabels:countLabels},bar:{borderRadius:3,maxPointWidth:20,dataLabels:countLabels,...(paired&&kind!=='count'?{pointWidth:16}:{})},pie:{innerSize:'68%',dataLabels:{enabled:false},showInLegend:true,borderWidth:2,borderColor:'#fff'}},series,responsive:{rules:[{condition:{maxWidth:420},chartOptions:{chart:{spacing:[12,4,4,0]},legend:{itemStyle:{fontSize:'10px'}}}}]}});ctx.addChart(c);if(type==='pie')global.CreditDonut?.(c,{esc,format:v=>format(v,kind),label:kind==='money'?'Total · USD':'Total '+(id==='covenantMonitoringChart'?'covenants':'facilities'),onSelect:p=>ctx.openChart(id,p.custom?.rows||rows,p.name)});
+  const countLabels={enabled:kind==='count',inside:false,crop:false,overflow:'allow',formatter:function(){return dotPlot||this.y?num(this.y):null;},style:{fontWeight:'normal',textOutline:'none',color:getComputedStyle(root).color}};
+  const c=global.Highcharts.chart(el,{chart:{type,height,...(dotPlot?{inverted:true}:{}),...(paired?{marginTop:65,marginBottom:75}:{}),alignTicks:!axes,backgroundColor:'transparent',animation:false,style:{fontFamily:getComputedStyle(root).fontFamily},spacing:kind==='count'?[22,30,8,6]:[16,16,8,6]},title:{text:null},credits:{enabled:false},colors:COLORS,accessibility:{description:ctx.state().tab==='portfolio'?'Select a chart point to explore that population locally; other charts remain unchanged.':'Select a chart point to inspect its source records.'},xAxis:{categories:cats,...(dotPlot?{min:-.5,max:cats.length-.5,tickPositions:cats.map((_,i)=>i),startOnTick:false,endOnTick:false,gridLineWidth:1,gridLineColor:'#EEF1F5',reversed:true}:{}),lineColor:'#E1E8EF',tickLength:0,labels:{formatter:function(){return global.CreditDates?.label(this.value)||this.value;},style:{color:'#697586',fontSize:'11px'}}},yAxis:axes||{...(kind==='count'?{min:0,maxPadding:dotPlot?.28:.18}:{}),title:{text:null},gridLineColor:'#E8ECF2',gridLineDashStyle:'Dash',allowDecimals:kind!=='count',labels:{formatter:function(){return format(this.value,kind);},style:{color:'#697586',fontSize:'10px'}},plotLines:target===null?[]:[{value:target,color:'#0F1632',width:1,dashStyle:'Dash',zIndex:5,label:{text:'12% target',style:{fontSize:'10px',color:'#0F1632'}}}]},legend:{enabled:id!=='creditClassificationChart'&&(type==='pie'||series.length>1),align:'center',verticalAlign:'bottom',itemStyle:{fontWeight:'normal',fontSize:'11px',color:'#697586'},symbolRadius:2,...(dotPlot?{symbolWidth:16,symbolHeight:12}: {})},tooltip:{useHTML:false,formatter:function(){const p=this.point;if(id==='monitoringPriorityChart')return '<b>'+esc(cats[p.index])+'</b><br>'+esc(this.series.name)+': '+num(this.y)+'<br>Source dates: '+esc(p.custom.dates.join(', ')||'No records in current scope');if(id==='relationshipChart')return '<b>'+esc(cats[p.index]||p.name||'')+'</b><br>'+esc(measures[settings.measure])+': '+money(p.custom.exposure)+'<br>ROTCE: '+(p.custom.rotce===null?'Unavailable':pct(p.custom.rotce))+'<br>Target: 12%';return '<b>'+esc(p.name||cats[p.index]||'')+'</b><br>'+esc(this.series.name)+': '+format(this.y,kind)+(p.custom?.count!==undefined?'<br>Facilities: '+num(p.custom.count):'');}},plotOptions:{scatter:{lineWidth:0,marker:{radius:5},dataLabels:dotPlot?{...countLabels,align:'left',verticalAlign:'middle',x:9,y:0,padding:0,allowOverlap:false,style:{...countLabels.style,fontSize:'11px'}}:undefined},series:{animation:false,borderWidth:0,cursor:'pointer',point:{events:{click:function(){if(onPoint)onPoint(this);else ctx.openChart(id,this.options.custom?.rows||rows,(this.name||cats[this.index]||'Selected group')+' · '+this.series.name);}}}},column:id==='facilityTrendChart'?{borderRadius:3,groupPadding:.28,pointPadding:.04,dataLabels:countLabels}:{borderRadius:3,maxPointWidth:34,dataLabels:countLabels},bar:{borderRadius:3,maxPointWidth:20,dataLabels:countLabels,...(paired&&kind!=='count'?{pointWidth:16}:{})},pie:{innerSize:'68%',dataLabels:{enabled:false},showInLegend:true,borderWidth:2,borderColor:'#fff'}},series,responsive:{rules:[{condition:{maxWidth:420},chartOptions:{chart:{spacing:[12,4,4,0]},legend:{itemStyle:{fontSize:'10px'}}}}]}});ctx.addChart(c);if(type==='pie')global.CreditDonut?.(c,{esc,format:v=>format(v,kind),label:kind==='money'?'Total · USD':'Total '+(id==='covenantMonitoringChart'?'covenants':'facilities'),onSelect:p=>ctx.openChart(id,p.custom?.rows||rows,p.name)});
  }
  function points(rows,key,measure=null){return by(rows,key).sort().map((v,i)=>{const rs=global.CreditDataCache.index(rows,key).get(v)||[];return{name:v,y:measure?sum(rs,measure):rs.length,color:COLORS[(key==='product'?by(ctx.data().portfolio||rows,key).sort().indexOf(v):i)%COLORS.length],custom:{rows:rs,count:rs.length}};});}
  function wire(){root.querySelectorAll('[data-pal-tab]').forEach(b=>{b.onclick=()=>{const key=b.dataset.palTab;if(String(settings[key])===b.dataset.value)return;settings[key]=b.dataset.value;const update=()=>ctx.render(['pal-trends']);Promise.resolve(global.CreditControls?global.CreditControls.run(b,update):update()).then(()=>[...root.querySelectorAll('[data-pal-tab]')].find(x=>x.dataset.palTab===key&&x.dataset.value===b.dataset.value)?.focus({preventScroll:true}));};b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const bs=[...b.parentElement.querySelectorAll('button')],i=bs.indexOf(b),next=e.key==='Home'?0:e.key==='End'?bs.length-1:(i+(e.key==='ArrowRight'?1:-1)+bs.length)%bs.length;bs[next].focus();bs[next].click();};});root.querySelectorAll('[data-pal-method]').forEach(b=>b.onclick=()=>ctx.methodology(b.dataset.palMethod));root.querySelectorAll('[data-pal-period]').forEach(el=>{el.onclick=()=>{const key=el.dataset.palPeriod,value=el.dataset.value;if(settings[key]===value)return;settings[key]=value;const ids={dealPeriod:['newDealsChart'],approvalPeriod:['creditClassificationChart'],pendingPeriod:['pal-pipeline'],covenants:['covenantMonitoringChart']};Promise.resolve(global.CreditControls?global.CreditControls.run(el,()=>ctx.render(ids[key])):ctx.render(ids[key])).then(()=>root.querySelector('[data-pal-period="'+key+'"][data-value="'+value+'"]')?.focus({preventScroll:true}));};el.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const buttons=[...el.parentElement.querySelectorAll('button')],i=buttons.indexOf(el);buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length].focus();};});root.querySelectorAll('[data-pal-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.palSetting]=el.value;if(el.dataset.palSetting==='relationship'){settings.deepTab='facilities';ctx.resetTable?.();}settings.extraOpen=!!$('.pal-extra-filters')?.open;ctx.render(['trend','pse','commitment'].includes(el.dataset.palSetting)?['pal-trends']:['top','measure'].includes(el.dataset.palSetting)?['relationshipChart']:undefined);});root.querySelectorAll('[data-pal-detail]').forEach(el=>el.onclick=()=>showRows(el.closest('section').querySelector('h2').textContent,details[el.dataset.palDetail]||[]));const pipeline=root.querySelector('#pal-pipeline table');if(pipeline)global.CreditDrillTable?.(pipeline,(i,j)=>j?i===4?(details.pipeline||[]):(details.pipeline||[]).filter(r=>r.pal_pipeline_bucket===['1-30','31-60','61-90','>90'][i]):null,(rs,label)=>showRows('Pending closure · '+label,rs));root.querySelectorAll('[data-pal-rows]').forEach(el=>el.onclick=()=>el.closest('#pal-snapshot')&&ctx.openChart?ctx.openChart(el.dataset.palRows,details[el.dataset.palRows]||[],el.dataset.title,el):['tfa','total_os','unused_commitment','unused_uncommitted'].includes(el.dataset.palRows)&&ctx.openMetric?ctx.openMetric(el.dataset.palRows):showRows(el.dataset.title,details[el.dataset.palRows]||[]));wireSummaryJourneys();}
@@ -1738,14 +1782,15 @@ global.CreditPAL=function(ctx){
   $('#ch-filter-status').textContent=rows.length+' portfolio records in selected scope';
   details.facilities=details.relationships=rows;details.caexpired=rows.filter(r=>r.pal_ca_expired);details.expired=rows.filter(r=>r.pal_facility_expired);
   let html='<div class="pal-metrics">'+[['Total facility amount','tfa','Portfolio limit'],['Outstanding','total_os','Drawn exposure'],['Unused commitment','unused_commitment','Committed capacity'],['Unused uncommitted','unused_uncommitted','Uncommitted capacity']].map(([t,k,eyebrow])=>'<button class="ch-card pal-metric" data-pal-rows="'+k+'" data-title="'+t+'"><span class="pal-metric-heading"><small>'+eyebrow+'</small><span>'+t+'</span></span><span class="pal-metric-label">Balance · USD</span><span class="pal-metric-value"><strong>'+money(sum(rows,k))+'</strong>'+variance(rows,k,report)+'</span><small class="pal-metric-date">'+(report?'vs '+esc(previousWeekday(report))+' · previous weekday':'No snapshot')+'</small></button>').join('')+'</div>';for(const k of ['tfa','total_os','unused_commitment','unused_uncommitted'])details[k]=rows;
+  html+=snapshot(rows);
   if(ctx.state().product==='Securities Based Lending')html+=sblHTML(sbl);
   const currentDeals=rows.filter(r=>r['pal_new_'+settings.dealPeriod]),priorDeals=rows.filter(r=>r['pal_prior_'+settings.dealPeriod]),priorLabel=priorLabels[settings.dealPeriod];
-  html+=card('facilityTrendChart','CAs & Facilities Expiring','Reporting month + next two months · distinct relationships / facilities')+card('creditClassificationChart','New Facilities Approved','First approval date · NAM, LATAM and EMEA',segments('approvalPeriod','Approval period'))+snapshot(rows);
+  html+=card('facilityTrendChart','CAs & Facilities Expiring','Reporting month + next two months · distinct relationships / facilities')+card('creditClassificationChart','New Facilities Approved','First approval date · NAM, LATAM and EMEA',segments('approvalPeriod','Approval period'));
   html+=card('newDealsChart','New deals','Non-PSE · origination date, with renewal fallback',segments('dealPeriod','New deals period')).replace('<div id="newDealsChart"',
    '<div class="pal-deal-totals"><div><span>Current period</span><strong>'+num(unique(currentDeals,'facility_id'))+' <small>facilities</small></strong><span>'+money(sum(currentDeals,'tfa'))+' TFA</span></div><div><span>'+priorLabel+'</span><strong>'+num(unique(priorDeals,'facility_id'))+' <small>facilities</small></strong><span>'+money(sum(priorDeals,'tfa'))+' TFA</span></div></div><div id="newDealsChart"');
   html+='<section class="ch-card pal-table-card" id="pal-pipeline" data-table-mode="summary"><div class="ch-card-head"><div><h2>Deals Pending Closure</h2><p class="ch-card-sub">NAM / LATAM · '+periods.find(p=>p[0]===settings.pendingPeriod)[1]+' first approvals · '+num(pending.length)+' facilities</p></div><button class="pal-detail" data-pal-detail="pipeline">View data ↗</button></div>'+segments('pendingPeriod','Pending closure approval period')+simpleTable(['Days since approval','Facilities','TFA'],['1-30','31-60','61-90','>90'].map(b=>{const rs=pending.filter(r=>r.pal_pipeline_bucket===b);details['pipe'+b]=rs;return summaryRow(['<button class="ch-row-link" data-pal-rows="pipe'+b+'" data-title="Pending closure '+b+' days">'+esc(b)+' days</button>',num(rs.length),money(sum(rs,'tfa'))],rs,'Pending closure '+b+' days');}).concat([summaryRow(['Total',num(pending.length),money(sum(pending,'tfa'))],pending,'All pending closures')]),'pipeline')+'</section>';details['pal-pipeline']=details.pipeline=pending;
   html+='<div class="pal-section-head"><div><h2>Relationship performance</h2><p class="ch-card-sub">Exposure bars and ROTCE markers use the same ranked relationships.</p></div><div class="ch-actions">'+select('measure','Rank by',Object.entries(measures))+select('top','Top relationships',[[5,'Top 5'],[10,'Top 10'],[20,'Top 20']])+'</div></div>'+card('relationshipChart','Top Relationships & ROTCE',measures[settings.measure]+' · USD bars / ROTCE markers · '+(by(rows,'rotce_period').length>1?'Mixed source periods':rows.find(r=>r.rotce_period)?.rotce_period||'ROTCE period unavailable'));
-  html+=card('monitoringPriorityChart','Monitoring priorities','Six monitoring areas · shared filters');
+  html+=card('monitoringPriorityChart','Monitoring priorities','Ranked by actions required · select a marker to explore');
   html+='<div class="ch-grid equal">'+card('covenantMonitoringChart',settings.covenants==='past'?'Past Due Covenants':'Coming Due Covenants','1–30, 31–45, 46–60, 61–90 and over 90 days',segments('covenants','Covenant view',[['past','Past due'],['coming','Coming due']]))+card('ccmRegionalChart','Criticized/Classified Memos & Reviews','Source CCM status by region · source dates retained')+'</div>';
   html+=trendTable(trendRows());ctx.commitContent?ctx.commitContent(html):$('#ch-content').innerHTML=html;
   root._exportRows=rows;
@@ -1770,7 +1815,8 @@ global.CreditPAL=function(ctx){
   const attention=monitor.filter(r=>r.action_required||r.coming_due),actions=monitor.filter(r=>r.action_required),critical=actions.filter(r=>r.critical),upcoming=monitor.filter(r=>!r.action_required&&r.coming_due);
   const domains=Object.keys(MONITOR_AREAS).sort((a,b)=>actions.filter(r=>r.category===b).length-actions.filter(r=>r.category===a).length);
   headline('monitoringPriorityChart',[[num(actions.length),'Actions required'],[num(critical.length),'Critical · included in actions'],[num(upcoming.length),'Upcoming · not yet actionable']]);
-  chart('monitoringPriorityChart','bar',domains.map(k=>MONITOR_AREAS[k]),[['Critical actions','#FF5C0B',r=>r.action_required&&r.critical],['Other actions',COLORS[0],r=>r.action_required&&!r.critical],['Upcoming',COLORS[5],r=>!r.action_required&&r.coming_due]].map(([name,color,fn])=>({name,color,data:domains.map(category=>{const rs=attention.filter(r=>r.category===category&&fn(r));return{y:rs.length,custom:{rows:rs,dates:by(monitor.filter(r=>r.category===category),'as_of_date').sort()}};})})),attention,{height:tall,paired:true,onPoint:p=>ctx.openChart('monitoringPriorityChart',p.options.custom.rows,MONITOR_AREAS[domains[p.index]]+' · '+p.series.name)});
+  // Three offset marker rows retain each exclusive population without crowded grouped bars.
+  chart('monitoringPriorityChart','scatter',domains.map(k=>MONITOR_AREAS[k]),[['Critical actions','#FF5C0B','diamond',r=>r.action_required&&r.critical],['Other actions',COLORS[0],'circle',r=>r.action_required&&!r.critical],['Upcoming','#8496B0','square',r=>!r.action_required&&r.coming_due]].map(([name,color,symbol,fn],seriesIndex)=>({name,color,marker:{symbol,radius:5},data:domains.map((category,domainIndex)=>{const rs=attention.filter(r=>r.category===category&&fn(r));return{name:MONITOR_AREAS[category],x:domainIndex+(seriesIndex-1)*.3,y:rs.length,marker:{enabled:true},custom:{rows:rs,dates:by(monitor.filter(r=>r.category===category),'as_of_date').sort()}};})})),attention,{height:Math.max(460,tall),dotPlot:true,onPoint:p=>ctx.openChart('monitoringPriorityChart',p.options.custom.rows,MONITOR_AREAS[domains[p.index]]+' · '+p.series.name)});
   const topArea=domains[0],topActions=actions.filter(r=>r.category===topArea).length;
   const note=document.createElement('div');note.className='pal-monitor-insight';note.innerHTML='<strong>'+esc(actions.length?MONITOR_AREAS[topArea]+': '+num(topActions)+' actions · '+pct(topActions/actions.length)+' of the action queue.':'No action flags in the supplied scope.')+'</strong><span>Obligations, not unique facilities.</span>';
   if(!ctx.shouldDraw||ctx.shouldDraw('monitoringPriorityChart'))$('#monitoringPriorityChart').after(note);
@@ -2601,5 +2647,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="a7c21e1ab951:APPRAISALS";
+window.CREDIT_PAGE_BUILD="4ee77c5fc39f:APPRAISALS";
 })();

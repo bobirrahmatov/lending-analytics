@@ -245,6 +245,21 @@
 .credit-native-navigation[data-credit-native-compact=true] .credit-native-toggle-icon{transform:rotate(180deg)!important}
 .credit-native-navigation[data-credit-native-compact=true] .credit-native-footer .credit-native-toggle-path:not(button):not(a):not([role=button]){display:flex!important;align-items:center!important;justify-content:center!important;visibility:visible!important;opacity:1!important}
 
+/* Put the reader's sidebar control above the page tree. The native footer and
+ * original control stay mounted for Confluence's own event handling, but consume
+ * no visible row once this top control is available. No rail geometry is reset. */
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation).credit-native-has-top-toggle .credit-native-footer{display:none!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-toggle-slot{display:block!important;visibility:visible!important;opacity:1!important;box-sizing:border-box!important;min-width:0!important;max-width:100%!important;padding:10px 10px 4px!important;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-top-toggle{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;position:static!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:40px!important;max-width:100%!important;margin:0!important;padding:8px!important;border:0!important;border-radius:9px!important;background:transparent!important;box-shadow:none!important;font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;font-size:13px!important;line-height:1.5!important;text-indent:0!important;color:var(--ds-text,var(--credit-theme-text,#253b54))!important;cursor:pointer!important;visibility:visible!important;opacity:1!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-top-toggle:hover{background:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5ff))!important;color:var(--ds-link,var(--credit-theme-link,#255be3))!important}
+.credit-native-navigation .credit-native-top-toggle::before,.credit-native-navigation .credit-native-top-toggle::after{content:none!important;display:none!important}
+.credit-native-navigation .credit-native-top-toggle>.credit-native-toggle-icon{display:block!important;position:static!important;box-sizing:border-box!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;overflow:visible!important;padding:0!important;margin:0!important;border:0!important;background:none!important;opacity:1!important;visibility:visible!important}
+.credit-native-navigation .credit-native-top-toggle>.credit-native-toggle-icon,.credit-native-navigation .credit-native-top-toggle>.credit-native-toggle-icon path{fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.credit-native-navigation .credit-native-top-toggle-label{font:inherit!important;color:inherit!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation)[data-credit-native-compact=true] .credit-native-top-toggle{justify-content:center!important;width:36px!important;margin-inline:auto!important;gap:0!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation)[data-credit-native-compact=true] .credit-native-top-toggle-label,
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation).credit-native-has-top-toggle[data-credit-native-compact=true] .credit-native-landing-label{display:none!important}
+
 /* Lending Analytics dashboard components */
 /* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
 #credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-width:2px;--card-frame-shadow:0 1px 2px #17355f08,0 0 0 var(--card-frame-width) var(--card-frame-color),0 0 0 calc(var(--card-frame-width) + 1px) var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
@@ -1559,23 +1574,15 @@
 @media(min-width:901px){
  #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px}
  #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget{grid-column:span 6;min-width:0}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart],#credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget-wide{grid-column:1/-1}
+ #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>.cw-widget-wide{grid-column:1/-1}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active)){display:flex!important;flex-wrap:wrap;align-items:stretch;gap:24px}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active))>.ch-card{flex:1 1 calc(50% - 12px);width:auto;max-width:100%;min-width:0;grid-row:auto!important;order:0}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid):has(>:is(.pj-inline-active,.cd-inline-active))>:is(.cw-widget-wide,.cd-source-card,.pj-inline-active,.cd-inline-active){flex-basis:100%}
  #credit-hub[data-view] :is(.cw-widget-grid,.cd-analysis-grid)>:is(.pj-inline-active,.cd-inline-active){order:-10!important}
 }
 @media(min-width:1200px){
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart]{grid-column:span 5}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=creditClassificationChart]{grid-column:span 4}
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=pal-snapshot]{grid-column:span 3}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart]>.cw-donut-layout{grid-template-columns:minmax(120px,.8fr) minmax(0,1.2fr);gap:12px;padding:0}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart] .cw-donut-row{gap:8px;padding:16px 0}
-}
-@media(min-width:1200px) and (max-width:1599px){
- #credit-ui #credit-hub #pal-snapshot .credit-data-table :is(th,td){padding:16px 12px;font-size:12px}
- #credit-hub #pal-snapshot .ch-row-link{font-size:14px;gap:6px}
- #credit-hub #pal-snapshot .pal-snapshot-label{gap:6px}
 }
 #credit-hub .pj-leaf{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;justify-content:stretch;align-items:stretch;text-align:left;min-height:0;padding:0}
 #credit-hub .pj-leaf-heading{margin:0;font-size:19px;font-weight:700;line-height:1.4;color:var(--ch-ink,#193963)}
@@ -1926,8 +1933,7 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
  #credit-hub[data-view] .ch-main{padding:20px}
  #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>[data-widget]{grid-column:auto!important;grid-row:auto!important}
- #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>:is(.cw-widget-wide,.pj-inline-active,.cd-inline-active),
- #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]>[data-widget=facilityTrendChart]{grid-column:1/-1!important}
+ #credit-hub[data-view] .cw-widget-grid[data-preset=balanced]>:is(.cw-widget-wide,.pj-inline-active,.cd-inline-active){grid-column:1/-1!important}
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart]>.cw-donut-layout{grid-template-columns:minmax(0,1fr)}
  #credit-hub .cw-widget-grid .ch-card-head{flex-wrap:wrap}
  #credit-hub .cw-widget-grid .cw-donut-layout{grid-template-columns:minmax(0,1fr)}
@@ -1983,17 +1989,25 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-hub .mon-chart-select select{width:100%;min-height:40px;padding:8px 12px;border:1px solid var(--line);border-radius:6px;background:var(--page);color:var(--ink)}
 #credit-hub .ch-card-head:has(.mon-chart-select){align-items:flex-start;flex-wrap:wrap}
 #credit-hub .mon-chart-select{margin-left:auto!important}
-/* Compact, clickable coverage statistics retain the four exact source cohorts. */
-#credit-hub .pal-coverage-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:0 18px 18px;gap:0;flex:1;align-content:start}
-#credit-hub .pal-coverage-stat{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;min-width:0;min-height:144px;padding:20px 14px;border:0;border-radius:0;background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
-#credit-hub .pal-coverage-stat:nth-child(even){border-left:1px solid var(--line)}
-#credit-hub .pal-coverage-stat:nth-child(n+3){border-top:1px solid var(--line)}
-#credit-hub .pal-coverage-stat>span{font-size:13px!important;font-weight:600!important;line-height:1.4!important;color:var(--ink)!important}
-#credit-hub .pal-coverage-stat>strong{font-size:30px!important;font-weight:700!important;line-height:1.2!important;font-variant-numeric:tabular-nums;color:var(--ink)!important}
+/* Full-width coverage row below the KPIs; each statistic retains its source drill. */
+#credit-hub .pal-coverage-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:0 18px 18px;gap:0;flex:1;align-content:start}
+#credit-hub .pal-coverage-stat{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;min-width:0;min-height:150px;padding:20px 24px;border:0;border-radius:0;background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+#credit-hub .pal-coverage-stat+.pal-coverage-stat{border-left:1px solid var(--line)}
+#credit-hub .pal-coverage-stat>span{font-size:15px!important;font-weight:600!important;line-height:1.4!important;color:var(--ink)!important}
+#credit-hub .pal-coverage-stat>strong{font-size:36px!important;font-weight:700!important;line-height:1.2!important;font-variant-numeric:tabular-nums;color:var(--ink)!important}
 #credit-hub .pal-coverage-stat>small{font-size:11px!important;color:var(--muted)!important}
 #credit-hub .pal-coverage-stat>svg{position:absolute;right:10px;bottom:20px;width:16px!important;height:16px!important;color:var(--blue)}
 #credit-hub .pal-coverage-stat:hover{background:var(--pale)}
 #credit-hub .pal-coverage-stat:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+@container credit-dashboard (max-width:800px){
+ #credit-hub .pal-coverage-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #credit-hub .pal-coverage-stat:nth-child(odd){border-left:0}
+ #credit-hub .pal-coverage-stat:nth-child(n+3){border-top:1px solid var(--line)}
+}
+@container credit-dashboard (max-width:480px){
+ #credit-hub .pal-coverage-stats{grid-template-columns:minmax(0,1fr)}
+ #credit-hub .pal-coverage-stat+.pal-coverage-stat{border-left:0;border-top:1px solid var(--line)}
+}
 /* Size editorial media against the content column, including native sidebar changes. */
 #credit-hub .la-landing{width:100%!important;min-width:0!important;max-width:1440px!important;box-sizing:border-box!important;padding:0 clamp(16px,2cqw,28px) 24px}
 #credit-hub .la-intro :is(h1,h2){font-size:clamp(32px,4.5cqw,60px)!important}
