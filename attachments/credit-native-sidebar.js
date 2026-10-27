@@ -59,6 +59,8 @@
   }
   // Only add presentation classes to existing native nodes. Track ownership so
   // rerenders, retargeted links and editor transitions can restore them exactly.
+  var sidebarToggle = '.acs-side-bar-toggle,.ia-toggle-button,[aria-label="Expand sidebar"],[aria-label="Collapse sidebar"],[title="Expand sidebar"],[title="Collapse sidebar"]';
+  var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
   function decorateTree() {
     var desired = new Map();
     function mark(el, name) { if (!el) return; if (!desired.has(el)) desired.set(el, new Set()); desired.get(el).add(name); }
@@ -80,6 +82,23 @@
         mark(row, 'credit-native-tree-row');
         if (!toggle.querySelector('a,button,[role=button],[data-type=toggle]')) mark(toggle, 'credit-native-leaf-marker');
       }
+    });
+    // Confluence themes can put the configuration action beside the native
+    // toggle, or use a bottom section instead of the standard footer wrapper.
+    var footers = new Set(host.querySelectorAll(sidebarFooter));
+    host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
+      var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
+      if (!/^configure sidebar$/i.test(name) || el.matches(sidebarToggle)) return;
+      mark(el, 'credit-native-configure');
+      var parent = el.parentElement;
+      if (parent !== host && parent.textContent.trim().replace(/\s+/g, ' ') === name && !parent.querySelector(sidebarToggle)) footers.add(parent);
+    });
+    footers.forEach(function (footer) {
+      mark(footer, 'credit-native-footer');
+      footer.querySelectorAll(sidebarToggle).forEach(function (toggle) {
+        mark(toggle, 'credit-native-toggle-path');
+        for (var parent = toggle.parentElement; parent && parent !== footer; parent = parent.parentElement) mark(parent, 'credit-native-toggle-path');
+      });
     });
     decorations.forEach(function (names, el) {
       names.forEach(function (name) { if (!desired.get(el)?.has(name)) { el.classList.remove(name); names.delete(name); } });
@@ -114,7 +133,7 @@
       if (!host.contains(a) || pages.get(pageId(a)) !== record.key || record.icon.parentNode !== a || record.label.parentNode !== a) restoreLink(a, record);
     });
     host.querySelectorAll('a[href]').forEach(function (a) {
-      if (a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') || a.closest('.acs-side-bar-footer')) return;
+      if (a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') || a.closest(sidebarFooter)) return;
       var key = pages.get(pageId(a));
       if (!key) return;
       if (!links.has(a)) {
@@ -153,8 +172,9 @@
   function escapeTooltip(event) { if (event.key === 'Escape') hideTooltip(); }
   function compactState() {
     if (!host) return;
-    var width = host.getBoundingClientRect().width;
-    var compact = host.matches('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || !!host.closest('.ia-splitter-left-collapsed') || (width > 0 && width <= 96);
+    var rail = host.matches('.acs-side-bar') ? host : host.querySelector('.acs-side-bar') || host;
+    var width = rail.getBoundingClientRect().width;
+    var compact = host.matches('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || !!host.closest('.ia-splitter-left-collapsed') || !!host.querySelector('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || (width > 0 && width <= 96);
     if (host.getAttribute('data-credit-native-compact') !== String(compact)) { host.setAttribute('data-credit-native-compact', String(compact)); hideTooltip(); }
   }
   function reset() {
@@ -179,7 +199,7 @@
       reset(); host = native; ownsHostClass = !host.classList.contains('credit-native-navigation'); host.classList.add('credit-native-navigation');
       host.addEventListener('mouseover', showTooltip); host.addEventListener('focusin', showTooltip);
       host.addEventListener('mouseout', leaveTooltip); host.addEventListener('focusout', leaveTooltip);
-      if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); }
+      if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); var rail = host.querySelector('.acs-side-bar'); if (rail) resizeObserver.observe(rail); }
     }
     if (d.body.classList.contains('citi-hide-sidebar')) { revealOwned = true; d.body.classList.remove('citi-hide-sidebar'); }
     enhance(); compactState();

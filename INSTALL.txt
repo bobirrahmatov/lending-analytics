@@ -307,3 +307,16 @@ an oversized 6px treatment. Scoped important border, radius, background and
 shadow rules protect these surfaces from Confluence CSS. Internal table/drill
 padding and chart layouts remain component-owned. The hidden dashboard h1
 remains available to assistive technology; chart titles stay visible.
+
+NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
+The shared native-sidebar adapter recognizes collapsed inner rails inside a
+fixed sidebar wrapper. It marks both footer/bottom structures and the native
+Configure sidebar action. In compact mode the configuration chrome disappears;
+a native expand control in that same footer remains usable. Expanded mode and
+adapter teardown restore the native configuration action.
+Dashboard grids use the actual available content width, so opening the native
+sidebar reflows cards and charts without changing Confluence widths or offsets.
+This update replaces credit-native-sidebar.js and credit-style.css plus generated
+page pairs from the same build. The existing Space_Navigation.html header include
+and page macro fragments do not change. Validate against the live host theme;
+local fixtures cover nested rails, shared toggle footers and hostile host CSS.
