@@ -1,4 +1,4 @@
-"""Run the current local regression gates; no Confluence or Windows access required."""
+"""Run the current local regression gates; no live Confluence connection required."""
 from pathlib import Path
 import subprocess
 import sys

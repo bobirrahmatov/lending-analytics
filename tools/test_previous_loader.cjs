@@ -9,7 +9,7 @@ const P=path.resolve(__dirname,'..'),A=path.join(P,'attachments'),D=path.join(P,
  const mismatchedPrevious=['sample-previous-in-live','live-previous-in-sample'].includes(scenario);
  const mismatchedHistory=['sample-history-in-live','live-history-in-sample'].includes(scenario);
  w.CREDIT_CONFIG={mode:'production',allowSampleData:explicitSamples,page:'CA',baseUrl:'http://localhost/attachments/'};
- w.WCSUI={enhance(){},closePopover(){},dialog(o){const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
+ w.CreditUI={enhance(){},closePopover(){},dialog(o){const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
  const manifest=JSON.parse(fs.readFileSync(path.join(D,'credit-manifest.json')));manifest.is_demo=sampleCurrent;
  let historyPayload;
  const reads=new Map();

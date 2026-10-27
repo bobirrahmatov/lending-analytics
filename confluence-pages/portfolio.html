@@ -1,10 +1,12 @@
 <!-- Portfolio Overview: separate native Confluence page. Header/title/sidebar are owned by Confluence.
-     First update Shared_WCSpedia_Include.html in existing navBar. No page-specific stylesheet. -->
-<div id="credit-hub" aria-label="Portfolio Overview"></div>
+     Self-contained dashboard assets; no navbar, access app or portal dependency. -->
+<link rel="stylesheet" href="/confluence/download/attachments/3845862527/credit-style.css">
+<div id="credit-ui" class="credit-ui-host"><div id="credit-hub" aria-label="Portfolio Overview"></div></div>
 <script>window.CREDIT_CONFIG={mode:'production',allowSampleData:true,spaceKey:'wcs',page:"portfolio",contextPath:'/confluence',baseUrl:'/confluence/download/attachments/3845862527/',pageIds:window.CREDIT_PAGE_IDS||{}};</script>
 <script src="/confluence/download/attachments/3845862527/credit-pages.js"></script>
 <script>window.CREDIT_CONFIG.pageIds=window.CREDIT_PAGE_IDS;</script>
-<script src="/confluence/download/attachments/3845862527/wcspedia-loading-overlay.js"></script>
+<script src="/confluence/download/attachments/3845862527/credit-ui.js"></script>
+<script src="/confluence/download/attachments/3845862527/credit-loading-overlay.js"></script>
 <script src="/confluence/download/attachments/3845862527/highcharts.js"></script>
 <script src="/confluence/download/attachments/3845862527/highcharts-accessibility.js"></script>
 <script src="/confluence/download/attachments/3845862527/xlsx.full.min.js"></script>

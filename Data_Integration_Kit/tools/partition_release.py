@@ -1,4 +1,4 @@
-"""Prepare a new upload directory from an Access export; never change the export.
+"""Prepare a new upload directory from a prepared JSON release; never change the input.
 python partition_release.py EXPORT NEW_DIRECTORY [--allow-demo]
 Required datasets are split into immutable, hashed attachments below 8 MB.
 Validation runs on the combined records before the output manifest is published.

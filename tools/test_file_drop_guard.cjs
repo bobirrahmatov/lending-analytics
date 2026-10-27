@@ -85,7 +85,7 @@ for (const [config, metadata, expected] of [
 
 {
   const {dom, w} = fixture(undefined, '<meta name="ajs-space-key" content="LENDING">', 'data-credit-space-key="LENDING"');
-  assert.equal(w.CreditFileDropGuard.isActive(), true, 'Script attributes configure a shared navBar include');
+  assert.equal(w.CreditFileDropGuard.isActive(), true, 'Script attributes configure a optional space include');
   w.CREDIT_FILE_DROP_CONFIG = {enabled: false};
   assert.equal(dispatch(w, 'drop', fileTypes()).event.defaultPrevented, false);
   dom.window.close();
@@ -100,11 +100,10 @@ for (const [config, metadata, expected] of [
 }
 {
   const {dom, w} = fixture({spaceId: '3782729579'});
-  let notices = 0;
-  w.WCSNotifications = {show: () => { notices++; throw Error('Optional notification unavailable'); }};
   assert.equal(dispatch(w, 'drop', fileTypes()).event.defaultPrevented, true);
   assert.equal(dispatch(w, 'drop', fileTypes()).event.defaultPrevented, true);
-  assert.equal(notices, 1, 'Repeated drops do not flood notifications');
+  assert.equal(w.document.querySelectorAll('#credit-file-drop-notice').length, 1, 'Repeated drops retain one standalone notice');
+  assert.match(w.document.querySelector('[role=status]').textContent, /Use Attachments/);
   dom.window.close();
 }
 console.log('PASS file-drop guard: exact native scope, file-only capture, normal text/link and file picker actions, dynamic navigation, fail-closed scope, idempotence.');

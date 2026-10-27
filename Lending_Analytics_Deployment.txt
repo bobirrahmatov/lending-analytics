@@ -27,21 +27,19 @@ uploaded there. These IDs are configured in the supplied artifacts; access and
 native page placement still require validation on the actual Confluence site.
 Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
 
-1. Retain the existing {include:wcs:navBar}, native page title and sidebar.
-   Install the shared Lending Analytics additions in that existing include once.
-   Use the shared space-key guard for wcs; do not create another navbar/sidebar
-   or duplicate its CSS and helper scripts on every page.
-2. Upload the application assets from the deployment bundle to 3845862527. The
-   shared CSS is wcspedia-style.css, built from the retained WCSpedia base plus
-   credit-dashboard.css. It inherits the space font family, protects dashboard
-   text/control/table sizes and neutral colours, and exposes actual scrolling
-   surfaces without altering Confluence's page/sidebar geometry.
-3. Merge all 12 IDs above into the existing WCSpedia early-loading helper's
-   allow-list. Keep one helper. The same overlay is adopted and released by the
-   landing and dashboard code; unrelated space pages are not initialized as
-   dashboards. The shared file-drop guard prevents incidental file drops from
-   becoming native attachments. It does not redirect dropped files or upload
-   anything to the attachment host; use that page's Attachments action explicitly.
+1. Lending Analytics is a standalone dashboard. Native Confluence space/page
+   permissions provide access; no application login, entitlements, approvals or
+   access-request pages are used. Keep the native title, sidebar and page tree.
+   There is no dependency on WCSpedia or a navBar include.
+2. Upload the application assets from the deployment bundle to 3845862527.
+   The single credit-style.css contains only dashboard styles and controls.
+   It inherits the space font family and protects scoped dashboard text, tables
+   and scrollbars without changing the host geometry. credit-ui.js and
+   credit-loading-overlay.js are dashboard-owned helpers, included by each macro.
+3. Optional: install Space_File_Drop_Guard.html through the site's existing
+   space customization mechanism for space wcs. It prevents accidental file
+   drops from becoming native uploads. It does not redirect/upload files and
+   is not a dashboard startup dependency. Use Attachments explicitly to upload.
 4. Install each confluence-pages/ fragment on its matching native page. Each is
    a content-only macro: settings, shared dependencies, its Page.js logic and
    matching HTMLPage.js renderer. Keep the pair from one build. Do not paste a
@@ -60,6 +58,15 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    URLs. The authenticated browser session reads attachments from the configured
    page using same-origin Confluence REST/download requests and revalidation.
    No API token, privileged service account or new backend is required.
+
+UPGRADING FROM THE PREVIOUS PACKAGE
+Replace all installed dashboard fragments with the matching fragments from this
+build, and upload the new credit-style.css, credit-ui.js and
+credit-loading-overlay.js alongside the matching page pairs. The earlier shared
+portal include is no longer a dashboard prerequisite. Remove old dashboard-only
+includes from its setup; do not alter another application's space configuration.
+Replace page pairs together and reload. No page permissions are changed by this
+package; everyone already permitted by the space can use the dashboards.
 
 DEFAULT DATA PATH — SIX EXCEL ATTACHMENTS
 The supplied excel/runtime/ files are the direct runtime inputs, with typed
@@ -169,21 +176,13 @@ Optional enrichment failures are remembered for the loaded release, so Reset
 does not repeatedly retry a missing attachment. Reload the page to retry them.
 See qa/Reset_Tab_Performance_Verification.txt for regression checks and limits.
 
-THE SAME OVERLAY AS WCSPEDIA
-The package copies wcspedia/confluence-upload/attachments/
-wcspedia-loading-overlay.js verbatim. No separate Lending Analytics overlay is
-maintained. The landing and every dashboard claim WCSHeaderLoading when present,
-otherwise create the same WCSLoadingOverlay instance. They await its paint,
-release it after content is ready, and destroy it on failure. Dashboard startup
-has a 60-second deadline; individual attachment reads have a 15-second deadline.
-Late startup responses cannot replace a timeout error. Background filter changes
-reuse data and do not block the page with the startup overlay.
-
-Merge the 12 confirmed page IDs above into the existing navBar helper's
-data-wcs-loading-pages allow-list, following Shared_WCSpedia_Include.html. Reuse
-the existing helper; never install two helpers. This only presents the loading
-layer; it does not initialize settings or change the macro sequence.
-Scripts cannot guarantee a paint before Confluence runs the shared header.
+DASHBOARD LOADING OVERLAY
+Dashboard mount creates one CreditLoadingOverlay. It awaits the first paint,
+releases the layer after content is ready, and destroys it on failure. No
+header hook or separate portal startup is needed. Startup has a 60-second
+limit; individual attachment reads have a 15-second limit. Late responses cannot
+replace a timeout error. Filter changes reuse validated data without a full-page
+startup overlay. Focus, busy/inert attributes and scrolling restore on cleanup.
 
 CACHE CONTRACT
 PAL-dashboard.html uses in-memory indexes and memoized results. The new shared
@@ -209,18 +208,12 @@ credit-data-cache.js follows that model:
   A full reload obtains the latest manifest. An open page stays on one published
   snapshot; background polling and automatic mixed-release refresh are not used.
 
-OPTIONAL LARGE-DATA JSON / ACCESS PATH
-This is an alternative to the default stable-name Excel publication above.
-Immutable JSON names apply only when explicitly choosing this optional path;
-they are not required for the supplied Excel files or application asset URLs.
-
-A 75,000-row full-field facility fixture was 139,360,471 UTF-8 bytes before
-transport compression. It cannot be published as one Confluence attachment.
-The new Access exporter streams core datasets into numbered parts below 8 MB.
-It uses create-only writes, one release ID and a manifest published last. No
-Python installation is required for that Access path. Import the updated
-CreditHubBuild.bas alongside the other two modules and compile/test on Windows.
-Windows Access execution has NOT been verified on this Mac.
+OPTIONAL LARGE-DATA JSON UTILITIES
+The default remains the six stable-name Excel inputs. Standalone JSON validation
+and partitioning tools are retained for prepared larger releases. They have no
+Microsoft Access dependency. A 75,000-row full-field facility fixture was
+139,360,471 UTF-8 bytes before transport compression, exceeding one attachment.
+Use parts below the attachment limit for such prepared JSON data.
 
 Both forms are supported for each required dataset:
   "portfolio": {"filename":"credit-portfolio-RELEASE.json","rows":3000}
@@ -254,8 +247,7 @@ VERIFICATION AND LIMITS
 qa/Performance_75000.json records local Chrome runs with 75,000 full facility rows,
 74,945 distinct relationships and seven real Highcharts. The timer includes JSON
 parse, field/source validation, calculations, DOM rendering and chart paint.
-It excludes data generation, network transfer, initial script download, Windows
-Access ETL and server work. This JSON benchmark does not establish XLSX parsing
+It excludes data generation, network transfer, initial script download, upstream preparation and server work. This JSON benchmark does not establish XLSX parsing
 or a five-second end-to-end Excel loading result. qa/performance-75000.html can rerun the check locally.
 Local runs met the five-second PROCESSING target. No five-second live end-to-end
 SLA is established: 139 MB transfer over Horizon/Confluence must be measured there.
@@ -263,8 +255,8 @@ SLA is established: 139 MB transfer over Horizon/Confluence must be measured the
 Regression checks cover every existing page/expanded chart, native sidebar
 behavior, correct related-data joins, exact cache/reference parity, partitioned
 publication roundtrip, cross-part duplicates, stale releases, permission errors,
-invalid JSON, UTF-8 byte limits, overlay adoption/cleanup and startup timeout.
-No assertion of zero bugs or live Confluence/Windows validation is made.
+invalid JSON, UTF-8 byte limits, standalone overlay creation/cleanup and startup timeout.
+No assertion of zero bugs or live Confluence validation is made.
 
 STATIC ASSET REFRESH
 Confluence controls HTTP caching of script and stylesheet attachments. Replace

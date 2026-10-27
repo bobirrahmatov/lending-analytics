@@ -29,7 +29,7 @@ EXPANSIONS
 - Product: product mix, region totals, frequency, underwriters and product detail.
 - Activity: maker-month trend and region donut; event KPIs and supporting records.
 Every expansion has one bottom tabbed detail area and original-field CSV export.
-Charts, tables, KPI values and insights each have calculation methodology.
+Charts, tables and KPI values retain calculation methodology. The compact selection summary has no methodology control.
 
 INTENTIONAL CHANGES
 The old coarse 1–45 / 46–90 / >90 bands are replaced with portfolio bands
@@ -40,18 +40,18 @@ not silently discarded. Due today belongs to the first band. A deferred date
 alone is not evidence of approval. No future/historical data is estimated.
 NAM and LATAM combine as Americas ONLY in activity views, as in the original.
 Inactive/deactivated activity joins Deleted. All event types remain in records.
-The new look uses WCSpedia components instead of the old compiled utility CSS.
+The dashboard uses its own shared controls and stylesheet, scoped to Lending Analytics.
 
 DATA COVERAGE AND PUBLICATION
 All original raw properties survive normalization and source CSV export. Screen
-columns avoid duplicate aliases and entirely empty fields. Record dialogs retain
+columns avoid duplicate aliases and entirely empty fields. Record views retain
 raw fields. All source records includes statuses not used in the headline total.
-Production consumes the existing validated monitoring/activity JSON contract;
-optional columns below must be retained in the prepared JSON for complete detail.
+Production reads canonical Monitoring.xlsx and Activity.xlsx Data/Metadata sheets;
+optional columns below must be retained in prepared rows for complete detail.
+The equivalent validated JSON contract is supported by standalone data utilities.
 The browser cannot recreate fields omitted by an upstream export. No live data
 was replaced. The local and workbook samples stay separate to avoid mixed dates.
-For repeatable local preview capture: node tools/capture_covenants_fixture.cjs.
-After capture: python3 tools/build_pages.py. Production bundles exclude fixtures.
+Build dashboard assets with npm run build. Production bundles exclude local preview fixtures.
 
 FIELD ALIASES (canonical = original headers)
 as_of_date = As Of Date | As_Of_Date | Report_Date | Report Date

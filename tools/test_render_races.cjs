@@ -1,11 +1,11 @@
-/* Real Highcharts and WCSpedia controls: overlapping renders must not strand destroyed charts. */
+/* Real Highcharts and dashboard controls: overlapping renders must not strand destroyed charts. */
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 const A=path.resolve(__dirname,'../attachments'),pause=()=>new Promise(resolve=>setTimeout(resolve,40));
 async function mount(page){
  const dom=new JSDOM('<div id="credit-hub"></div>',{url:'http://localhost/'+page,runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,root=w.document.querySelector('#credit-hub');
  w.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.CREDIT_CONFIG={mode:'demo',page};
  const errors=[];w.addEventListener('error',event=>errors.push(event.error||event.message));
- for(const name of ['wcspedia-ui.js','highcharts.js','highcharts-accessibility.js','credit-demo-data.js','credit-comparison-demo.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-data-cache.js','credit-dashboard.js'])w.eval(fs.readFileSync(path.join(A,name),'utf8'));
+ for(const name of ['credit-ui.js','highcharts.js','highcharts-accessibility.js','credit-demo-data.js','credit-comparison-demo.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-data-cache.js','credit-dashboard.js'])w.eval(fs.readFileSync(path.join(A,name),'utf8'));
  await w.CreditHub.mount(root);assert.equal(root.querySelector('.ch-error'),null,root.textContent);
  const live=()=>w.Highcharts.charts.filter(c=>c?.renderTo?.isConnected);
  const ready=async()=>{await pause();assert.equal(root.querySelector('[aria-busy="true"]'),null,'Busy controls must settle');assert.equal(root.querySelector('.ch-error'),null,root.textContent);assert.deepEqual(errors,[]);};

@@ -2,7 +2,7 @@
 const {JSDOM}=require('jsdom');const fs=require('node:fs');const path=require('node:path');const assert=require('node:assert/strict');
 const dom=new JSDOM('<div id="credit-hub"><a class="ch-skip" href="#ch-content"></a><button id="ch-download"></button><button id="ch-customize"></button><div class="ch-actions"><button data-layout-control></button></div><div class="ch-demo"></div><div class="cw-layout-notice" hidden></div><div id="ch-content"></div></div>',{runScripts:'outside-only',url:'http://localhost'});
 const w=dom.window,d=w.document,root=d.querySelector('#credit-hub');w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};let dialogOptions;
-w.WCSUI={closePopover(){},enhance(){},dialog(options){dialogOptions=options;const el=d.createElement('div');el.innerHTML=options.body;d.body.append(el);return{element:el,body:el,close(){el.remove();options.onClose?.();}};}};
+w.CreditUI={closePopover(){},enhance(){},dialog(options){dialogOptions=options;const el=d.createElement('div');el.innerHTML=options.body;d.body.append(el);return{element:el,body:el,close(){el.remove();options.onClose?.();}};}};
 w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-workspace.js'),'utf8'));
 w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-tables.js'),'utf8'));
 w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-chart-details.js'),'utf8'));

@@ -4,8 +4,9 @@ Source: https://cdn.jsdelivr.net/npm/highcharts@12.4.0/modules/accessibility.js
 Upstream copyright/license notices retained in both files.
 Use subject to the applicable Highcharts license: https://www.highcharts.com/license
 
-Citi logo, CitiText fonts, WCSpedia loading helper/styles and shared ui.js/ui.css controls:
-Reused from the user-provided internal wealth workspace for this implementation.
+Citi logo and dashboard UI/loading-control derivatives:
+Adapted from user-provided internal wealth workspace assets for this implementation.
+Dashboard fonts inherit from Confluence; no font files or portal styling are bundled.
 No broader redistribution rights are asserted.
 
 SheetJS Community Edition 0.20.3 (Apache License 2.0)

@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const P=path.resolve(__dirname,'..');
 const dom=new JSDOM('<div id="credit-hub"><a class="ch-skip"></a><button id="ch-download"></button><button id="ch-customize"></button><div class="ch-actions"></div><div class="ch-demo"></div><div id="ch-content"></div></div>',{url:'http://localhost',runScripts:'outside-only'});
 const w=dom.window,d=w.document,root=d.querySelector('#credit-hub');w.HTMLElement.prototype.scrollIntoView=()=>{};w.scrollTo=()=>{};
-let dialog,charts=[],selected;w.WCSUI={closePopover(){},enhance(){},dialog(o){dialog=o;const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove();}};}};
+let dialog,charts=[],selected;w.CreditUI={closePopover(){},enhance(){},dialog(o){dialog=o;const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove();}};}};
 for(const file of ['credit-pal.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-covenant-risk.js','credit-covenants.js'])w.eval(fs.readFileSync(path.join(P,'attachments',file),'utf8'));
 const D=w.CreditCovenantsData,raw=JSON.parse(fs.readFileSync(path.join(__dirname,'covenants-workbook-samples.json')));
 for(const [type,rs]of Object.entries(raw))for(const [i,r]of rs.entries()){const n=D.normalize(r,i,type==='activity');for(const [k,v]of Object.entries(r))assert.deepEqual(n[k],v,'Original field retained: '+k);}

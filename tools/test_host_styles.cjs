@@ -4,15 +4,15 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const {JSDOM}=require('jsdom');
-const source=fs.readFileSync(path.join(__dirname,'../source/wcspedia/credit-dashboard.css'),'utf8');
+const source=fs.readFileSync(path.join(__dirname,'../source/dashboard/dashboard.css'),'utf8');
 const marker='/* Confluence host protection.';
 assert.equal(source.split(marker).length,2,'one shared host-protection block');
 const css=marker+source.split(marker)[1];
 const dom=new JSDOM(`<!doctype html><html><head><style>${css}</style></head><body>
  <nav id="native"><button>Confluence</button><h2>Native heading</h2></nav>
- <div id="wcspedia" class="credit-ui-host"><main id="credit-hub">
+ <div id="credit-ui" class="credit-ui-host"><main id="credit-hub">
   <section class="ch-card"><header class="ch-card-head"><h2 id="title">Facilities</h2><p class="ch-card-sub" id="subtitle">Current portfolio</p></header>
-   <strong class="ch-kpi-value" id="kpi">120</strong><div class="wcs-data-table-scroll" id="table-scroll"><table class="wcs-data-table"><thead><tr><th id="heading">Category</th></tr></thead><tbody><tr>
+   <strong class="ch-kpi-value" id="kpi">120</strong><div class="credit-data-table-scroll" id="table-scroll"><table class="credit-data-table"><thead><tr><th id="heading">Category</th></tr></thead><tbody><tr>
     <td class="ct-category-cell" id="category"><button class="ch-row-link">Aircraft Finance</button></td>
     <td class="ct-amount-cell" id="amount"><button class="ch-row-link" id="amount-link">$1m</button></td>
     <td id="plain">2026-08-31</td><td><span id="severity" class="ct-status-pill ct-tone-red">Past due</span><span id="delta" class="ct-number-pill ct-tone-green">+5%</span></td>
@@ -21,9 +21,9 @@ const dom=new JSDOM(`<!doctype html><html><head><style>${css}</style></head><bod
    <svg><text id="chart-label">120</text><path id="chart-series"></path></svg>
   </section>
   <dialog class="ca-overlay" id="dialog"><div class="ca-overlay-body" id="dialog-scroll"></div></dialog>
- </main><div class="wcs-ui-layer"><section class="wcs-ui-dialog cw-dashboard-drawer"><div class="wcs-ui-dialog-heading"><h2 id="drawer-title">Filters</h2></div><div class="wcs-ui-dialog-body" id="drawer-scroll"><input id="drawer-input"></div></section>
- <div class="wcs-ui-popover ct-filter-popover" id="filter-popup"><div class="ct-values" id="filter-values"></div></div>
- <div class="wcs-searchable-select"><div role="listbox" id="list-scroll"></div></div></div></div>
+ </main><div class="credit-ui-layer"><section class="credit-ui-dialog cw-dashboard-drawer"><div class="credit-ui-dialog-heading"><h2 id="drawer-title">Filters</h2></div><div class="credit-ui-dialog-body" id="drawer-scroll"><input id="drawer-input"></div></section>
+ <div class="credit-ui-popover ct-filter-popover" id="filter-popup"><div class="ct-values" id="filter-values"></div></div>
+ <div class="credit-searchable-select"><div role="listbox" id="list-scroll"></div></div></div></div>
  </body></html>`);
 const d=dom.window.document;
 const rules=[...d.styleSheets[0].cssRules].filter(r=>r.type===1);
@@ -52,6 +52,6 @@ assert.equal(webkit.length,1);assert.equal(webkit[0].style.getPropertyValue('dis
 assert.equal(webkit[0].style.getPropertyValue('height'),'10px');
 assert.equal(webkit[0].style.getPropertyValue('width'),'10px');
 d.querySelector('#credit-hub').remove();
-assert.equal(matching('filter-popup','scrollbar-width').length,0,'shared WCSpedia popovers outside Lending Analytics keep their own styles');
+assert.equal(matching('filter-popup','scrollbar-width').length,0,'shared dashboard popovers outside Lending Analytics keep their own styles');
 dom.window.close();
 console.log('PASS: scoped Confluence typography/scrollbar priorities, host theme aliases, inherited fonts, native chrome isolation and preserved semantic chart/table colours (CSSOM contract; browser paint checked separately).');

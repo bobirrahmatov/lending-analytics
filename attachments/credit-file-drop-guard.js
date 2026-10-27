@@ -1,11 +1,11 @@
-/* Load once from the existing space navBar. This prevents accidental browser
+/* Optional independent space-wide include, loaded once. This prevents accidental browser
  * file-drop uploads/navigation; native permissions and explicit uploads remain.
  * Configure exact native space identity, never an attachment or parent page ID.
  */
 (function (global) {
   'use strict';
   if (global.CreditFileDropGuard || !global.document) return;
-  var doc = global.document, script = doc.currentScript, lastNotice = -Infinity;
+  var doc = global.document, script = doc.currentScript, lastNotice = -Infinity, noticeTimer;
   var initial = {
     spaceId: script && script.getAttribute('data-credit-space-id') || '',
     spaceKey: script && script.getAttribute('data-credit-space-key') || '',
@@ -55,11 +55,17 @@
     catch (_) { /* Some browsers expose a read-only transfer. */ }
     if (event.type !== 'drop' || Date.now() - lastNotice < 3000) return;
     lastNotice = Date.now();
-    if (global.WCSNotifications && typeof global.WCSNotifications.show === 'function') {
-      try {
-        global.WCSNotifications.show('File drag-and-drop is disabled here. Use the upload button to choose a file.', {type: 'info'});
-      } catch (_) { /* A notification failure must not permit an upload. */ }
+    var notice = doc.getElementById('credit-file-drop-notice');
+    if (!notice) {
+      notice = doc.createElement('div');
+      notice.id = 'credit-file-drop-notice';
+      notice.setAttribute('role', 'status');
+      notice.style.cssText = 'position:fixed;bottom:24px;right:24px;max-width:min(420px,calc(100vw - 48px));padding:14px 18px;border-radius:8px;background:var(--ds-background-neutral-bold,#17355f);color:var(--ds-text-inverse,#fff);box-shadow:0 4px 18px #0003;z-index:2147483647;font:inherit;font-size:14px;line-height:1.5;';
+      doc.body.append(notice);
     }
+    notice.textContent = 'File drag-and-drop is disabled here. Use Attachments to upload a file.';
+    global.clearTimeout(noticeTimer);
+    noticeTimer = global.setTimeout(function () { notice.remove(); }, 6000);
   }
 
   // Window capture precedes document/element upload handlers. No file-input,

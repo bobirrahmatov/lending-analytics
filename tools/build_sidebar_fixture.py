@@ -1,12 +1,59 @@
-"""Local native-host fixture only. Does not create production sidebar markup."""
+"""Build a local native-host fixture. No production sidebar is created."""
 from pathlib import Path
-import json,html,re
-P=Path(__file__).resolve().parents[1]
-pages={'portfolio':'Portfolio','overview':'Underwriters Summary','workload':'Underwriter workload','deepdive':'Relationship deep dive','COVENANTS':'Covenants','CA':'CA expiration','FACILITY':'Facility maturity','CCM':'CCM','INSURANCE':'Insurance','APPRAISALS':'Appraisals','activity':'Covenant activity'}
-ids={'lendingAnalytics':'100',**{key:str(101+i) for i,key in enumerate(pages)}}
-links=''.join('<li><span class="plugin_pagetree_children_span"><a href="/confluence/pages/viewpage.action?pageId='+ids[k]+'"'+(' aria-current="page"' if k=='overview' else '')+'>'+html.escape(title)+'</a></span></li>' for k,title in pages.items())
-sidebar='<aside class="acs-side-bar"><button class="acs-side-bar-toggle" aria-label="Collapse sidebar" aria-expanded="true">Toggle sidebar</button><ul><li><a href="/confluence/pages/viewpage.action?pageId=100">Lending Analytics</a><button id="native-branch" aria-label="Toggle Lending Analytics pages" aria-expanded="true">Dashboard pages</button><ul id="native-children">'+links+'</ul></li></ul></aside>'
-s=(P/'pages/overview.html').read_text();s=s.replace('<body>','<body><style>.fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}.fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}.acs-side-bar ul{padding:0 10px;list-style:none}.acs-side-bar li{padding:5px 0}.acs-side-bar a{display:flex;align-items:center;gap:0;font-size:13px}.fixture-shell.collapsed .acs-side-bar .wcs-native-page-label{display:none}.fixture-content{min-width:0}.fixture-heading{font:12px Arial;color:#666;margin-bottom:12px}.acs-side-bar-toggle,#native-branch{border:1px solid #dce6ef;border-radius:6px;background:white;color:#17385e;padding:7px;font:inherit;font-size:12px;max-width:100%}</style><p class="fixture-heading">QA fixture only — simulated native host tree; no production sidebar is created</p><div class="fixture-shell">'+sidebar+'<div class="fixture-content">')
-s=s.replace('<script>window.CREDIT_CONFIG=', '</div></div><script>document.querySelector(".acs-side-bar-toggle").onclick=function(){const collapsed=document.querySelector(".fixture-shell").classList.toggle("collapsed");document.querySelector(".acs-side-bar").classList.toggle("acs-side-bar-collapsed",collapsed);this.setAttribute("aria-expanded",String(!collapsed));this.setAttribute("aria-label",collapsed?"Expand sidebar":"Collapse sidebar");};document.getElementById("native-branch").onclick=function(){const children=document.getElementById("native-children");children.hidden=!children.hidden;this.setAttribute("aria-expanded",String(!children.hidden));};</script><script>window.CREDIT_CONFIG=')
-s=s.replace("page:\"overview\",baseUrl:", "page:\"overview\",pageIds:"+json.dumps(ids)+",baseUrl:")
-(P/'qa/native-sidebar-fixture.html').write_text(s)
+import html
+import json
+import re
+
+P = Path(__file__).resolve().parents[1]
+pages = {
+    'portfolio': 'Portfolio Overview', 'overview': 'Underwriter Summary',
+    'workload': 'Underwriter Workload', 'deepdive': 'Relationship Deep Dive',
+    'COVENANTS': 'Covenants', 'activity': 'Covenants Activity', 'CCM': 'CCM',
+    'CA': 'CA Expiration', 'FACILITY': 'Facility Maturity',
+    'INSURANCE': 'Insurances', 'APPRAISALS': 'Appraisals',
+}
+ids = {'lendingAnalytics': '100', **{key: str(101 + i) for i, key in enumerate(pages)}}
+links = ''.join(
+    '<li><span class="plugin_pagetree_children_span"><a href="/confluence/pages/viewpage.action?pageId='
+    + ids[key] + '"' + (' aria-current="page"' if key == 'overview' else '') + '>'
+    + html.escape(title) + '</a></span></li>' for key, title in pages.items()
+)
+sidebar = '''<aside class="acs-side-bar" aria-label="Native Confluence navigation fixture">
+<button class="acs-side-bar-toggle" aria-label="Collapse sidebar" aria-expanded="true">☰</button>
+<ul><li><a href="/confluence/pages/viewpage.action?pageId=100">Lending Analytics</a>
+<button id="native-branch" aria-label="Toggle Lending Analytics pages" aria-expanded="true">⌄ <span>Dashboard pages</span></button>
+<ul id="native-children">''' + links + '''</ul></li>
+<li id="fixture-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Space resources"><span aria-hidden="true">◇</span><span class="fixture-native-label">Space resources</span></a></li>
+</ul></aside>'''
+styles = '''<style>
+.fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
+.fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
+.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}
+.acs-side-bar ul{padding:0 10px;list-style:none}.acs-side-bar li{padding:5px 0}
+.acs-side-bar a{display:flex;align-items:center;gap:0;font-size:13px}
+.fixture-shell.collapsed #native-branch span,.fixture-shell.collapsed .fixture-native-label{display:none}
+.fixture-content{min-width:0}.fixture-heading{font:12px Arial;color:#666;margin-bottom:12px}
+.acs-side-bar-toggle,#native-branch{border:1px solid #dce6ef;border-radius:6px;background:white;color:#17385e;padding:7px;font:inherit;font-size:12px;max-width:100%}
+#fixture-unrelated a{gap:7px;color:inherit;text-decoration:none}
+</style>'''
+handlers = '''<script>
+document.querySelector('.acs-side-bar-toggle').onclick=function(){
+  const collapsed=document.querySelector('.fixture-shell').classList.toggle('collapsed');
+  document.querySelector('.acs-side-bar').classList.toggle('acs-side-bar-collapsed',collapsed);
+  this.setAttribute('aria-expanded',String(!collapsed));
+  this.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
+};
+document.getElementById('native-branch').onclick=function(){
+  const children=document.getElementById('native-children');children.hidden=!children.hidden;
+  this.setAttribute('aria-expanded',String(!children.hidden));
+};
+</script>'''
+s = (P / 'pages/overview.html').read_text()
+s = s.replace('</head>', styles + '</head>', 1)
+s = s.replace('<body>', '<body><p class="fixture-heading">QA fixture only — simulated native host tree; no production sidebar is created</p><div class="fixture-shell">' + sidebar + '<div class="fixture-content">', 1)
+s = s.replace('<script>window.CREDIT_CONFIG=', '</div></div>' + handlers + '<script>window.CREDIT_CONFIG=', 1)
+s, replacements = re.subn(r'(page:\s*[\'\"]overview[\'\"],)', lambda match: match.group(1) + 'pageIds:' + json.dumps(ids) + ',', s, count=1)
+if replacements != 1:
+    raise ValueError('Overview preview settings could not be located; rebuild pages first.')
+(P / 'qa/native-sidebar-fixture.html').write_text(s)
+print('Built qa/native-sidebar-fixture.html (local fixture only).')

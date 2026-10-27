@@ -1,21 +1,22 @@
 /* Shared Citi-styled controls. Native fields remain the source of form values. */
 (function (global) {
   'use strict';
+  if (global.CreditUI) return;
   const doc = global.document;
   if (!doc) return;
   let sequence = 0, activePopover = null, cleanupScheduled = false;
   const dialogs = [], enhanced = new Map(), inertState = new Map();
   const isolatedHosts = new WeakSet();
   const busyButtons = new WeakMap();
-  const busyScope='#wcspedia,.wcs-add-document,.wcs-article-discussion,.wcs-article-engagement,[data-wcs-article-discussion-host]';
+  const busyScope='#credit-ui,.credit-ui-surface';
   function syncBusyIndicator(button) {
     if (!button?.matches?.('button')) return;
-    const existing=button.querySelector(':scope > .wcs-button-spinner');
+    const existing=button.querySelector(':scope > .credit-button-spinner');
     if (button.getAttribute('aria-busy')==='true') {
-      button.setAttribute('data-wcs-busy-indicator','');
-      if(!existing){const spinner=doc.createElement('span');spinner.className='wcs-button-spinner';spinner.setAttribute('aria-hidden','true');button.append(spinner);}
+      button.setAttribute('data-credit-busy-indicator','');
+      if(!existing){const spinner=doc.createElement('span');spinner.className='credit-button-spinner';spinner.setAttribute('aria-hidden','true');button.append(spinner);}
     } else {
-      existing?.remove();button.removeAttribute('data-wcs-busy-indicator');
+      existing?.remove();button.removeAttribute('data-credit-busy-indicator');
     }
   }
   function buttonBusy(button, value) {
@@ -37,23 +38,23 @@
     buttonBusy(button, true);
     try { return await task(); } finally { buttonBusy(button, false); }
   }
-  const uid = () => 'wcs-ui-' + (++sequence);
+  const uid = () => 'credit-ui-' + (++sequence);
   const escape = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const icon = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + ({down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/>',check:'<path d="m5 12 4 4L19 6"/>'}[name] || '') + '</svg>';
-  function root() { return doc.getElementById('wcspedia'); }
+  function root() { return doc.getElementById('credit-ui'); }
   function layer() {
     const host = root();
-    if (!host) throw Error('WCSpedia is not mounted.');
+    if (!host) throw Error('The dashboard UI host is not mounted.');
     if(!isolatedHosts.has(host)){
       // Keep application delegation on this root, but do not pass dialog actions
       // to the host's document-level menus or single-letter keyboard shortcuts.
       for(const type of ['click','dblclick','pointerdown','contextmenu','submit','keydown','keypress','keyup'])host.addEventListener(type,event=>{
-        if(event.target.closest?.('.wcs-ui-layer'))event.stopPropagation();
+        if(event.target.closest?.('.credit-ui-layer'))event.stopPropagation();
       });
       isolatedHosts.add(host);
     }
-    let mount = host.querySelector(':scope > .wcs-ui-layer');
-    if (!mount) { mount = doc.createElement('div'); mount.className = 'wcs-ui-layer'; host.append(mount); }
+    let mount = host.querySelector(':scope > .credit-ui-layer');
+    if (!mount) { mount = doc.createElement('div'); mount.className = 'credit-ui-layer'; host.append(mount); }
     return mount;
   }
   function put(element, body) { if (body && body.nodeType) element.append(body); else element.innerHTML = String(body || ''); }
@@ -73,12 +74,12 @@
     if (activePopover) activePopover.close('replace');
     const isDrawer = options.placement === 'right';
     const before = doc.activeElement, id = uid(), backdrop = doc.createElement(isDrawer ? 'dialog' : 'div');
-    backdrop.className = 'wcs-ui-backdrop' + (isDrawer ? ' wcs-ui-drawer-backdrop' : '');
+    backdrop.className = 'credit-ui-backdrop' + (isDrawer ? ' credit-ui-drawer-backdrop' : '');
     const panel = doc.createElement('section');
-    panel.className = 'wcs-ui-dialog' + (options.size === 'wide' ? ' is-wide' : '') + (isDrawer ? ' wcs-ui-drawer' : '');
+    panel.className = 'credit-ui-dialog' + (options.size === 'wide' ? ' is-wide' : '') + (isDrawer ? ' credit-ui-drawer' : '');
     panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', id); panel.tabIndex = -1;
-    panel.innerHTML = '<div class="wcs-ui-dialog-heading"><div><h2 id="' + id + '">' + escape(options.title || 'WCSpedia') + '</h2>' + (options.description ? '<p>' + escape(options.description) + '</p>' : '') + '</div><button type="button" class="wcs-ui-close" aria-label="' + escape(options.closeLabel || 'Close dialog') + '">' + icon('close') + '</button></div><div class="wcs-ui-dialog-body"></div>';
-    const body = panel.querySelector('.wcs-ui-dialog-body'); put(body, options.body);
+    panel.innerHTML = '<div class="credit-ui-dialog-heading"><div><h2 id="' + id + '">' + escape(options.title || 'Lending Analytics') + '</h2>' + (options.description ? '<p>' + escape(options.description) + '</p>' : '') + '</div><button type="button" class="credit-ui-close" aria-label="' + escape(options.closeLabel || 'Close dialog') + '">' + icon('close') + '</button></div><div class="credit-ui-dialog-body"></div>';
+    const body = panel.querySelector('.credit-ui-dialog-body'); put(body, options.body);
     backdrop.append(panel); layer().append(backdrop);
     let closed = false, busy = false, initiator = null, busyButton = null, disabledButtons = [];
     const previousOverflow = doc.documentElement.style.overflow;
@@ -120,7 +121,7 @@
       if (options.restoreFocus !== false) focusElement(before);
       return true;
     }
-    panel.querySelector('.wcs-ui-close').addEventListener('click', () => close('close'));
+    panel.querySelector('.credit-ui-close').addEventListener('click', () => close('close'));
     backdrop.addEventListener('pointerdown', event => { if (event.target === backdrop && options.dismissOnBackdrop !== false) close('backdrop'); });
     // All validation belongs to the same inline error surface, never browser bubbles.
     panel.querySelectorAll('form').forEach(form => { form.noValidate = true; });
@@ -134,11 +135,11 @@
     if (!options.anchor || !options.anchor.isConnected) return null;
     if (activePopover) activePopover.close('replace');
     const anchor = options.anchor, panel = doc.createElement('div');
-    panel.className = 'wcs-ui-popover' + (options.className ? ' ' + options.className : ''); panel.id = options.id || uid();
+    panel.className = 'credit-ui-popover' + (options.className ? ' ' + options.className : ''); panel.id = options.id || uid();
     if (options.role) panel.setAttribute('role', options.role);
     if (options.label) panel.setAttribute('aria-label', options.label);
     put(panel, options.body);
-    const parent = anchor.closest('.wcs-ui-dialog') || layer(); parent.append(panel);
+    const parent = anchor.closest('.credit-ui-dialog') || layer(); parent.append(panel);
     let closed = false;
     function position() {
       if (closed) return;
@@ -182,38 +183,38 @@
   // Opt-in searchable dropdown; existing selects retain their original behavior.
   function searchableSelectControl(field) {
     const originalHidden=field.hidden,id=uid(),wrapper=doc.createElement('span'),trigger=doc.createElement('button');
-    wrapper.className='wcs-ui-select';trigger.type='button';trigger.className='wcs-ui-select-trigger';trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label',nameFor(field));
-    trigger.innerHTML='<span class="wcs-ui-select-value"></span>'+icon('down');field.after(wrapper);wrapper.append(trigger);field.hidden=true;field.dataset.wcsUi='select';
+    wrapper.className='credit-ui-select';trigger.type='button';trigger.className='credit-ui-select-trigger';trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label',nameFor(field));
+    trigger.innerHTML='<span class="credit-ui-select-value"></span>'+icon('down');field.after(wrapper);wrapper.append(trigger);field.hidden=true;field.dataset.creditUi='select';
     let popup=null,active=0;const abort=new AbortController(),signal=abort.signal;
     function sync(){trigger.disabled=field.disabled;trigger.querySelector('span').textContent=field.selectedOptions[0]?.textContent||'Search and select';if(popup&&field.disabled)popup.close('disabled');}
     function open(){if(popup||field.disabled)return;active=0;
-      popup=popover({anchor:trigger,role:'dialog',label:nameFor(field),matchWidth:true,className:'wcs-searchable-select',body:'<input type="search" role="combobox" aria-label="Search relationships" aria-autocomplete="list" aria-expanded="true" aria-controls="'+id+'-options" placeholder="Search ID or name…"><div id="'+id+'-options" role="listbox" aria-label="Matching relationships"></div><p role="status"></p>',onClose(){popup=null;trigger.setAttribute('aria-expanded','false');}});
+      popup=popover({anchor:trigger,role:'dialog',label:nameFor(field),matchWidth:true,className:'credit-searchable-select',body:'<input type="search" role="combobox" aria-label="Search relationships" aria-autocomplete="list" aria-expanded="true" aria-controls="'+id+'-options" placeholder="Search ID or name…"><div id="'+id+'-options" role="listbox" aria-label="Matching relationships"></div><p role="status"></p>',onClose(){popup=null;trigger.setAttribute('aria-expanded','false');}});
       trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',popup.element.id);
       const input=popup.element.querySelector('input'),list=popup.element.querySelector('[role=listbox]'),status=popup.element.querySelector('[role=status]');let found=[];
       const choose=index=>{const option=found[index];if(!option)return;field.value=option.value;sync();popup.close('select');announceValue(field);};
-      function paint(){const query=input.value.trim().toLocaleLowerCase();found=Array.from(field.options).filter(o=>!o.disabled&&(!query||o.textContent.toLocaleLowerCase().includes(query)));active=Math.min(active,Math.max(0,found.length-1));list.innerHTML=found.map((o,i)=>'<div role="option" id="'+id+'-result-'+i+'" data-result="'+i+'" aria-selected="'+(o.value===field.value)+'" class="wcs-ui-option'+(i===active?' is-active':'')+'"><span>'+escape(o.textContent)+'</span>'+(o.value===field.value?icon('check'):'')+'</div>').join('');status.textContent=found.length?found.length+' matching '+(found.length===1?'option':'options'):'No matching relationships. Try another ID or name.';if(found.length)input.setAttribute('aria-activedescendant',id+'-result-'+active);else input.removeAttribute('aria-activedescendant');}
+      function paint(){const query=input.value.trim().toLocaleLowerCase();found=Array.from(field.options).filter(o=>!o.disabled&&(!query||o.textContent.toLocaleLowerCase().includes(query)));active=Math.min(active,Math.max(0,found.length-1));list.innerHTML=found.map((o,i)=>'<div role="option" id="'+id+'-result-'+i+'" data-result="'+i+'" aria-selected="'+(o.value===field.value)+'" class="credit-ui-option'+(i===active?' is-active':'')+'"><span>'+escape(o.textContent)+'</span>'+(o.value===field.value?icon('check'):'')+'</div>').join('');status.textContent=found.length?found.length+' matching '+(found.length===1?'option':'options'):'No matching relationships. Try another ID or name.';if(found.length)input.setAttribute('aria-activedescendant',id+'-result-'+active);else input.removeAttribute('aria-activedescendant');}
       input.oninput=()=>{active=0;paint();};input.onkeydown=e=>{if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();active=e.key==='Home'?0:e.key==='End'?found.length-1:Math.max(0,Math.min(found.length-1,active+(e.key==='ArrowDown'?1:-1)));paint();list.querySelector('.is-active')?.scrollIntoView({block:'nearest'});}else if(e.key==='Enter'){e.preventDefault();choose(active);}};
       list.onpointerdown=e=>e.preventDefault();list.onclick=e=>{const item=e.target.closest('[data-result]');if(item)choose(Number(item.dataset.result));};paint();focusElement(input);
     }
     trigger.addEventListener('click',()=>popup?popup.close('toggle'):open(),{signal});trigger.addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();open();}},{signal});field.addEventListener('change',sync,{signal});
     const observer=new MutationObserver(sync);observer.observe(field,{attributes:true,childList:true,subtree:true,characterData:true});
-    enhanced.set(field,{field,wrapper,sync,destroy(){popup?.close('destroy');observer.disconnect();abort.abort();wrapper.remove();field.hidden=originalHidden;delete field.dataset.wcsUi;}});sync();
+    enhanced.set(field,{field,wrapper,sync,destroy(){popup?.close('destroy');observer.disconnect();abort.abort();wrapper.remove();field.hidden=originalHidden;delete field.dataset.creditUi;}});sync();
   }
   function selectControl(field) {
     if(field.hasAttribute('data-searchable'))return searchableSelectControl(field);
     if (field.multiple || Number(field.size) > 1) return;
     const originalHidden = field.hidden, id = uid(), wrapper = doc.createElement('span'), trigger = doc.createElement('button');
-    wrapper.className = 'wcs-ui-select'; trigger.type = 'button'; trigger.className = 'wcs-ui-select-trigger'; trigger.id = id;
+    wrapper.className = 'credit-ui-select'; trigger.type = 'button'; trigger.className = 'credit-ui-select-trigger'; trigger.id = id;
     trigger.setAttribute('role', 'combobox'); trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');
-    trigger.setAttribute('aria-label', nameFor(field)); trigger.innerHTML = '<span class="wcs-ui-select-value"></span>' + icon('down');
-    field.after(wrapper); wrapper.append(trigger); field.hidden = true; field.dataset.wcsUi = 'select';
+    trigger.setAttribute('aria-label', nameFor(field)); trigger.innerHTML = '<span class="credit-ui-select-value"></span>' + icon('down');
+    field.after(wrapper); wrapper.append(trigger); field.hidden = true; field.dataset.creditUi = 'select';
     let popup = null, index = field.selectedIndex, buffer = '', bufferTimer;
     const abort = new AbortController(), signal = abort.signal;
     function opts() { return Array.from(field.options); }
     function enabled(i) { const option = field.options[i]; return option && !option.disabled && !option.closest('optgroup[disabled]'); }
     function sync() {
       trigger.disabled = field.disabled; trigger.setAttribute('aria-required', String(field.required));
-      trigger.querySelector('.wcs-ui-select-value').textContent = field.selectedOptions[0]?.textContent || 'Choose an option';
+      trigger.querySelector('.credit-ui-select-value').textContent = field.selectedOptions[0]?.textContent || 'Choose an option';
       trigger.setAttribute('aria-invalid', field.getAttribute('aria-invalid') || 'false');
       if (field.disabled && popup) popup.close('disabled');
       if (popup) renderOptions();
@@ -221,7 +222,7 @@
     function renderOptions() {
       if (!popup) return;
       const items = opts();
-      popup.element.innerHTML = items.map((option, i) => '<div id="' + id + '-option-' + i + '" role="option" aria-selected="' + (field.selectedIndex === i) + '" aria-disabled="' + !enabled(i) + '" data-wcs-option="' + i + '" class="wcs-ui-option' + (i === index ? ' is-active' : '') + '"><span>' + escape(option.textContent) + '</span>' + (field.selectedIndex === i ? icon('check') : '') + '</div>').join('');
+      popup.element.innerHTML = items.map((option, i) => '<div id="' + id + '-option-' + i + '" role="option" aria-selected="' + (field.selectedIndex === i) + '" aria-disabled="' + !enabled(i) + '" data-credit-option="' + i + '" class="credit-ui-option' + (i === index ? ' is-active' : '') + '"><span>' + escape(option.textContent) + '</span>' + (field.selectedIndex === i ? icon('check') : '') + '</div>').join('');
       if(index >= 0) trigger.setAttribute('aria-activedescendant', id + '-option-' + index); else trigger.removeAttribute('aria-activedescendant');
     }
     function move(next) {
@@ -238,10 +239,10 @@
     function open() {
       if (field.disabled || popup) return;
       index = field.selectedIndex >= 0 ? field.selectedIndex : opts().findIndex((_, i) => enabled(i));
-      popup = popover({anchor:trigger, id:id + '-list', role:'listbox', label:nameFor(field), matchWidth:true, className:'wcs-ui-options', focus:false, onClose() { popup = null; trigger.setAttribute('aria-expanded','false'); trigger.removeAttribute('aria-activedescendant'); }});
+      popup = popover({anchor:trigger, id:id + '-list', role:'listbox', label:nameFor(field), matchWidth:true, className:'credit-ui-options', focus:false, onClose() { popup = null; trigger.setAttribute('aria-expanded','false'); trigger.removeAttribute('aria-activedescendant'); }});
       trigger.setAttribute('aria-controls', popup.element.id); trigger.setAttribute('aria-expanded', 'true'); renderOptions();
-      popup.element.addEventListener('pointerdown', event => { if (event.target.closest('[data-wcs-option]')) event.preventDefault(); });
-      popup.element.addEventListener('click', event => { const item = event.target.closest('[data-wcs-option]'); if (item) choose(Number(item.dataset.wcsOption)); });
+      popup.element.addEventListener('pointerdown', event => { if (event.target.closest('[data-credit-option]')) event.preventDefault(); });
+      popup.element.addEventListener('click', event => { const item = event.target.closest('[data-credit-option]'); if (item) choose(Number(item.dataset.creditOption)); });
     }
     trigger.addEventListener('click', () => popup ? popup.close('toggle') : open(), {signal});
     trigger.addEventListener('keydown', event => {
@@ -264,7 +265,7 @@
     field.form?.addEventListener('reset', () => queueMicrotask(sync), {signal});
     for (const label of field.labels || []) label.addEventListener('click', event => { if (event.target === label || event.target.tagName === 'SPAN' && !wrapper.contains(event.target)) focusElement(trigger); }, {signal});
     const observer = new MutationObserver(sync); observer.observe(field, {attributes:true,childList:true,subtree:true,characterData:true});
-    const record = {field, wrapper, sync, destroy() { if (popup) popup.close('destroy'); observer.disconnect(); abort.abort(); clearTimeout(bufferTimer); wrapper.remove(); field.hidden = originalHidden; delete field.dataset.wcsUi; }};
+    const record = {field, wrapper, sync, destroy() { if (popup) popup.close('destroy'); observer.disconnect(); abort.abort(); clearTimeout(bufferTimer); wrapper.remove(); field.hidden = originalHidden; delete field.dataset.creditUi; }};
     enhanced.set(field, record); sync();
   }
   function iso(date) { return date.getFullYear() + '-' + String(date.getMonth()+1).padStart(2,'0') + '-' + String(date.getDate()).padStart(2,'0'); }
@@ -274,14 +275,14 @@
     return iso(date) === value ? date : null;
   }
   function dateControl(field) {
-    const wrapper = doc.createElement('span'), trigger = doc.createElement('button'); wrapper.className = 'wcs-ui-date';
+    const wrapper = doc.createElement('span'), trigger = doc.createElement('button'); wrapper.className = 'credit-ui-date';
     const fieldName = nameFor(field);
     const original = {type:field.type,placeholder:field.getAttribute('placeholder'),inputmode:field.getAttribute('inputmode'),pattern:field.getAttribute('pattern'),'aria-label':field.getAttribute('aria-label')};
-    field.before(wrapper); wrapper.append(field,trigger); field.type = 'text'; field.inputMode = 'numeric'; field.placeholder = 'YYYY-MM-DD'; field.pattern = '\\d{4}-\\d{2}-\\d{2}'; field.dataset.wcsUi = 'date';
+    field.before(wrapper); wrapper.append(field,trigger); field.type = 'text'; field.inputMode = 'numeric'; field.placeholder = 'YYYY-MM-DD'; field.pattern = '\\d{4}-\\d{2}-\\d{2}'; field.dataset.creditUi = 'date';
     // Keep an implicit label's calendar button out of the input's accessible name.
     if (!field.hasAttribute('aria-label') && !field.hasAttribute('aria-labelledby')) field.setAttribute('aria-label',fieldName);
-    trigger.type = 'button'; trigger.className = 'wcs-ui-date-trigger'; trigger.setAttribute('aria-label', 'Choose ' + fieldName.toLocaleLowerCase()); trigger.setAttribute('aria-haspopup','dialog'); trigger.setAttribute('aria-expanded','false'); trigger.innerHTML = icon('calendar');
-    const error = doc.createElement('span'); error.className = 'wcs-ui-field-error'; error.id = uid(); error.hidden = true; error.setAttribute('role','status'); wrapper.after(error);
+    trigger.type = 'button'; trigger.className = 'credit-ui-date-trigger'; trigger.setAttribute('aria-label', 'Choose ' + fieldName.toLocaleLowerCase()); trigger.setAttribute('aria-haspopup','dialog'); trigger.setAttribute('aria-expanded','false'); trigger.innerHTML = icon('calendar');
+    const error = doc.createElement('span'); error.className = 'credit-ui-field-error'; error.id = uid(); error.hidden = true; error.setAttribute('role','status'); wrapper.after(error);
     const describedBy = field.getAttribute('aria-describedby'); field.setAttribute('aria-describedby', [describedBy,error.id].filter(Boolean).join(' '));
     let popup = null, displayed = null, selectedDay = null;
     const abort = new AbortController(), signal = abort.signal;
@@ -298,10 +299,10 @@
       const first = new Date(displayed.getFullYear(),displayed.getMonth(),1,12), start = new Date(first); start.setDate(1 - ((first.getDay()+6)%7));
       const month = first.toLocaleDateString('en-GB',{month:'long',year:'numeric'}), today = iso(new Date());
       let days = '';
-      for (let i=0;i<42;i++) { const date = new Date(start); date.setDate(start.getDate()+i); const value = iso(date); days += '<button type="button" data-wcs-date="' + value + '" class="wcs-ui-day' + (date.getMonth()!==first.getMonth()?' is-other':'') + (value===field.value?' is-selected':'') + '" aria-label="' + escape(date.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})) + '"' + (value===today?' aria-current="date"':'') + (value===field.value?' aria-pressed="true"':'') + (validDay(date)?'':' disabled') + ' tabindex="' + (value===iso(selectedDay)?'0':'-1') + '">' + date.getDate() + '</button>'; }
-      popup.element.innerHTML = '<div class="wcs-ui-calendar-heading"><button type="button" data-wcs-month="-1" aria-label="Previous month">'+icon('left')+'</button><strong aria-live="polite">'+escape(month)+'</strong><button type="button" data-wcs-month="1" aria-label="Next month">'+icon('right')+'</button></div><div class="wcs-ui-calendar-week" aria-hidden="true">'+['Mo','Tu','We','Th','Fr','Sa','Su'].map(day=>'<span>'+day+'</span>').join('')+'</div><div class="wcs-ui-calendar-days" role="group" aria-label="Days in '+escape(month)+'">'+days+'</div><div class="wcs-ui-calendar-actions"><button type="button" class="link" data-wcs-today'+(validDay(new Date())?'':' disabled')+'>Today</button>'+(!field.required?'<button type="button" class="link" data-wcs-clear>Clear date</button>':'')+'<span>YYYY-MM-DD</span></div>';
+      for (let i=0;i<42;i++) { const date = new Date(start); date.setDate(start.getDate()+i); const value = iso(date); days += '<button type="button" data-credit-date="' + value + '" class="credit-ui-day' + (date.getMonth()!==first.getMonth()?' is-other':'') + (value===field.value?' is-selected':'') + '" aria-label="' + escape(date.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})) + '"' + (value===today?' aria-current="date"':'') + (value===field.value?' aria-pressed="true"':'') + (validDay(date)?'':' disabled') + ' tabindex="' + (value===iso(selectedDay)?'0':'-1') + '">' + date.getDate() + '</button>'; }
+      popup.element.innerHTML = '<div class="credit-ui-calendar-heading"><button type="button" data-credit-month="-1" aria-label="Previous month">'+icon('left')+'</button><strong aria-live="polite">'+escape(month)+'</strong><button type="button" data-credit-month="1" aria-label="Next month">'+icon('right')+'</button></div><div class="credit-ui-calendar-week" aria-hidden="true">'+['Mo','Tu','We','Th','Fr','Sa','Su'].map(day=>'<span>'+day+'</span>').join('')+'</div><div class="credit-ui-calendar-days" role="group" aria-label="Days in '+escape(month)+'">'+days+'</div><div class="credit-ui-calendar-actions"><button type="button" class="link" data-credit-today'+(validDay(new Date())?'':' disabled')+'>Today</button>'+(!field.required?'<button type="button" class="link" data-credit-clear>Clear date</button>':'')+'<span>YYYY-MM-DD</span></div>';
       popup.reposition();
-      if (focusDate) focusElement(popup.element.querySelector('[data-wcs-date="'+iso(focusDate)+'"]'));
+      if (focusDate) focusElement(popup.element.querySelector('[data-credit-date="'+iso(focusDate)+'"]'));
     }
     function choose(value) { field.value = value; validate(true); popup?.close('select'); announceValue(field); }
     function open() {
@@ -310,18 +311,18 @@
       if (field.min && iso(selectedDay) < field.min) selectedDay = parseDate(field.min) || selectedDay;
       if (field.max && iso(selectedDay) > field.max) selectedDay = parseDate(field.max) || selectedDay;
       displayed = new Date(selectedDay.getFullYear(),selectedDay.getMonth(),1,12);
-      popup = popover({anchor:trigger, role:'dialog', label:'Choose a date', className:'wcs-ui-calendar', focus:false, maxHeight:410, onClose() {popup=null;trigger.setAttribute('aria-expanded','false');}});
+      popup = popover({anchor:trigger, role:'dialog', label:'Choose a date', className:'credit-ui-calendar', focus:false, maxHeight:410, onClose() {popup=null;trigger.setAttribute('aria-expanded','false');}});
       trigger.setAttribute('aria-expanded','true'); trigger.setAttribute('aria-controls',popup.element.id); renderCalendar(selectedDay);
       popup.element.addEventListener('click', event => {
         const button = event.target.closest('button'); if (!button || button.disabled) return;
-        if (button.dataset.wcsDate) choose(button.dataset.wcsDate);
-        else if (button.hasAttribute('data-wcs-month')) { displayed.setMonth(displayed.getMonth()+Number(button.dataset.wcsMonth)); selectedDay = new Date(displayed); renderCalendar(); focusElement(popup.element.querySelector('[data-wcs-month="'+button.dataset.wcsMonth+'"]')); }
-        else if (button.hasAttribute('data-wcs-today')) choose(iso(new Date()));
-        else if (button.hasAttribute('data-wcs-clear')) choose('');
+        if (button.dataset.creditDate) choose(button.dataset.creditDate);
+        else if (button.hasAttribute('data-credit-month')) { displayed.setMonth(displayed.getMonth()+Number(button.dataset.creditMonth)); selectedDay = new Date(displayed); renderCalendar(); focusElement(popup.element.querySelector('[data-credit-month="'+button.dataset.creditMonth+'"]')); }
+        else if (button.hasAttribute('data-credit-today')) choose(iso(new Date()));
+        else if (button.hasAttribute('data-credit-clear')) choose('');
       });
       popup.element.addEventListener('keydown', event => {
-        const button = event.target.closest('[data-wcs-date]'); if (!button) return;
-        const date = parseDate(button.dataset.wcsDate), offsets={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7};
+        const button = event.target.closest('[data-credit-date]'); if (!button) return;
+        const date = parseDate(button.dataset.creditDate), offsets={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7};
         if (event.key in offsets) date.setDate(date.getDate()+offsets[event.key]);
         else if (event.key === 'Home') date.setDate(date.getDate()-((date.getDay()+6)%7));
         else if (event.key === 'End') date.setDate(date.getDate()+6-((date.getDay()+6)%7));
@@ -334,26 +335,26 @@
     field.addEventListener('blur',()=>validate(true),{signal}); field.addEventListener('input',()=>validate(false),{signal});field.addEventListener('change',()=>validate(true),{signal});
     field.addEventListener('keydown',event=>{if(event.key==='ArrowDown'&&event.altKey){event.preventDefault();open();}},{signal});
     const observer=new MutationObserver(sync);observer.observe(field,{attributes:true,attributeFilter:['disabled','readonly','min','max']});
-    enhanced.set(field,{field,wrapper,sync,destroy(){if(popup)popup.close('destroy');observer.disconnect();abort.abort();wrapper.before(field);wrapper.remove();error.remove();field.type=original.type;for(const attr of ['placeholder','inputmode','pattern','aria-label']){if(original[attr]===null)field.removeAttribute(attr);else field.setAttribute(attr,original[attr]);}if(describedBy)field.setAttribute('aria-describedby',describedBy);else field.removeAttribute('aria-describedby');field.setCustomValidity('');delete field.dataset.wcsUi;}});sync();validate(false);
+    enhanced.set(field,{field,wrapper,sync,destroy(){if(popup)popup.close('destroy');observer.disconnect();abort.abort();wrapper.before(field);wrapper.remove();error.remove();field.type=original.type;for(const attr of ['placeholder','inputmode','pattern','aria-label']){if(original[attr]===null)field.removeAttribute(attr);else field.setAttribute(attr,original[attr]);}if(describedBy)field.setAttribute('aria-describedby',describedBy);else field.removeAttribute('aria-describedby');field.setCustomValidity('');delete field.dataset.creditUi;}});sync();validate(false);
   }
   // Search uses the same close SVG as dialogs; native browser cancel icons are hidden.
   function searchControl(field) {
     const wrapper=doc.createElement('span'),button=doc.createElement('button'),abort=new AbortController();
-    wrapper.className='wcs-ui-search-field';field.before(wrapper);wrapper.append(field);
-    button.type='button';button.className='wcs-ui-search-clear';button.setAttribute('aria-label','Clear '+nameFor(field));button.innerHTML=icon('close');wrapper.append(button);
+    wrapper.className='credit-ui-search-field';field.before(wrapper);wrapper.append(field);
+    button.type='button';button.className='credit-ui-search-clear';button.setAttribute('aria-label','Clear '+nameFor(field));button.innerHTML=icon('close');wrapper.append(button);
     const sync=()=>{button.hidden=!field.value;button.disabled=field.disabled||field.readOnly;};
     field.addEventListener('input',sync,{signal:abort.signal});field.addEventListener('change',sync,{signal:abort.signal});
     button.addEventListener('click',event=>{event.preventDefault();field.value='';sync();announceValue(field);if(field.isConnected)field.focus({preventScroll:true});},{signal:abort.signal});
     enhanced.set(field,{field,wrapper,sync,destroy(){abort.abort();wrapper.before(field);wrapper.remove();}});sync();
   }
   function enhance(container) {
-    if (!container || !container.querySelectorAll) return;
+    if (!container || !container.querySelectorAll || !container.closest?.('#credit-ui,.credit-ui-surface')) return;
     cleanup();
     container.querySelectorAll('button[aria-busy]').forEach(syncBusyIndicator);
     container.querySelectorAll('form').forEach(form=>{form.noValidate=true;});
-    container.querySelectorAll('input[type=search]').forEach(field=>{if(!field.closest('#credit-hub,.credit-ui-surface,.wcs-ui-popover,.wcs-ui-dialog'))return;if(enhanced.has(field))enhanced.get(field).sync();else searchControl(field);});
+    container.querySelectorAll('input[type=search]').forEach(field=>{if(!field.closest('#credit-hub,.credit-ui-surface,.credit-ui-popover,.credit-ui-dialog'))return;if(enhanced.has(field))enhanced.get(field).sync();else searchControl(field);});
     container.querySelectorAll('select').forEach(field=>{ if(enhanced.has(field))enhanced.get(field).sync();else selectControl(field); });
-    container.querySelectorAll('input[type="date"],input[data-wcs-ui="date"]').forEach(field=>{if(enhanced.has(field))enhanced.get(field).sync();else dateControl(field);});
+    container.querySelectorAll('input[type="date"],input[data-credit-ui="date"]').forEach(field=>{if(enhanced.has(field))enhanced.get(field).sync();else dateControl(field);});
     container.querySelectorAll('[title]').forEach(el=>{const title=el.getAttribute('title');el.removeAttribute('title');if(title){el.dataset.tooltip=title;if(!el.hasAttribute('aria-label')&&!el.textContent.trim())el.setAttribute('aria-label',title);}});
   }
   function destroyFields(container) { for (const [field,record] of enhanced) if (container===field||container.contains(field)) {record.destroy();enhanced.delete(field);} }
@@ -372,8 +373,7 @@
     if(activePopover&&!activePopover.anchor.isConnected)activePopover.close('detached');
     for(const handle of dialogs.slice())if(!handle.backdrop.isConnected){
       handle.setBusy(false);
-      // Notify owners too: otherwise the editor retains a dead dialog handle
-      // and every later Insert/Cancel action silently returns.
+      // Notify owners too, so a removed panel cannot retain a stale handle.
       if(!handle.close('detached')){const index=dialogs.indexOf(handle);if(index>=0)dialogs.splice(index,1);destroyFields(handle.element);}
     }
     if(!dialogs.length&&inertState.size)syncInert();
@@ -394,16 +394,22 @@
     }
   },true);
   new MutationObserver(records=>{
+    let changed = false;
     for(const record of records){
       if(record.type==='attributes'){
-        if(record.target.closest(busyScope))syncBusyIndicator(record.target);
-      }else for(const node of record.addedNodes){
-        if(node.nodeType!==1||!node.closest(busyScope))continue;
-        if(node.matches('button[aria-busy]'))syncBusyIndicator(node);
-        node.querySelectorAll('button[aria-busy]').forEach(syncBusyIndicator);
+        if(record.target.closest(busyScope)){syncBusyIndicator(record.target);changed=true;}
+      }else{
+        const owned = record.target.closest?.(busyScope) || [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1&&(node.matches(busyScope)||node.querySelector(busyScope)));
+        if(!owned)continue;
+        changed=true;
+        for(const node of record.addedNodes){
+          if(node.nodeType!==1||!node.closest(busyScope))continue;
+          if(node.matches('button[aria-busy]'))syncBusyIndicator(node);
+          node.querySelectorAll('button[aria-busy]').forEach(syncBusyIndicator);
+        }
       }
     }
-    if(!cleanupScheduled){cleanupScheduled=true;queueMicrotask(()=>{cleanupScheduled=false;cleanup();});}
+    if(changed&&!cleanupScheduled){cleanupScheduled=true;queueMicrotask(()=>{cleanupScheduled=false;cleanup();});}
   }).observe(doc.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-busy']});
-  global.WCSUI={icon,dialog,popover,enhance,destroy,buttonBusy,runButton,closePopover:()=>activePopover?.close('close'),hasPopup:()=>!!activePopover||dialogs.length>0};
+  global.CreditUI={icon,dialog,popover,enhance,destroy,buttonBusy,runButton,closePopover:()=>activePopover?.close('close'),hasPopup:()=>!!activePopover||dialogs.length>0};
 })(typeof window!=='undefined'?window:globalThis);

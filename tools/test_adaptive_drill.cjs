@@ -2,7 +2,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSD
 const A=path.resolve(__dirname,'../attachments');
 function fixture(){
  const dom=new JSDOM('<main id="credit-hub"><a class="ch-skip"></a><button id="ch-download"></button><div id="ch-content"><section class="ch-card"><div class="ch-card-head"><h2>Selected population</h2></div><div id="test-chart">Original chart</div></section></div></main>',{url:'http://localhost/test',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,root=w.document.querySelector('main'),charts=[];
- w.ResizeObserver=class{observe(){}disconnect(){}};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.WCSUI={enhance(){},closePopover(){}};
+ w.ResizeObserver=class{observe(){}disconnect(){}};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.CreditUI={enhance(){},closePopover(){}};
  for(const file of ['credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js'])w.eval(fs.readFileSync(path.join(A,file),'utf8'));
  w.Highcharts={chart(el,options){const chart={renderTo:el,options,chartHeight:320,series:options.series.map(s=>({...s,data:s.data.map((p,i)=>({...p,options:p,color:options.colors?.[i%options.colors.length]||'#255BE3'}))})),update(){},reflow(){},redraw(){},destroy(){this.destroyed=true;}};charts.push(chart);return chart;}};
  const esc=v=>String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');

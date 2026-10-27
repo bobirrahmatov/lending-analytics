@@ -1,6 +1,6 @@
 {
   "is_demo": true,
-  "note": "Proposed ETL extension example. Base Access Documents export does not emit entity keys. Not included in release/.",
+  "note": "Proposed ETL extension example. The supplied general-reference Documents row has no entity keys. Not included in release/.",
   "row": {
     "document_id": "ILLUSTRATIVE-DOC-001",
     "category": "COVENANTS",

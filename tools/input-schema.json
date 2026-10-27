@@ -148,13 +148,13 @@
       "field": "description",
       "type": "text",
       "required": false,
-      "definition": "Covenant or monitoring description; internal covenants excluded in Access."
+      "definition": "Covenant or monitoring description; internal covenants excluded during upstream preparation."
     },
     {
       "field": "remarks",
       "type": "text",
       "required": false,
-      "definition": "Source remarks; internal-prefixed covenant remarks excluded in Access."
+      "definition": "Source remarks; internal-prefixed covenant remarks excluded during upstream preparation."
     },
     {
       "field": "origination_unit",
@@ -366,7 +366,7 @@
       "field": "osuc",
       "type": "number",
       "required": true,
-      "definition": "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed in Access."
+      "definition": "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed during upstream preparation."
     },
     {
       "field": "unused_commitment",
@@ -432,7 +432,7 @@
       "field": "risk_category",
       "type": "text",
       "required": false,
-      "definition": "Original risk category; NAM Clearing/Notation/Settlement excluded upstream in Access."
+      "definition": "Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation."
     },
     {
       "field": "control_unit",
@@ -578,7 +578,7 @@
       "field": "event_type",
       "type": "text",
       "required": true,
-      "definition": "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED in Access."
+      "definition": "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation."
     }
   ],
   "Sources": [

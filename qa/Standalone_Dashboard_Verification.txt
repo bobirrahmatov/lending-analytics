@@ -1,0 +1,61 @@
+STANDALONE LENDING ANALYTICS — 27 OCTOBER 2026
+Release: 1.2.0
+
+Scope
+- Landing + 11 dashboards remain; Trends is a Portfolio compatibility route.
+- Each Confluence fragment loads one credit-style.css, credit-ui.js,
+  credit-loading-overlay.js and its matching page pair. No WCSpedia navbar,
+  application login, entitlement, approval or access-request page dependency.
+- Native Confluence permissions and authenticated same-origin attachment reads
+  remain authoritative. No space/page permission change was performed.
+- Dashboard-only controls/styles replace bundled portal sources. Native sidebar
+  decoration touches only the configured dashboard IDs and preserves handlers,
+  URLs, titles, dimensions and unrelated space links.
+- Microsoft Access/VBA modules, staging workbooks and their generators removed.
+  All six runtime XLSX inputs are unchanged; data grains, typed keys, dated join
+  validation and existing financial calculations remain unchanged.
+- Optional space file-drop guard is independent, uses no portal notifications,
+  performs no upload, and is not a dashboard startup dependency.
+
+Automated verification
+npm run build: PASS
+npm test: PASS — 40 local regression commands
+npm run package: PASS — three CRC-checked archives below 10,000,000 bytes;
+retired WCSpedia/Access artifacts absent from all three archive file lists.
+The suite includes all dashboard/expanded chart flows, real Highcharts/control
+lifecycle, filters, Reset/tab races, inline chart/table drills, export populations,
+search/sort/pagination, exact linkage, native sidebar scope, XLSX/JSON validation,
+attachment permission/timeout failures, immutable partitions and startup cleanup.
+
+New test_standalone_macros.cjs executes actual generated native macro scripts in
+order on a bare host without portal globals: landing's eleven native links, no
+financial landing fetch, dashboard dependency order, one startup overlay, all
+six actual workbook loads, table row drill/Back, search/Reset and no refetch.
+Native unrelated content and controls remain unchanged. Geometry is deliberately
+covered by browser and existing real-chart tests, not claimed from this fixture.
+
+Browser verification (local Chrome/IAB, 1280px viewport)
+- Portfolio renders the 5/4/3 first chart row, complete controls and tables.
+- Region/APAC filter applies and displays its tag; Reset restores full totals.
+- Expanded expiry analysis opens one large dialog with two top charts, summary,
+  KPIs, supporting table, primary Download data and circular X close.
+- Search FA100003 returns its supporting row. Selecting it drills inside that
+  same dialog; Back to table restores it. Closing returns to the dashboard.
+- No page-level horizontal overflow in checked Portfolio/expanded drill views.
+- Native-sidebar fixture renders twelve unique dashboard icons, expanded and
+  collapsed. An unrelated Space resources link retains its own markup.
+- Landing retains all eleven links and all four people-free images; one owned
+  stylesheet loads. The 375px fixture stacks cards and links without clipping.
+
+Evidence
+Standalone-Dashboard-Portfolio.png
+Standalone-Dashboard-Expanded.png
+native-sidebar-fixture.html
+landing-cards-responsive.html?width=375
+
+Deployment limits
+These are local checks and simulated native-host fixtures. Live Confluence
+installation, host caching, network transfer and page/attachment permissions
+were not exercised. This work does not establish a five-second live Excel load
+or a zero-bug guarantee. Historical QA notes describe their own builds; use
+Lending_Analytics_Deployment.txt for current installation instructions.

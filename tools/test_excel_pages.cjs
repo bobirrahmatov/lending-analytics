@@ -1,7 +1,7 @@
 /* Native attachment XLSX integration across the 11 dashboards. No live upload. */
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 const P=path.resolve(__dirname,'..'),A=path.join(P,'attachments'),D=path.join(P,'excel/runtime'),XLSX=require(path.join(A,'xlsx.full.min.js'));
-const files=['wcspedia-ui.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-excel.js','credit-data-cache.js','credit-dashboard.js'];
+const files=['credit-ui.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-excel.js','credit-data-cache.js','credit-dashboard.js'];
 const scripts=files.map(file=>fs.readFileSync(path.join(A,file),'utf8'));
 const published=JSON.parse(fs.readFileSync(path.join(D,'credit-manifest.json'),'utf8'));
 const sleep=()=>new Promise(resolve=>setTimeout(resolve,30));

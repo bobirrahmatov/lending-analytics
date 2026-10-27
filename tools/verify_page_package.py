@@ -3,12 +3,14 @@ from pathlib import Path
 import re,subprocess,tempfile
 P=Path(__file__).resolve().parents[1];A=P/'attachments'
 fragments=list((P/'confluence-pages').glob('*.html'));assert len(fragments)==13
-assert len([f for f in A.glob('credit-*Page.js') if f.name!='credit-dashboardHTMLPage.js'])==26
+assert len([f for f in A.glob('credit-*Page.js')])==26
 for retired in ['pages/sources.html','confluence-pages/sources.html','attachments/credit-sourcesPage.js','attachments/credit-sourcesHTMLPage.js']:
  assert not (P/retired).exists(),retired
 assert 'sourceView' not in (A/'credit-dashboard.js').read_text()
 for f in fragments:
- s=f.read_text();assert not re.search(r'<(?:html|head|body|header|aside|nav)\b|rel="stylesheet"',s)
+ s=f.read_text();assert not re.search(r'<(?:html|head|body|header|aside|nav)\b',s)
+ assert s.count('rel="stylesheet"')==1 and 'credit-style.css' in s and 'credit-ui.js' in s
+ assert 'WCSpedia' not in s and 'WCSHeaderLoading' not in s and 'navBar' not in s
  assert "mode:'production'" in s and 'credit-demo-data' not in s
  assert '?v=' not in s and 'REPLACE_WITH_' not in s
  assert '/attachments/3845862527/' in s
@@ -18,9 +20,10 @@ for f in fragments:
    temp.write(inline);temp.flush();subprocess.run(['node','--check',temp.name],check=True,capture_output=True)
 for f in A.glob('credit-*Page.js'):subprocess.run(['node','--check',str(f)],check=True,capture_output=True)
 for f in (P/'pages').glob('*.html'):
- s=f.read_text();assert s.count('rel="stylesheet"')==1;assert 'wcspedia-style.css' in s
-css=(A/'wcspedia-style.css').read_text();assert '@font-face' not in css
-assert '.wcs-ui-popover' in css and '.wcs-reader-navigation' in css and '#credit-hub' in css
+ s=f.read_text();assert s.count('rel="stylesheet"')==1;assert 'credit-style.css' in s
+css=(A/'credit-style.css').read_text();assert '@font-face' not in css
+assert '.credit-ui-popover' in css and '.credit-native-page-icon' in css and '#credit-hub' in css
+assert not re.search(r'wcspedia|wcs-|entitlement|article-editor|discussion',css,re.I)
 assert '.cw-side' not in css and '.cw-shell-frame' not in css
 adapter=(A/'credit-native-sidebar.js').read_text()
 assert 'fetch(' not in adapter and 'toggle.click()' not in adapter

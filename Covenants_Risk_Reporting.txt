@@ -24,8 +24,8 @@ Facility-level reporting
   relationship, facility and reporting cycle (or a source-native unique association key). Never deduplicate on covenant number.
 - OSUC comes from the prepared portfolio osuc measure, not total_os. PAL regional rules remain upstream.
 - Optional banker_name is supported in Monitoring and Portfolio. PAL-ETL exports Banker_Name from explicit
-  Banker Name / Banker_Name / Banker / Relationship Manager columns. Map it to banker_name in staging.
-  Underwriter is never substituted for banker. Re-run InstallCreditHub for the additive Access field migration.
+  Banker Name / Banker_Name / Banker / Relationship Manager columns. Map it to banker_name in the prepared workbook.
+  Underwriter is never substituted for banker. Preserve the explicit field in Monitoring.xlsx and Portfolio.xlsx.
 - The default preview is now a separately generated, explicitly synthetic aligned August 2026 scenario.
   ?covenants_source=local retains the original November 2024 example; ?covenants_source=workbook selects workbook examples.
   These original legacy examples do not have same-date portfolio matches. Production requires synchronized releases.
@@ -46,12 +46,12 @@ Daily variance contract
   This is an event-volume comparison, not a daily change or clearance rate.
 
 Retaining history without changing published data
-The original six-file release remains supported. The optional seventh dataset is covenant_history.
+The six shared runtime workbooks remain the default inputs. Retained covenant_history is optional.
 The browser validates schema/bundle identity, row counts, complete snapshot controls, source counts,
 unique date/key pairs and the full monitoring schema per snapshot. Invalid optional history disables
 comparison; it does not substitute zeros or stop the current dashboard.
 
-Run from the full package's tools directory, using validated releases from the existing ETL:
+Run from the full package's tools directory, using validated prepared JSON releases (this utility does not parse XLSX workbooks):
 
 python3 build_covenant_history.py \
   --current-manifest /path/current/credit-manifest.json \
@@ -69,7 +69,7 @@ The tool writes a NEW complete release.
 It refuses existing output directories, conflicting dates, mixed demo/live data, incorrect controls and >10MB files.
 It does not upload or schedule anything. Upload every file from the new release, then its manifest LAST using
 normal authorized Confluence publication. Never mix its new manifest with files from the older bundle.
-Live comparisons never estimate missing prior values. The separate default demo intentionally supplies synthetic current and prior files for comparison; no production JSON was changed. See All_Pages_Data_Handoff.txt for the optional Access prior-workbook route.
+Live comparisons never estimate missing prior values. The separate default demo intentionally supplies synthetic current and prior files for comparison; no production JSON was changed. See All_Pages_Data_Handoff.txt for the workbook and optional comparison-file contract.
 
 ETL fidelity
 PAL-ETL.html emits Report_Date and covenant dates in DD/MM/YYYY. That source contract is explicitly recognized.

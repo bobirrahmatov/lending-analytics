@@ -1,193 +1,167 @@
 (function(){
-const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDIT_CONFIG?.page!=="trends"){root.textContent='This page needs its matching dashboard settings and scripts.';window.WCSHeaderLoading?.claim(root)?.destroy();return;}
-/* Dashboard opt-in adapter, derived from canonical WCSpedia reader-sidebar.js.
- * Native page URLs and user collapse preferences are preserved.
- * Styling of Confluence's own sidebar. Never creates navigation,
- * moves tree controls, replaces collapse handlers or fetches a second tree. */
-(function (w,d) {
+const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDIT_CONFIG?.page!=="trends"){root.textContent='This page needs its matching dashboard settings and scripts.';return;}
+/* Dashboard icons on Confluence's existing navigation. Native URLs, titles,
+ * tree controls, visibility, dimensions and collapse preferences stay native. */
+(function (w, d) {
   'use strict';
-  if(w.WCSCreditSidebar)return;
-  var defaultedHosts=new WeakSet();
-  var host=null,observer=null,resizeObserver=null,queued=false,destroyed=false,revealOwned=false;
-  var compactPaths=new Set(),compactLinks=new Set(),tooltip=null,tooltipLink=null,previousDescription=null;
-  var links=new Map(),checks=new Map(),pending=[],running=0,generation=0,controllers=new Set(),leafMarkers=new Set(),treeRows=new Set(),collections=new Set();
-  function config(){
-    var menus=Object.fromEntries(Object.entries(w.CREDIT_CONFIG?.pageIds||{}).filter(function(entry){return /^[1-9]\d*$/.test(String(entry[1]));}));
-    return {menus:menus,excluded:Object.values(menus).map(String)};
-  }
-  function pageId(href){
-    try{var u=new URL(href,w.location.href);if(u.origin!==w.location.origin||u.hash)return null;
-      if(/\/pages\/viewpage\.action$/.test(u.pathname))return /^[1-9]\d*$/.test(u.searchParams.get('pageId')||'')?u.searchParams.get('pageId'):null;
-      return (u.pathname.match(/\/spaces\/[^/]+\/pages\/([1-9]\d*)(?:\/|$)/)||[])[1]||null;
-    }catch(_){return null;}
-  }
-  // One stable identity per page, reused in expanded rows and compact tooltips.
-  var iconPaths={
-    lendingAnalytics:'M3 21h18 M4 9l8-6 8 6H4z M6 11v7 M12 11v7 M18 11v7',
-    portfolio:'M3 8h18v12H3z M8 8V4h8v4 M3 12h18 M10 12v3h4v-3',
-    trends:'M3 3v18h18 M6 15l4-5 4 2 6-7 M16 5h4v4',
-    deepdive:'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14 M15 15l6 6 M7 11V8 M10 11V6 M13 11V9',
-    overview:'M4 4h16v16H4z M7 8h2 M12 8h5 M7 12h2 M12 12h5 M7 16h2 M12 16h5',
-    workload:'M9 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6 M3 20v-3a6 6 0 0 1 12 0v3 M17 4a3 3 0 0 1 0 6 M18 14a5 5 0 0 1 3 4v2',
-    COVENANTS:'M5 3h10l4 4v14H5z M14 3v5h5 M8 13l2 2 5-5 M8 18h8',
-    CA:'M12 3l8 4v5c0 5-8 9-8 9S4 17 4 12V7z M8 12l3 3 5-6',
-    FACILITY:'M4 21V4h10v17 M14 10h6v11 M2 21h20 M7 8h4 M7 12h4 M7 16h4 M17 14h1 M17 18h1',
-    CCM:'M3 12h4l3-7 4 14 3-7h4 M4 5V3h16v2 M4 19v2h16v-2',
-    INSURANCE:'M3 12a9 9 0 0 1 18 0H3z M12 3v16a2 2 0 0 0 4 0 M12 4c-3 2-4 5-4 8 M12 4c3 2 4 5 4 8',
-    APPRAISALS:'M3 21h18 M5 18l7-14 7 14H5z M9 14h6 M12 10v4',
-    activity:'M4 7h13l-3-3 M20 17H7l3 3 M4 7v6 M20 17v-6 M9 10l3 3-3 3',
-    insights:'M4 4h16v16H4z M8 8h8 M8 12h8 M8 16h4',
-    'credit-approval-control':'M12 3l8 4v5c0 5-8 9-8 9S4 17 4 12V7z M8 12l3 3 5-6',
-    'credit-information-management':'M3 5h18v14H3z M7 9h10 M7 13h4',
-    'credit-management-reporting':'M4 3v18h17 M8 17v-5 M13 17V7 M18 17V4',
-    'deal-closing':'M8 5V3h8v2 M5 5h14v16H5z M8 13l3 3 5-6',
-    'documentation-pledging':'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6',
-    'emea-credit-admin':'M3 12h18 M12 3c-5 5-5 13 0 18 M12 3c5 5 5 13 0 18 M21 12a9 9 0 1 1-18 0 9 9 0 1 1 18 0',
-    'loan-management':'M3 9l9-6 9 6z M5 11v8 M10 11v8 M14 11v8 M19 11v8 M3 21h18',
-    'regional-operating-manuals':'M12 5C8 2 3 4 3 4v16s5-2 9 1c4-3 9-1 9-1V4s-5-2-9 1v16',
-    mine:'M3 7h18v14H3z M8 7V3h8v4 M3 12h18 M10 12v3h4v-3',
-    review:'M12 8a3 3 0 1 1-6 0 3 3 0 1 1 6 0 M3 21v-3a6 6 0 0 1 9-5 M15 17l2 2 4-5',
-    saved:'M6 3h12v18l-6-4-6 4z',
-    entitlements:'M5 10h14v11H5z M8 10V7a4 4 0 0 1 8 0v3 M12 14v3',
-    working:'M3 7V5h6l2 2h10v13H3z M9 13h6 M12 10v6',
-    home:'M3 11l9-8 9 8 M6 9v12h12V9 M10 21v-7h4v7'
+  if (w.CreditSidebar) return;
+  var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false;
+  var links = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
+  var iconPaths = {
+    lendingAnalytics: 'M3 21h18 M4 9l8-6 8 6H4z M6 11v7 M12 11v7 M18 11v7',
+    portfolio: 'M3 8h18v12H3z M8 8V4h8v4 M3 12h18 M10 12v3h4v-3',
+    trends: 'M3 3v18h18 M6 15l4-5 4 2 6-7 M16 5h4v4',
+    deepdive: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14 M15 15l6 6 M7 11V8 M10 11V6 M13 11V9',
+    overview: 'M4 4h16v16H4z M7 8h2 M12 8h5 M7 12h2 M12 12h5 M7 16h2 M12 16h5',
+    workload: 'M9 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6 M3 20v-3a6 6 0 0 1 12 0v3 M17 4a3 3 0 0 1 0 6 M18 14a5 5 0 0 1 3 4v2',
+    COVENANTS: 'M5 3h10l4 4v14H5z M14 3v5h5 M8 13l2 2 5-5 M8 18h8',
+    CA: 'M12 3l8 4v5c0 5-8 9-8 9S4 17 4 12V7z M8 12l3 3 5-6',
+    FACILITY: 'M4 21V4h10v17 M14 10h6v11 M2 21h20 M7 8h4 M7 12h4 M7 16h4 M17 14h1 M17 18h1',
+    CCM: 'M3 12h4l3-7 4 14 3-7h4 M4 5V3h16v2 M4 19v2h16v-2',
+    INSURANCE: 'M3 12a9 9 0 0 1 18 0H3z M12 3v16a2 2 0 0 0 4 0 M12 4c-3 2-4 5-4 8 M12 4c3 2 4 5 4 8',
+    APPRAISALS: 'M3 21h18 M5 18l7-14 7 14H5z M9 14h6 M12 10v4',
+    activity: 'M4 7h13l-3-3 M20 17H7l3 3 M4 7v6 M20 17v-6 M9 10l3 3-3 3'
   };
-  function nativeId(a){
-    var id=pageId(a.getAttribute('href'));if(id)return id;
-    try{var u=new URL(a.getAttribute('href'),w.location.href);if(u.origin!==w.location.origin||u.hash||!u.pathname.includes('/display/'))return null;
-      return (a.closest('.plugin_pagetree_children_span')?.id.match(/^childrenspan([1-9]\d*)-/)||[])[1]||null;
-    }catch(_){return null;}
+  function configuredPages() {
+    var pages = w.CREDIT_CONFIG?.pageIds || w.CREDIT_PAGE_IDS || {}, result = new Map();
+    Object.keys(iconPaths).forEach(function (key) {
+      var id = String(pages[key] || '');
+      // The Portfolio identity wins when the legacy Trends route shares its ID.
+      if (/^[1-9]\d*$/.test(id) && !result.has(id)) result.set(id, key);
+    });
+    return result;
   }
-  function cleanTitle(a,id,record){
-    // Only the generated suffix for this exact page ID; never change stored titles.
-    var walker=d.createTreeWalker(a,4),nodes=[],node;
-    while((node=walker.nextNode()))nodes.push(node);
-    var suffix=new RegExp('\\s*[·]\\s*WCS\\s+'+id+'\\s*$');
-    for(var i=nodes.length-1;i>=0;i--){node=nodes[i];if(!node.nodeValue.trim())continue;
-      var clean=node.nodeValue.replace(suffix,'');if(clean!==node.nodeValue&&clean.trim()){
-        record.title={node:node,original:node.nodeValue,clean:clean};node.nodeValue=clean;
-      }break;
+  function pageId(a) {
+    try {
+      var url = new URL(a.getAttribute('href'), w.location.href);
+      if (url.origin !== w.location.origin || url.hash) return null;
+      if (/\/pages\/viewpage\.action$/.test(url.pathname)) {
+        var id = url.searchParams.get('pageId') || '';
+        return /^[1-9]\d*$/.test(id) ? id : null;
+      }
+      var pathId = (url.pathname.match(/\/spaces\/[^/]+\/pages\/([1-9]\d*)(?:\/|$)/) || [])[1];
+      if (pathId) return pathId;
+      if (url.pathname.includes('/display/')) return (a.closest('.plugin_pagetree_children_span')?.id.match(/^childrenspan([1-9]\d*)-/) || [])[1] || null;
+    } catch (_) {}
+    return null;
+  }
+  function restoreAttribute(element, name, value) {
+    if (value === null) element.removeAttribute(name); else element.setAttribute(name, value);
+  }
+  function hideTooltip() {
+    if (tooltipLink) restoreAttribute(tooltipLink, 'aria-describedby', previousDescription);
+    tooltip?.remove(); tooltip = null; tooltipLink = null; previousDescription = null;
+  }
+  function restoreLink(a, record) {
+    if (tooltipLink === a) hideTooltip();
+    record.icon.remove();
+    if (record.label.parentNode === a) record.label.replaceWith(...Array.from(record.label.childNodes));
+    if (record.ariaLabel === null && a.getAttribute('aria-label') === record.generatedLabel) a.removeAttribute('aria-label');
+    restoreAttribute(a, 'data-credit-native-page-link', record.pageMarker);
+    restoreAttribute(a, 'data-credit-native-current', record.currentMarker);
+    links.delete(a);
+  }
+  function enhance() {
+    var pages = configuredPages();
+    links.forEach(function (record, a) {
+      if (!host.contains(a) || pages.get(pageId(a)) !== record.key || record.icon.parentNode !== a || record.label.parentNode !== a) restoreLink(a, record);
+    });
+    host.querySelectorAll('a[href]').forEach(function (a) {
+      if (a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') || a.closest('.acs-side-bar-footer')) return;
+      var key = pages.get(pageId(a));
+      if (!key) return;
+      if (!links.has(a)) {
+        var icon = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 24 24'); icon.setAttribute('width', '16'); icon.setAttribute('height', '16');
+        icon.setAttribute('aria-hidden', 'true'); icon.setAttribute('focusable', 'false'); icon.setAttribute('class', 'credit-native-page-icon');
+        icon.setAttribute('data-credit-native-page-icon', key);
+        var path = d.createElementNS(icon.namespaceURI, 'path'); path.setAttribute('d', iconPaths[key]); icon.append(path);
+        var label = d.createElement('span'); label.className = 'credit-native-page-label';
+        var record = {key: key, icon: icon, label: label, ariaLabel: a.getAttribute('aria-label'), generatedLabel: a.textContent.trim(), pageMarker: a.getAttribute('data-credit-native-page-link'), currentMarker: a.getAttribute('data-credit-native-current')};
+        while (a.firstChild) label.append(a.firstChild);
+        a.append(label); a.prepend(icon); links.set(a, record);
+        a.setAttribute('data-credit-native-page-link', key);
+        if (record.ariaLabel === null) a.setAttribute('aria-label', record.generatedLabel);
+      }
+      var row = a.closest('li');
+      var selected = a.matches('[aria-current="page"]') || !!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current') || !!row && row.matches('.plugin_pagetree_current');
+      if (a.getAttribute('data-credit-native-current') !== String(selected)) a.setAttribute('data-credit-native-current', String(selected));
+    });
+  }
+  function showTooltip(event) {
+    var a = event.target.closest?.('a[data-credit-native-page-link]');
+    if (!host || host.getAttribute('data-credit-native-compact') !== 'true' || !a || !links.has(a)) return;
+    if (tooltipLink === a) return;
+    hideTooltip();
+    tooltip = d.createElement('div'); tooltip.id = 'credit-native-sidebar-tooltip'; tooltip.className = 'credit-native-sidebar-tooltip';
+    tooltip.setAttribute('role', 'tooltip'); tooltip.textContent = a.getAttribute('aria-label') || a.textContent.trim(); d.body.append(tooltip);
+    tooltipLink = a; previousDescription = a.getAttribute('aria-describedby');
+    a.setAttribute('aria-describedby', [previousDescription, tooltip.id].filter(Boolean).join(' '));
+    var box = a.getBoundingClientRect(), tip = tooltip.getBoundingClientRect();
+    tooltip.style.left = Math.max(8, Math.min(box.right + 12, w.innerWidth - tip.width - 8)) + 'px';
+    tooltip.style.top = Math.max(8, Math.min(box.top + (box.height - tip.height) / 2, w.innerHeight - tip.height - 8)) + 'px';
+  }
+  function leaveTooltip(event) { if (tooltipLink && !tooltipLink.contains(event.relatedTarget) && !tooltip?.contains(event.relatedTarget)) hideTooltip(); }
+  function escapeTooltip(event) { if (event.key === 'Escape') hideTooltip(); }
+  function compactState() {
+    if (!host) return;
+    var width = host.getBoundingClientRect().width;
+    var compact = host.matches('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || !!host.closest('.ia-splitter-left-collapsed') || (width > 0 && width <= 96);
+    if (host.getAttribute('data-credit-native-compact') !== String(compact)) { host.setAttribute('data-credit-native-compact', String(compact)); hideTooltip(); }
+  }
+  function reset() {
+    hideTooltip(); resizeObserver?.disconnect(); resizeObserver = null;
+    if (host) {
+      host.removeEventListener('mouseover', showTooltip); host.removeEventListener('focusin', showTooltip);
+      host.removeEventListener('mouseout', leaveTooltip); host.removeEventListener('focusout', leaveTooltip);
+      host.removeAttribute('data-credit-native-compact');
+      if (ownsHostClass) host.classList.remove('credit-native-navigation');
     }
+    links.forEach(function (record, a) { restoreLink(a, record); });
+    host = null; ownsHostClass = false;
   }
-  function markLeaves(){
-    host.querySelectorAll('.plugin_pagetree_childtoggle_container').forEach(function(marker){
-      var leaf=!marker.querySelector('a,button,[role=button],[data-type=toggle]');
-      marker.classList.toggle('wcs-native-leaf-marker',leaf);if(leaf)leafMarkers.add(marker);else leafMarkers.delete(marker);
-    });
+  function refresh() {
+    if (destroyed || !d.body) return;
+    if (!d.getElementById('credit-hub') || d.querySelector('#editpageform,#content-editor,body.contenteditor')) { reset(); return; }
+    var native = d.querySelector('.ia-fixed-sidebar,.acs-side-bar,#sidebar');
+    if (!native) { reset(); return; }
+    if (host !== native) {
+      reset(); host = native; ownsHostClass = !host.classList.contains('credit-native-navigation'); host.classList.add('credit-native-navigation');
+      host.addEventListener('mouseover', showTooltip); host.addEventListener('focusin', showTooltip);
+      host.addEventListener('mouseout', leaveTooltip); host.addEventListener('focusout', leaveTooltip);
+      if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); }
+    }
+    enhance(); compactState();
   }
-  function enhance(){
-    var c=config(),epoch=generation;markLeaves();
-    host.querySelectorAll('.plugin_pagetree_childtoggle_container').forEach(function(toggle){
-      var row=toggle.parentElement;
-      if(Array.from(row.children).some(function(child){return child.classList.contains('plugin_pagetree_children_content');})){
-        row.classList.add('wcs-native-tree-row');treeRows.add(row);
-      }
-    });
-    host.querySelectorAll('a[href]').forEach(function(a){
-      if(links.has(a)||a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]')||a.closest('.acs-side-bar-footer'))return;
-      var original=a.getAttribute('href'),id=nativeId(a);if(!id)return;
-      var icon=d.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('width','16');icon.setAttribute('height','16');icon.setAttribute('aria-hidden','true');icon.setAttribute('focusable','false');icon.setAttribute('class','wcs-native-page-icon');
-      var path=d.createElementNS(icon.namespaceURI,'path');var menu=c&&Object.keys(c.menus).find(function(key){return String(c.menus[key])===id;});if(menu)icon.setAttribute('data-credit-page-icon',menu);path.setAttribute('d',iconPaths[menu]||(c&&c.excluded.includes(id)?iconPaths.working:iconPaths['documentation-pledging']));icon.append(path);
-      var label=d.createElement('span');label.className='wcs-native-page-label';while(a.firstChild)label.append(a.firstChild);a.append(label);a.prepend(icon);
-      var record={original:original,rewritten:null,icon:icon,label:label,ariaLabel:a.getAttribute('aria-label')};links.set(a,record);a.setAttribute('data-wcs-native-page-link','');
-      if(menu==='insights'||Object.prototype.hasOwnProperty.call(c?.menus||{},menu)&&!['home','mine','review','saved','entitlements','working'].includes(menu)){
-        var row=a.closest('li');if(row){row.classList.add('wcs-native-collection');collections.add(row);}
-        a.setAttribute('data-wcs-compact-link','');compactLinks.add(a);
-        for(var parent=a.parentElement;parent&&parent!==host;parent=parent.parentElement){parent.classList.add('wcs-native-compact-path');compactPaths.add(parent);}
-        if(menu==='insights'){
-          var walker=d.createTreeWalker(a,4),node;while((node=walker.nextNode()))if(node.nodeValue.trim()==='Blogs'){record.title={node:node,original:node.nodeValue,clean:node.nodeValue.replace('Blogs','Insights')};node.nodeValue=record.title.clean;break;}
+  function schedule() { if (!queued && !destroyed) { queued = true; Promise.resolve().then(function () { queued = false; refresh(); }); } }
+  function start() {
+    refresh(); if (observer || !d.body || destroyed) return;
+    observer = new w.MutationObserver(function (changes) {
+      if (changes.some(function (change) {
+        if (change.type === 'attributes') {
+          if (change.attributeName === 'class' && (change.oldValue || '') === (change.target.getAttribute('class') || '')) return false;
+          return !!host && (host.contains(change.target) || change.target.contains(host));
         }
-      }
-      if(!c||!c.excluded.includes(id))cleanTitle(a,id,record);
-      if(record.ariaLabel===null)a.setAttribute('aria-label',label.textContent.trim());
-      if(c&&c.excluded.includes(id))return;if(!c)return;
-
+        if (host?.contains(change.target)) return true;
+        return Array.from(change.addedNodes).concat(Array.from(change.removedNodes)).some(function (node) {
+          return node.nodeType === 1 && (node === host || node.contains(host) || node.matches('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar') || node.querySelector('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar'));
+        });
+      })) schedule();
     });
-    compactLinks.forEach(function(a){
-      var row=a.closest('li'),selected=a.matches('[aria-current="page"]')||!!row&&row.matches('.plugin_pagetree_current')||!!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current');
-      if(a.getAttribute('data-wcs-current-collection')!==String(selected))a.setAttribute('data-wcs-current-collection',String(selected));
-    });
+    observer.observe(d.body, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'aria-current', 'href']});
   }
-  function hideTooltip(){
-    if(tooltipLink){if(previousDescription===null)tooltipLink.removeAttribute('aria-describedby');else tooltipLink.setAttribute('aria-describedby',previousDescription);}
-    tooltip?.remove();tooltip=null;tooltipLink=null;previousDescription=null;
+  function destroy() {
+    destroyed = true; observer?.disconnect(); observer = null; reset();
+    d.removeEventListener('DOMContentLoaded', start); w.removeEventListener('hashchange', schedule); w.removeEventListener('resize', compactState);
+    w.removeEventListener('scroll', hideTooltip, true); d.removeEventListener('keydown', escapeTooltip);
   }
-  function showTooltip(event){
-    var a=event.target.closest?.('a[data-wcs-compact-link]');
-    if(!host||host.getAttribute('data-wcs-native-compact')!=='true'||!a||!host.contains(a))return;
-    if(tooltipLink===a)return;hideTooltip();
-    tooltip=d.createElement('div');tooltip.id='wcs-native-sidebar-tooltip';tooltip.className='wcs-native-sidebar-tooltip';tooltip.setAttribute('role','tooltip');tooltip.textContent=a.getAttribute('aria-label')||a.textContent.trim();d.body.append(tooltip);
-    tooltipLink=a;previousDescription=a.getAttribute('aria-describedby');a.setAttribute('aria-describedby',[previousDescription,tooltip.id].filter(Boolean).join(' '));
-    var box=a.getBoundingClientRect(),tip=tooltip.getBoundingClientRect();
-    tooltip.style.left=Math.max(8,Math.min(box.right+12,w.innerWidth-tip.width-8))+'px';
-    tooltip.style.top=Math.max(8,Math.min(box.top+(box.height-tip.height)/2,w.innerHeight-tip.height-8))+'px';
-  }
-  function leaveTooltip(event){if(tooltipLink&&!tooltipLink.contains(event.relatedTarget)&&!tooltip?.contains(event.relatedTarget))hideTooltip();}
-  function escapeTooltip(event){if(event.key==='Escape')hideTooltip();}
-  function compactState(){
-    if(!host)return;
-    var width=host.getBoundingClientRect().width;
-    var compact=host.matches('.ia-splitter-left-collapsed,.acs-side-bar-collapsed')||!!host.closest('.ia-splitter-left-collapsed')||(width>0&&width<=96);
-    // Only retain existing collection links. Never create a replacement rail.
-    compact=compact&&Array.from(compactLinks).some(function(a){return host.contains(a);});
-    if(host.getAttribute('data-wcs-native-compact')!==String(compact)){host.setAttribute('data-wcs-native-compact',String(compact));hideTooltip();}
-  }
-  function attachHost(){
-    host.addEventListener('mouseover',showTooltip);host.addEventListener('focusin',showTooltip);host.addEventListener('mouseout',leaveTooltip);host.addEventListener('focusout',leaveTooltip);
-    if(w.ResizeObserver){resizeObserver=new w.ResizeObserver(compactState);resizeObserver.observe(host);}
-  }
-  function active(){
-    return !!d.getElementById('credit-hub')&&!d.querySelector('#editpageform,#content-editor,body.contenteditor');
-  }
-  function reset(){
-    hideTooltip();resizeObserver?.disconnect();resizeObserver=null;
-    if(host){host.removeEventListener('mouseover',showTooltip);host.removeEventListener('focusin',showTooltip);host.removeEventListener('mouseout',leaveTooltip);host.removeEventListener('focusout',leaveTooltip);host.removeAttribute('data-wcs-native-compact');}
-    compactPaths.forEach(function(el){el.classList.remove('wcs-native-compact-path');});compactPaths.clear();compactLinks.forEach(function(a){a.removeAttribute('data-wcs-compact-link');a.removeAttribute('data-wcs-current-collection');});compactLinks.clear();
-    generation++;controllers.forEach(function(c){c.abort();});checks.clear();
-    links.forEach(function(record,a){if(record.rewritten&&a.getAttribute('href')===record.rewritten)a.setAttribute('href',record.original);if(record.title&&record.title.node.nodeValue===record.title.clean)record.title.node.nodeValue=record.title.original;record.icon.remove();if(record.label.parentNode===a)record.label.replaceWith(...Array.from(record.label.childNodes));if(record.ariaLabel===null)a.removeAttribute('aria-label');else a.setAttribute('aria-label',record.ariaLabel);a.removeAttribute('data-wcs-native-page-link');});links.clear();
-    leafMarkers.forEach(function(marker){marker.classList.remove('wcs-native-leaf-marker');});leafMarkers.clear();
-    treeRows.forEach(function(row){row.classList.remove('wcs-native-tree-row');});treeRows.clear();collections.forEach(function(row){row.classList.remove('wcs-native-collection');});collections.clear();
-    if(host)host.classList.remove('wcs-reader-navigation');
-    host=null;d.body?.removeAttribute('data-wcs-reader-nav');
-    if(revealOwned){revealOwned=false;d.body.classList.add('citi-hide-sidebar');}
-  }
-  function refresh(){
-    if(destroyed||!d.body)return;
-    if(!active()){reset();return;}
-    var native=d.querySelector('.ia-fixed-sidebar,.acs-side-bar,#sidebar');
-    if(!native){reset();return;} // No native tree means no sidebar; never synthesize one.
-    if(host!==native){if(host)reset();host=native;attachHost();}
-    host.classList.add('wcs-reader-navigation');
-    d.body.setAttribute('data-wcs-reader-nav','native');
-    // Let the theme restore its own sidebar/content layout. Native collapsed
-    // classes and preferences remain entirely under Confluence's control.
-    if(d.body.classList.contains('citi-hide-sidebar')){revealOwned=true;d.body.classList.remove('citi-hide-sidebar');}
-    enhance();compactState();
-  }
-  function schedule(){if(!queued){queued=true;Promise.resolve().then(function(){queued=false;refresh();});}}
-  function start(){
-    refresh();if(observer||!d.body)return;
-    observer=new MutationObserver(function(changes){
-      if(changes.some(function(c){
-        if(c.type==='attributes'){
-          if(c.attributeName==='class'&&(c.oldValue||'')===(c.target.getAttribute('class')||''))return false;
-          if(c.attributeName==='data-wcs-active-style-flags')return c.target===d.body;
-          if(host&&host.contains(c.target)&&c.attributeName==='aria-current')return true;
-          if(host&&host.contains(c.target)&&c.attributeName==='class'&&((c.oldValue||'').includes('plugin_pagetree_current')||c.target.classList.contains('plugin_pagetree_current')))return true;
-          if(c.attributeName==='class'&&host&&(c.target===d.body||c.target===host||c.target.contains(host))){
-            var old=(c.oldValue||'').replace(/wcs-reader-navigation/g,'').trim(),next=(c.target.getAttribute('class')||'').replace(/wcs-reader-navigation/g,'').trim();return old!==next;
-          }return false;
-        }
-        return Array.from(c.addedNodes).concat(Array.from(c.removedNodes)).some(function(n){return n.nodeType===1;});
-      }))schedule();
-    });
-    observer.observe(d.body,{childList:true,subtree:true,attributes:true,attributeOldValue:true,attributeFilter:['data-wcs-active-style-flags','class','aria-current']});
-  }
-  function destroy(){destroyed=true;observer?.disconnect();observer=null;reset();d.removeEventListener('DOMContentLoaded',start);w.removeEventListener('hashchange',schedule);w.removeEventListener('resize',compactState);w.removeEventListener('scroll',hideTooltip,true);d.removeEventListener('keydown',escapeTooltip);}
-  w.WCSCreditSidebar={refresh:refresh,destroy:destroy,icon:function(key){return iconPaths[key]?'<svg class="la-page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="'+iconPaths[key]+'"/></svg>':'';}};
-  d.addEventListener('DOMContentLoaded',start);w.addEventListener('hashchange',schedule);w.addEventListener('resize',compactState);w.addEventListener('scroll',hideTooltip,true);d.addEventListener('keydown',escapeTooltip);
-  if(d.body)start();
-})(window,document);
+  w.CreditSidebar = {refresh: refresh, destroy: destroy, icon: function (key) {
+    return iconPaths[key] ? '<svg class="la-page-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="' + iconPaths[key] + '"/></svg>' : '';
+  }};
+  d.addEventListener('DOMContentLoaded', start); w.addEventListener('hashchange', schedule); w.addEventListener('resize', compactState);
+  w.addEventListener('scroll', hideTooltip, true); d.addEventListener('keydown', escapeTooltip);
+  if (d.body) start();
+})(window, document);
 
 ;
 /* Prepared workbook adapter. Calculation and joining remain in the canonical
@@ -335,26 +309,26 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
 })(window);
 
 ;
-/* Shared WCSpedia controls; only presentation preferences are persisted. */
+/* Shared dashboard controls; only presentation preferences are persisted. */
 (function(global){'use strict';
 const paths={grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',chart:'<path d="M4 20h17M7 16V9m6 7V4m6 12v-5"/>',trend:'<path d="m3 17 6-6 4 3 8-10M15 4h6v6"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',document:'<path d="M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h6"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 6"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18M8 15h3"/>',shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/>',building:'<path d="M4 21V5h11v16M15 11h5v10M8 9h3M8 13h3M8 17h3M2 21h20"/>',activity:'<path d="M2 12h5l3-8 4 16 3-8h5"/>',check:'<path d="m5 12 4 4L19 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',panel:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',filter:'<path d="M3 6h18M6 12h12M9 18h6"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',wallet:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M16 11h5v5h-5zM3 8h18"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>'};
-const icon=name=>name==='close'&&global.WCSUI?.icon?global.WCSUI.icon('close'):'<svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.grid)+'</svg>';
+const icon=name=>name==='close'&&global.CreditUI?.icon?global.CreditUI.icon('close'):'<svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.grid)+'</svg>';
 // Shared inline SVG tiles for dashboard and expanded-analysis cards.
 global.CreditIcons={icon,metric:(name,index)=>'<span class="cw-metric-icon cw-metric-'+index%4+'">'+icon(name)+'</span>'};
 // Native top-layer analysis shell. Panels remain under the dashboard root so
 // scoped styles, delegated controls and record exports keep the same context.
 global.CreditAnalysisOverlay=function({root,panel,title,onClose}){
- const dialog=document.createElement('dialog');dialog.className='wcs-ui-dialog ca-overlay';
+ const dialog=document.createElement('dialog');dialog.className='credit-ui-dialog ca-overlay';
  dialog.setAttribute('aria-label',title||'Chart analysis');
  const bar=document.createElement('div');bar.className='ca-overlay-bar';
  const label=document.createElement('span');label.className='ca-overlay-label';label.textContent='Expanded view';
  const actions=document.createElement('div');actions.className='ca-overlay-actions';
  const download=document.createElement('button');download.type='button';download.className='ch-btn cw-primary ca-overlay-download';download.textContent='Download data';
- const close=document.createElement('button');close.type='button';close.className='ch-btn ca-overlay-close wcs-ui-close';close.setAttribute('aria-label','Close analysis');close.innerHTML=icon('close');
+ const close=document.createElement('button');close.type='button';close.className='ch-btn ca-overlay-close credit-ui-close';close.setAttribute('aria-label','Close analysis');close.innerHTML=icon('close');
  const body=document.createElement('div');body.className='ca-overlay-body';
  actions.append(download,close);bar.append(label,actions);body.append(panel);dialog.append(bar,body);root.append(dialog);
  const doc=document.documentElement,overflow=doc.style.overflow,scroll=global.scrollY;
- global.WCSUI?.closePopover();
+ global.CreditUI?.closePopover();
  // The fallback retains readable content in test/legacy DOMs; supported browsers
  // use showModal to cover host navigation and make the background inert.
  if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
@@ -366,7 +340,7 @@ global.CreditAnalysisOverlay=function({root,panel,title,onClose}){
  dialog.addEventListener('cancel',event=>{event.preventDefault();onClose();});
  dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)onClose();});
  let removed=false;
- return {dialog,body,dispose(){if(removed)return;removed=true;observer.disconnect();global.WCSUI?.closePopover();if(typeof dialog.close==='function')dialog.close();dialog.remove();doc.style.overflow=overflow;global.scrollTo({top:scroll,behavior:'instant'});}};
+ return {dialog,body,dispose(){if(removed)return;removed=true;observer.disconnect();global.CreditUI?.closePopover();if(typeof dialog.close==='function')dialog.close();dialog.remove();doc.style.overflow=overflow;global.scrollTo({top:scroll,behavior:'instant'});}};
 };
 // One accessible side-label treatment for every Highcharts pie in the dashboard.
 global.CreditDonut=function(chart,{esc,format,label='Total',onSelect}={}){
@@ -392,7 +366,7 @@ global.CreditControls=(()=>{
   marker.style.transition=animate?'':'none';marker.style.width=a.width+'px';marker.style.height=a.height+'px';marker.style.transform='translate('+(a.left-b.left+group.scrollLeft)+'px,'+(a.top-b.top+group.scrollTop)+'px)';
  }
  function enhance(root){
-  global.WCSUI?.enhance(root);
+  global.CreditUI?.enhance(root);
   root.querySelectorAll(selector).forEach(g=>{
    const button=g.querySelector('button[aria-pressed=true],button[aria-selected=true]'),saved=pending.get(key(g));
    position(g,button);
@@ -429,8 +403,8 @@ global.CreditControls=(()=>{
 })();
 
 global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
- let host=document.getElementById('wcspedia');if(!host){host=document.createElement('div');host.id='wcspedia';host.className='credit-ui-host';root.before(host);host.append(root);}
- const UI=global.WCSUI;if(!UI)throw Error('Shared WCSpedia controls did not load.');
+ let host=document.getElementById('credit-ui');if(!host){host=document.createElement('div');host.id='credit-ui';host.className='credit-ui-host';root.before(host);host.append(root);}
+ const UI=global.CreditUI;if(!UI)throw Error('Dashboard controls did not load.');
  // Published page composition is shared by every reader; no browser-only preferences.
  let tab='',widgets=[],grid=null;
  const $=s=>root.querySelector(s);root.classList.add('cw-app');
@@ -465,7 +439,7 @@ global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
   const fieldHTML=f=>'<div class="form-group"><label for="cw-filter-'+f.key+'">'+esc(f.label)+'</label><select id="cw-filter-'+f.key+'" data-filter-key="'+f.key+'" aria-label="'+esc(f.label)+'" '+(f.disabled?'disabled':'')+'>'+f.options.map(([v,t])=>'<option value="'+esc(v)+'" '+(v===f.value?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>'+(f.disabled?'<small class="cw-field-note">Not supplied in this snapshot.</small>':'')+'</div>';
   const groups=[['shared',tab==='portfolio'?'Portfolio scope':'Dashboard scope',tab==='portfolio'?'Applies to portfolio and monitoring charts.':'Applies to this dashboard’s metrics, charts and records.'],['portfolio','Facility attributes','Applies to facility metrics, charts and downloads. Monitoring cards keep their own source population.']];
   filterButton.setAttribute('aria-expanded','true');
-  filterDrawer=UI.dialog({placement:'right',title:tab==='portfolio'?'Portfolio filters':'Dashboard filters',description:'Refine your view. Changes take effect when you apply.',closeLabel:'Close filters',body:'<div class="wcs-ui-drawer-scroll">'+groups.filter(([key])=>fields.some(f=>f.group===key)).map(([key,title,note])=>'<section class="cw-filter-section"><h3>'+title+'</h3><p>'+note+'</p>'+fields.filter(f=>f.group===key).map(fieldHTML).join('')+'</section>').join('')+'</div><div class="cw-filter-preview" role="status" aria-live="polite"></div><div class="wcs-ui-drawer-footer"><button class="button secondary" data-filter-reset>Reset</button><div class="cw-filter-actions"><button class="button secondary" data-filter-cancel>Cancel</button><button class="button" data-filter-apply>Apply filters</button></div></div>',onClose:()=>{filterDrawer=null;filterButton.setAttribute('aria-expanded','false');}});
+  filterDrawer=UI.dialog({placement:'right',title:tab==='portfolio'?'Portfolio filters':'Dashboard filters',description:'Refine your view. Changes take effect when you apply.',closeLabel:'Close filters',body:'<div class="credit-ui-drawer-scroll">'+groups.filter(([key])=>fields.some(f=>f.group===key)).map(([key,title,note])=>'<section class="cw-filter-section"><h3>'+title+'</h3><p>'+note+'</p>'+fields.filter(f=>f.group===key).map(fieldHTML).join('')+'</section>').join('')+'</div><div class="cw-filter-preview" role="status" aria-live="polite"></div><div class="credit-ui-drawer-footer"><button class="button secondary" data-filter-reset>Reset</button><div class="cw-filter-actions"><button class="button secondary" data-filter-cancel>Cancel</button><button class="button" data-filter-apply>Apply filters</button></div></div>',onClose:()=>{filterDrawer=null;filterButton.setAttribute('aria-expanded','false');}});
   filterDrawer.element.classList.add('cw-filter-drawer','cw-dashboard-drawer');
   function preview(){const count=filters.count(draft);filterDrawer.body.querySelector('.cw-filter-preview').textContent=count===null?'Apply to update this dashboard.':count.toLocaleString()+' matching facilities'+(count===0?' · Try a broader selection.':'');}
   filterDrawer.body.querySelectorAll('[data-filter-key]').forEach(field=>field.onchange=()=>{draft[field.dataset.filterKey]=field.value;preview();});
@@ -546,11 +520,11 @@ function styleNumbers(table,columns){
   if(!existing){while(cell.firstChild)pill.append(cell.firstChild);cell.append(pill);}
  }));
 }
-function enhanceNumbers(root){root.querySelectorAll('table.wcs-data-table').forEach(table=>styleNumbers(table));}
+function enhanceNumbers(root){root.querySelectorAll('table.credit-data-table').forEach(table=>styleNumbers(table));}
 function decorate({table,rows,columns,state,onChange,matched,local=false,onSearch}){
  styleNumbers(table,columns);table.dataset.creditTable='managed';table.closest('section.ch-card')?.classList.add('ct-table-card');
  const head=table.tHead||table.createTHead();head.innerHTML='<tr>'+columns.map((c,i)=>'<th scope="col" aria-sort="'+(state.sortKey===c.key?(state.sortDir===1?'ascending':'descending'):'none')+'"><div class="ct-heading"><button type="button" class="ct-sort" data-ct-sort="'+i+'" aria-label="Sort by '+esc(c.label)+'">'+esc(c.label)+(state.sortKey===c.key?svg('<path d="M10 16V4m-4 4 4-4 4 4"/>'):sortIcon)+'</button><button type="button" class="ct-filter '+(isActive(state.filters[c.key])?'is-active':'')+'" data-ct-filter="'+i+'" aria-label="Filter '+esc(c.label)+'" aria-haspopup="dialog" aria-expanded="false">'+filterIcon+'</button></div></th>').join('')+'</tr><tr class="ct-search-row">'+columns.map((c,i)=>'<th><input type="search" data-ct-search="'+i+'" aria-label="Search '+esc(c.label)+' column" placeholder="Search '+esc(c.label)+'…" value="'+esc(state.filters[c.key]?.query||'')+'"></th>').join('')+'</tr>';
- const wrap=table.closest('.wcs-data-table-scroll')||table.parentElement;
+ const wrap=table.closest('.credit-data-table-scroll')||table.parentElement;
  let bar=wrap.previousElementSibling;if(!bar?.classList.contains('ct-status')){bar=document.createElement('div');bar.className='ct-status';wrap.before(bar);}
  if(onSearch)table.closest('section.ch-card')?.querySelector('.cc-table-actions [data-ct-global]')?.closest('label').remove();
  const tableMethod=onSearch?(bar.querySelector('.cd-section-method')||table.closest('section.ch-card')?.querySelector(':scope>.ch-card-head .cd-section-method,:scope>.ch-toolbar .cd-section-method')):null;
@@ -562,13 +536,13 @@ function decorate({table,rows,columns,state,onChange,matched,local=false,onSearc
  head.querySelectorAll('[data-ct-filter]').forEach(b=>b.onclick=()=>openFilter(b,columns[+b.dataset.ctFilter],rows,state,onChange));
  bar.querySelectorAll('[data-ct-clear]').forEach(b=>b.onclick=()=>{delete state.filters[b.dataset.ctClear];onChange();});bar.querySelector('[data-ct-reset]')?.addEventListener('click',()=>{state.filters={};state.sortKey='';state.sortDir=1;state.query='';onChange();});
  global.CreditControls?.tableToolbar(table.closest('section.ch-card')||wrap.parentElement);
- global.WCSUI?.enhance?.(table.closest('section.ch-card')||wrap.parentElement);
+ global.CreditUI?.enhance?.(table.closest('section.ch-card')||wrap.parentElement);
 }
 function openFilter(anchor,c,rows,state,onChange){
  const existing=state.filters[c.key]||{},choices=new Map();rows.forEach(r=>choices.set(token(value(r,c)),display(r,c)||'(Blank)'));
  const keys=[...choices.keys()].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));let selected=new Set(existing.values??keys);const nonblank=keys.filter(Boolean),date=nonblank.length>0&&nonblank.every(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)),numeric=nonblank.length>0&&nonblank.every(x=>scalar(x)!==null),type=date?'date':'number';
- const body='<div class="ct-pop-title"><strong>'+esc(c.label)+'</strong><button type="button" data-close class="wcs-ui-close" aria-label="Close column filter">'+global.CreditIcons.icon('close')+'</button></div><p>Match selected values'+(numeric?' and an optional range':'')+'.</p>'+(numeric&&c.rangeUnit?'<p>Range: '+esc(c.rangeUnit)+'</p>':'')+(numeric?'<div class="ct-range"><label>'+(date?'From':'Minimum')+'<input data-min type="'+type+'" step="any" value="'+esc(existing.min||'')+'"></label><label>'+(date?'To':'Maximum')+'<input data-max type="'+type+'" step="any" value="'+esc(existing.max||'')+'"></label></div>':'')+'<label class="ct-find">Find a value<input type="search" data-find placeholder="Search values…"></label><div class="ct-value-actions"><button type="button" data-all>Select all</button><button type="button" data-none>Select none</button><span data-selected></span></div><div class="ct-values"></div><p class="ct-error" role="alert"></p><div class="ct-pop-footer"><button type="button" class="ch-btn" data-clear>Clear column</button><button type="button" class="ch-btn cw-primary" data-apply>Apply filter</button></div>';
- anchor.setAttribute('aria-expanded','true');global.WCSUI.popover({anchor,body,role:'dialog',label:'Filter '+c.label,className:'ct-filter-popover',onClose:()=>anchor.setAttribute('aria-expanded','false'),onMount(handle){const el=handle.element,$=s=>el.querySelector(s);const draw=()=>{const found=keys.filter(k=>choices.get(k).toLowerCase().includes($('[data-find]').value.toLowerCase()));$('.ct-values').innerHTML=found.length?found.slice(0,200).map(k=>'<label><input type="checkbox" data-value="'+esc(k)+'" '+(selected.has(k)?'checked':'')+'><span>'+esc(choices.get(k))+'</span></label>').join('')+(found.length>200?'<p>Showing 200 values. Search to narrow the list.</p>':''):'<p>No matching values.</p>';$('[data-selected]').textContent=selected.size+' selected';$('.ct-values').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.checked?selected.add(i.dataset.value):selected.delete(i.dataset.value);$('[data-selected]').textContent=selected.size+' selected';});};$('[data-find]').oninput=draw;$('[data-all]').onclick=()=>{selected=new Set(keys);draw();};$('[data-none]').onclick=()=>{selected.clear();draw();};$('[data-close]').onclick=()=>handle.close();$('[data-clear]').onclick=()=>{handle.close();delete state.filters[c.key];onChange();};$('[data-apply]').onclick=()=>{const min=$('[data-min]')?.value||'',max=$('[data-max]')?.value||'';if((min&&scalar(min)===null)||(max&&scalar(max)===null)||(min&&max&&scalar(min)>scalar(max))||[...el.querySelectorAll('.ct-range input')].some(i=>!i.validity.valid)){$('.ct-error').textContent='Enter a valid range with the minimum before the maximum.';return;}state.filters[c.key]={...existing,min,max,values:selected.size===keys.length?null:[...selected]};handle.close();onChange();};draw();}});
+ const body='<div class="ct-pop-title"><strong>'+esc(c.label)+'</strong><button type="button" data-close class="credit-ui-close" aria-label="Close column filter">'+global.CreditIcons.icon('close')+'</button></div><p>Match selected values'+(numeric?' and an optional range':'')+'.</p>'+(numeric&&c.rangeUnit?'<p>Range: '+esc(c.rangeUnit)+'</p>':'')+(numeric?'<div class="ct-range"><label>'+(date?'From':'Minimum')+'<input data-min type="'+type+'" step="any" value="'+esc(existing.min||'')+'"></label><label>'+(date?'To':'Maximum')+'<input data-max type="'+type+'" step="any" value="'+esc(existing.max||'')+'"></label></div>':'')+'<label class="ct-find">Find a value<input type="search" data-find placeholder="Search values…"></label><div class="ct-value-actions"><button type="button" data-all>Select all</button><button type="button" data-none>Select none</button><span data-selected></span></div><div class="ct-values"></div><p class="ct-error" role="alert"></p><div class="ct-pop-footer"><button type="button" class="ch-btn" data-clear>Clear column</button><button type="button" class="ch-btn cw-primary" data-apply>Apply filter</button></div>';
+ anchor.setAttribute('aria-expanded','true');global.CreditUI.popover({anchor,body,role:'dialog',label:'Filter '+c.label,className:'ct-filter-popover',onClose:()=>anchor.setAttribute('aria-expanded','false'),onMount(handle){const el=handle.element,$=s=>el.querySelector(s);const draw=()=>{const found=keys.filter(k=>choices.get(k).toLowerCase().includes($('[data-find]').value.toLowerCase()));$('.ct-values').innerHTML=found.length?found.slice(0,200).map(k=>'<label><input type="checkbox" data-value="'+esc(k)+'" '+(selected.has(k)?'checked':'')+'><span>'+esc(choices.get(k))+'</span></label>').join('')+(found.length>200?'<p>Showing 200 values. Search to narrow the list.</p>':''):'<p>No matching values.</p>';$('[data-selected]').textContent=selected.size+' selected';$('.ct-values').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.checked?selected.add(i.dataset.value):selected.delete(i.dataset.value);$('[data-selected]').textContent=selected.size+' selected';});};$('[data-find]').oninput=draw;$('[data-all]').onclick=()=>{selected=new Set(keys);draw();};$('[data-none]').onclick=()=>{selected.clear();draw();};$('[data-close]').onclick=()=>handle.close();$('[data-clear]').onclick=()=>{handle.close();delete state.filters[c.key];onChange();};$('[data-apply]').onclick=()=>{const min=$('[data-min]')?.value||'',max=$('[data-max]')?.value||'';if((min&&scalar(min)===null)||(max&&scalar(max)===null)||(min&&max&&scalar(min)>scalar(max))||[...el.querySelectorAll('.ct-range input')].some(i=>!i.validity.valid)){$('.ct-error').textContent='Enter a valid range with the minimum before the maximum.';return;}state.filters[c.key]={...existing,min,max,values:selected.size===keys.length?null:[...selected]};handle.close();onChange();};draw();}});
 }
 // Every caller supplies the actual source cohort; displayed cell text is never a join key.
 function rowLabel(row){
@@ -580,7 +554,7 @@ function bindRows({table,rows,resolve=row=>[row],label=rowLabel,onSelect}){
  if(!table?.tBodies[0])return;
  [...table.tBodies[0].rows].forEach((tr,index)=>{
   const row=rows[index],cohort=row===undefined?null:resolve(row,index);if(!Array.isArray(cohort)||!cohort.length||!tr.cells.length||tr.cells[0].colSpan>1)return;
-  const title=label(row,index),select=trigger=>{if(global.getSelection?.()?.toString())return;global.WCSUI?.closePopover?.();if(onSelect)onSelect(cohort,title,trigger);else table.dispatchEvent(new CustomEvent('credit:table-drill',{bubbles:true,detail:{rows:cohort,label:title,table,trigger}}));};
+  const title=label(row,index),select=trigger=>{if(global.getSelection?.()?.toString())return;global.CreditUI?.closePopover?.();if(onSelect)onSelect(cohort,title,trigger);else table.dispatchEvent(new CustomEvent('credit:table-drill',{bubbles:true,detail:{rows:cohort,label:title,table,trigger}}));};
   tr.dataset.ctDrill='';tr.classList.add('ct-drill-row');
   const first=tr.cells[0];let button=first.querySelector('button.ch-row-link');
   if(!button&&!first.querySelector('a,button,input,select,textarea')){button=document.createElement('button');button.type='button';button.className='ch-row-link';while(first.firstChild)button.append(first.firstChild);first.append(button);}
@@ -595,15 +569,15 @@ function pagination({host,total,page,pageSize,onChange}){
  footer.innerHTML='<label class="ch-page-size">Show per page<select aria-label="Rows per page" data-ct-size>'+[10,25,50].map(n=>'<option value="'+n+'" '+(pageSize===n?'selected':'')+'>'+n+'</option>').join('')+'</select></label><span role="status">'+(total?page*pageSize+1:0)+'–'+Math.min((page+1)*pageSize,total)+' of '+total.toLocaleString()+' · Page '+(page+1)+' of '+pages+'</span><nav class="ct-pagination-nav" aria-label="Table pages"><button type="button" class="ch-btn" data-ct-prev '+(!page?'disabled':'')+'>Previous</button><span class="ct-page-numbers">'+pageNumbers(page,pages).map(n=>n==='gap'?'<span class="ct-page-gap" aria-hidden="true">…</span>':'<button type="button" class="ch-btn" data-ct-page="'+n+'" aria-label="Go to page '+(n+1)+'"'+(n===page?' aria-current="page"':'')+'>'+(n+1)+'</button>').join('')+'</span><button type="button" class="ch-btn" data-ct-next '+(page+1>=pages?'disabled':'')+'>Next</button></nav>';
  const update=(nextPage,nextSize,focus)=>{onChange(nextPage,nextSize);const next=host.querySelector(focus+':not(:disabled)')||host.querySelector('[data-ct-prev]:not(:disabled),[data-ct-next]:not(:disabled)');if(focus==='[data-ct-size]'){const select=host.querySelector(focus);(select?.nextElementSibling?.querySelector('button')||select)?.focus({preventScroll:true});}else next?.focus({preventScroll:true});};
  footer.querySelectorAll('[data-ct-page]').forEach(b=>b.onclick=()=>update(Number(b.dataset.ctPage),pageSize,'[data-ct-page="'+b.dataset.ctPage+'"]'));
- footer.querySelector('[data-ct-prev]').onclick=()=>update(page-1,pageSize,'[data-ct-prev]');footer.querySelector('[data-ct-next]').onclick=()=>update(page+1,pageSize,'[data-ct-next]');footer.querySelector('[data-ct-size]').onchange=e=>update(0,Number(e.target.value),'[data-ct-size]');global.WCSUI?.enhance?.(footer);
+ footer.querySelector('[data-ct-prev]').onclick=()=>update(page-1,pageSize,'[data-ct-prev]');footer.querySelector('[data-ct-next]').onclick=()=>update(page+1,pageSize,'[data-ct-next]');footer.querySelector('[data-ct-size]').onchange=e=>update(0,Number(e.target.value),'[data-ct-size]');global.CreditUI?.enhance?.(footer);
 }
-function enhanceStatic(root){enhanceNumbers(root);root.querySelectorAll('table.wcs-data-table:not([data-credit-table])').forEach(table=>{if(table.closest('#ch-table,.cd-records')||table.closest('[data-table-mode=summary]'))return;const heads=[...table.querySelectorAll('thead tr:first-child th')];if(!heads.length||!table.tBodies[0])return;const originalHead=[...table.tHead.childNodes],originalBody=[...table.tBodies[0].childNodes],card=table.closest('section.ch-card'),hadCardClass=card?.classList.contains('ct-table-card');const original=[...table.tBodies[0].rows].filter(r=>r.cells.length===heads.length&&!r.querySelector('[colspan]'));const columns=heads.map((h,i)=>({key:String(i),label:h.textContent.trim(),get:r=>r.values[i]})),rows=original.map(node=>({node,values:[...node.cells].map(c=>c.textContent.trim())})),state=createState();table.dataset.creditTable='static';const host=table.closest('.wcs-data-table-scroll')?.parentElement||table.parentElement;const hadHostAttribute=host.hasAttribute('data-ct-host');host.dataset.ctHost='';staticRestorers.set(table,()=>{const actions=card?.querySelector('.cc-table-actions');if(actions){const method=actions.querySelector('.cd-section-method');if(method)card.querySelector('.ch-card-head,.ch-toolbar')?.append(method);actions.remove();}card?.querySelector('.cc-unified-table-head')?.classList.remove('cc-unified-table-head');table.tHead.replaceChildren(...originalHead);table.tBodies[0].replaceChildren(...originalBody);delete table.dataset.creditTable;const wrap=table.closest('.wcs-data-table-scroll')||table.parentElement;if(wrap.previousElementSibling?.classList.contains('ct-status')){const method=wrap.previousElementSibling.querySelector('.cd-section-method');if(method)card?.querySelector('.ch-card-head,.ch-toolbar')?.append(method);wrap.previousElementSibling.remove();}[...host.children].filter(el=>el.classList.contains('ch-pagination')).forEach(el=>el.remove());if(!hadCardClass)card?.classList.remove('ct-table-card');if(!hadHostAttribute)delete host.dataset.ctHost;});const render=()=>{const result=select(rows,columns,state);state.page=Math.min(state.page,Math.max(0,Math.ceil(result.length/state.pageSize)-1));table.tBodies[0].replaceChildren(...result.slice(state.page*state.pageSize,(state.page+1)*state.pageSize).map(r=>r.node));if(!result.length){const tr=table.tBodies[0].insertRow(),cell=tr.insertCell();cell.colSpan=columns.length;cell.className='ch-empty';cell.textContent='No matching rows. Clear search or column filters to broaden the view.';}decorate({table,rows,columns,state,onChange:()=>{state.page=0;render();},onSearch:query=>{state.query=query;state.page=0;render();},matched:result.length,local:true});pagination({host,total:result.length,page:state.page,pageSize:state.pageSize,onChange:(page,size)=>{state.page=page;state.pageSize=size;render();}});};render();});}
+function enhanceStatic(root){enhanceNumbers(root);root.querySelectorAll('table.credit-data-table:not([data-credit-table])').forEach(table=>{if(table.closest('#ch-table,.cd-records')||table.closest('[data-table-mode=summary]'))return;const heads=[...table.querySelectorAll('thead tr:first-child th')];if(!heads.length||!table.tBodies[0])return;const originalHead=[...table.tHead.childNodes],originalBody=[...table.tBodies[0].childNodes],card=table.closest('section.ch-card'),hadCardClass=card?.classList.contains('ct-table-card');const original=[...table.tBodies[0].rows].filter(r=>r.cells.length===heads.length&&!r.querySelector('[colspan]'));const columns=heads.map((h,i)=>({key:String(i),label:h.textContent.trim(),get:r=>r.values[i]})),rows=original.map(node=>({node,values:[...node.cells].map(c=>c.textContent.trim())})),state=createState();table.dataset.creditTable='static';const host=table.closest('.credit-data-table-scroll')?.parentElement||table.parentElement;const hadHostAttribute=host.hasAttribute('data-ct-host');host.dataset.ctHost='';staticRestorers.set(table,()=>{const actions=card?.querySelector('.cc-table-actions');if(actions){const method=actions.querySelector('.cd-section-method');if(method)card.querySelector('.ch-card-head,.ch-toolbar')?.append(method);actions.remove();}card?.querySelector('.cc-unified-table-head')?.classList.remove('cc-unified-table-head');table.tHead.replaceChildren(...originalHead);table.tBodies[0].replaceChildren(...originalBody);delete table.dataset.creditTable;const wrap=table.closest('.credit-data-table-scroll')||table.parentElement;if(wrap.previousElementSibling?.classList.contains('ct-status')){const method=wrap.previousElementSibling.querySelector('.cd-section-method');if(method)card?.querySelector('.ch-card-head,.ch-toolbar')?.append(method);wrap.previousElementSibling.remove();}[...host.children].filter(el=>el.classList.contains('ch-pagination')).forEach(el=>el.remove());if(!hadCardClass)card?.classList.remove('ct-table-card');if(!hadHostAttribute)delete host.dataset.ctHost;});const render=()=>{const result=select(rows,columns,state);state.page=Math.min(state.page,Math.max(0,Math.ceil(result.length/state.pageSize)-1));table.tBodies[0].replaceChildren(...result.slice(state.page*state.pageSize,(state.page+1)*state.pageSize).map(r=>r.node));if(!result.length){const tr=table.tBodies[0].insertRow(),cell=tr.insertCell();cell.colSpan=columns.length;cell.className='ch-empty';cell.textContent='No matching rows. Clear search or column filters to broaden the view.';}decorate({table,rows,columns,state,onChange:()=>{state.page=0;render();},onSearch:query=>{state.query=query;state.page=0;render();},matched:result.length,local:true});pagination({host,total:result.length,page:state.page,pageSize:state.pageSize,onChange:(page,size)=>{state.page=page;state.pageSize=size;render();}});};render();});}
 function releaseStatic(root){root.querySelectorAll('table[data-credit-table]').forEach(table=>{staticRestorers.get(table)?.();staticRestorers.delete(table);});}
 global.CreditTables={bindRows,rowLabel,createState,select,decorate,styleNumbers,enhanceNumbers,enhanceStatic,releaseStatic,pagination,pageNumbers,scalar};
 })(window);
 
 ;
-/* Shared chart workspace: one chart instance, page-level detail, and WCSpedia drawers. */
+/* Shared chart workspace: one chart instance, page-level detail, and dashboard drawers. */
 (function(global){'use strict';
 const svg=path=>'<svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>';
 const expandIcon=svg('<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/>');
@@ -655,7 +629,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   const summaryNotes={monitoringPriorityChart:'Actions required includes critical actions. Upcoming excludes every action-required item to prevent double counting. Category share divides its actionable obligations by all actions in the shared monitoring scope.',facilityTrendChart:'Headline counts deduplicate relationships and facilities across the full three-month horizon. A relationship can appear in more than one monthly bar, so monthly CA counts need not sum to the distinct headline. CA relationships and facilities are different counting units.',creditClassificationChart:'Headline figures count eligible facility records and sum their TFA. Both use the selected approval period and shared filters.',relationshipChart:'The amount is the selected exposure summed across the ranked relationships. Its share divides that amount by the same exposure summed across the entire filtered portfolio. A zero denominator is shown as unavailable.',rotceChart:'Below target counts ranked relationships with a supplied ROTCE below 12%. Coverage shows how many ranked relationships have a non-null ROTCE; missing ratios are not counted as below target.',covenantMonitoringChart:'The obligation count uses the selected past-due or coming-due population. The relationship figure deduplicates relationship IDs within that population.',ccmRegionalChart:'CCM records counts the filtered CCM population. Past due counts only records with the source CCM status PAST_DUE.'};
   const summarySection=!section&&m.card?.querySelector('.ch-chart-summary')?'<section><h3>Summary figures</h3><p>'+esc(summaryNotes[id]||'Items shown totals the displayed groups. Largest-group share divides the largest displayed group by that displayed total. For top-owner charts this describes the ranked subset, not all portfolio obligations. A zero denominator is shown as unavailable.')+'</p></section>':'';
 
-  drawer=global.WCSUI.dialog({placement:'right',title:'Methodology',description:m.title,closeLabel:'Close methodology',body:'<div class="wcs-ui-drawer-scroll cd-methodology"><section><h3>What this view shows</h3><p>'+esc(m.description)+'</p></section><section><h3>Calculation</h3><p>'+esc(explanation[0])+'</p></section><section><h3>Scope & interpretation</h3><p>'+esc(explanation[1])+'</p><p>'+esc(context.filters||'All available records in this dashboard scope.')+'</p>'+(controls.length?'<p>'+esc(controls.join(' · '))+'</p>':'')+'</section>'+summarySection+'<section><h3>Source dates</h3><p>'+esc(dates.length?dates.join(' · '):context.date)+'</p><p>Last updated follows the latest source report date. It is not a live refresh timestamp.</p></section><section><h3>Data quality</h3><p>'+esc(context.demo?'Illustrative data only. These records demonstrate the dashboard and are not live portfolio results.':'Prepared source snapshot. Missing values are not imputed; records retain their source dates.')+'</p><p>Chart controls and applied filters determine the current view. Exported source records retain their identifiers and source dates.</p></section></div><div class="wcs-ui-drawer-footer"><button class="button" data-method-done>Done</button></div>',onClose:()=>{drawer=null;}});
+  drawer=global.CreditUI.dialog({placement:'right',title:'Methodology',description:m.title,closeLabel:'Close methodology',body:'<div class="credit-ui-drawer-scroll cd-methodology"><section><h3>What this view shows</h3><p>'+esc(m.description)+'</p></section><section><h3>Calculation</h3><p>'+esc(explanation[0])+'</p></section><section><h3>Scope & interpretation</h3><p>'+esc(explanation[1])+'</p><p>'+esc(context.filters||'All available records in this dashboard scope.')+'</p>'+(controls.length?'<p>'+esc(controls.join(' · '))+'</p>':'')+'</section>'+summarySection+'<section><h3>Source dates</h3><p>'+esc(dates.length?dates.join(' · '):context.date)+'</p><p>Last updated follows the latest source report date. It is not a live refresh timestamp.</p></section><section><h3>Data quality</h3><p>'+esc(context.demo?'Illustrative data only. These records demonstrate the dashboard and are not live portfolio results.':'Prepared source snapshot. Missing values are not imputed; records retain their source dates.')+'</p><p>Chart controls and applied filters determine the current view. Exported source records retain their identifiers and source dates.</p></section></div><div class="credit-ui-drawer-footer"><button class="button" data-method-done>Done</button></div>',onClose:()=>{drawer=null;}});
   drawer.element.classList.add('cw-dashboard-drawer');drawer.body.querySelector('[data-method-done]').onclick=()=>drawer.close();
  }
  function metricRule(label,id=''){
@@ -741,7 +715,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
    const button=document.createElement('button');button.className='cw-icon-btn cd-section-method';button.setAttribute('aria-label','Methodology for '+title);button.innerHTML=infoIcon;card.append(button);button.onclick=()=>methodology('ch-mix',{title,note:'Monitoring overview insight',explanation:[rules[index]||rules[0],'Counts represent obligations, not unique facilities. Shared dashboard filters apply. Critical items are a subset of all actions.']});
   });
  }
- // PAL's chart-specific insight sections, rendered with Highcharts and shared WCSpedia tables.
+ // PAL's chart-specific insight sections, rendered with Highcharts and shared dashboard tables.
  function renderAnalysis(){
   const a=active;if(!a)return;if(renderCustomAnalysis?.(a))return;const context=getAnalysis?.()||{},settings=context.settings||{},source=getRows(a.id)||[],portfolio=context.portfolio||source;
   const total=(rs,k)=>rs.reduce((n,r)=>n+(typeof r[k]==='number'?r[k]:0),0),distinct=(rs,k)=>new Set(rs.map(r=>r[k]).filter(v=>v!==null&&v!==undefined&&v!=='')).size;
@@ -753,7 +727,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   const sectionButton=(title,note,calculation)=>{const index=sectionMethods.push({title,note,explanation:[calculation,methods[a.id]?.join(' ')||'Uses the current chart population and applied filters. Missing values are not imputed.']})-1;return '<button class="cw-icon-btn cd-section-method" data-section-method="'+index+'" title="Methodology" aria-label="Methodology for '+esc(title)+'">'+infoIcon+'</button>';};
   const tableCalculation=(title,headers,note)=>{let rule='Rows are grouped by '+headers[0]+'. Counts and totals use the eligible source records for this analysis; USD values are displayed in millions.';if(title==='Period-over-Period Performance')rule='Compare distinct facility counts and summed TFA for the current and prior prepared period. Change is current minus prior, an absolute difference, not a percentage.';else if(title.includes('Top 10 Facilities'))rule='Sort eligible facilities by TFA descending and display the first ten. Each row retains the original facility identifiers and approval date.';else if(title==='Top Relationships Details')rule='One row per ranked relationship. Sum each exposure across its facilities; facility counts deduplicate facility IDs. ROTCE is the first supplied non-null relationship ratio; missing ratios remain unavailable.';else if(title==='Chart breakdown')rule='Exact plotted series, categories and values, in chart order. This table does not reaggregate or impute values.';else if(title==='Monitoring coverage & priorities')rule='One row per monitoring area. Critical = action_required AND critical; other actions = action_required AND NOT critical; upcoming = coming_due AND NOT action_required. No obligation enters more than one segment.';else if(title.includes('Covenant'))rule='Count eligible covenant obligations within each displayed grouping and aging band. Population includes all supplied covenants in scope; Total includes only the selected past-due or coming-due cohort. Both views use 1–30, 31–45, 46–60, 61–90 and over 90 day bands. Exact source_aging_bucket values take precedence. Otherwise past due uses days_past_due and coming due uses days until the effective due date at the source reporting date. Coarse legacy categories are not arbitrarily split. Due today belongs to the first band; missing aging remains separate.';if(headers.includes('Avg per Facility'))rule+=' Average per facility is summed TFA divided by the number of eligible facility records in that region.';if(title.includes('Underwriter')&&!title.includes('Covenant'))rule+=' Rank owners by '+(title.includes('New Deals')?'eligible record count':'the selected balance')+' descending and retain the first ten.';return rule+(note?' '+note:'');};
   const cohortRow=(cells,rows,cellRows={})=>Object.defineProperties(cells,{_rows:{value:rows},_cellRows:{value:cellRows}});
-  const table=(title,headers,rows,note='',mode='summary')=>{const index=tableDrills.push({title,headers,rows})-1;blocks.push('<section data-summary-drill="'+index+'" data-table-mode="'+mode+'" class="ch-card cd-insight-card cd-insight-table'+(headers.length>5||/Details|by Underwriter|Period-over-Period/.test(title)?' cd-wide':'')+'"><div class="ch-card-head"><div><h3>'+esc(title)+'</h3><p class="ch-card-sub">'+esc(note)+'</p></div>'+sectionButton(title,note,tableCalculation(title,headers,note))+'</div><div class="wcs-data-table-scroll"><table class="wcs-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No eligible records in this selection.</p>':'')+'</div></section>')};
+  const table=(title,headers,rows,note='',mode='summary')=>{const index=tableDrills.push({title,headers,rows})-1;blocks.push('<section data-summary-drill="'+index+'" data-table-mode="'+mode+'" class="ch-card cd-insight-card cd-insight-table'+(headers.length>5||/Details|by Underwriter|Period-over-Period/.test(title)?' cd-wide':'')+'"><div class="ch-card-head"><div><h3>'+esc(title)+'</h3><p class="ch-card-sub">'+esc(note)+'</p></div>'+sectionButton(title,note,tableCalculation(title,headers,note))+'</div><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No eligible records in this selection.</p>':'')+'</div></section>')};
   const chartBlock=(title,type,pts,note='',money=false)=>{const id='cd-insight-'+plans.length;blocks.push('<section class="ch-card cd-insight-card cd-insight-visual"><div class="ch-card-head"><div><h3>'+esc(title)+'</h3><p class="ch-card-sub">'+esc(note)+'</p></div>'+sectionButton(title,note,(title.includes('ROTCE')?'Display the supplied relationship ROTCE multiplied by 100 as percentage points. Missing ratios are excluded.':money?'Sum the selected USD balance for each displayed group. Values are shown in millions.':'Count eligible records for each displayed group.')+(title.includes('Top 10')?(title.includes('ROTCE')?' Keep supplied ratios below 8%, sort ascending and retain the first ten.':' Sort the grouped values descending and retain the first ten.'):'')+(type==='pie'?' Slice share is the group value divided by the sum of displayed group values.':'')+(note?' '+note:''))+'</div><div id="'+id+'" class="cd-insight-chart"></div></section>');plans.push({id,title,type,pts,money});};
   const breakdown=(rs,key,measure)=>groups(rs,key).sort((a,b)=>a.name.localeCompare(b.name)).map((g,i)=>({name:g.name,y:measure?total(g.rows,measure):g.rows.length,color:colors[(key==='product'?Math.max(0,(context.products||groups(portfolio,'product').map(g=>g.name).sort()).indexOf(g.name)):i)%colors.length],custom:{rows:g.rows}}));
   const regional=rs=>table('Regional Distribution',['Region','Facilities','Total TFA','Avg per Facility'],groups(rs,'region').map(g=>cohortRow([g.name,n(g.rows.length),usd(total(g.rows,'tfa')),g.rows.length?usd(total(g.rows,'tfa')/g.rows.length):'—'],g.rows)));
@@ -959,7 +933,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   if(!a.drill)keys=keys.filter(k=>records.some(r=>r[k]!==null&&r[k]!==undefined&&r[k]!==''));
   const columns=keys.map(key=>({key,label:labels[key]||global.CreditCovenantsData?.label(key)||key,rangeScale:key==='rotce'?100:1,rangeUnit:key==='rotce'?'percent':'',format:v=>formatted(key,v)}));a.tableState??=global.CreditTables.createState();rs=global.CreditTables.select(scope,columns,a.tableState);a.exportRows=rs;$('#ch-download').disabled=!rs.length;
   a.pageSize??=10;a.page=Math.min(a.page,Math.max(0,Math.ceil(rs.length/a.pageSize)-1));
-  const area=a.panel.querySelector('.cd-records');area.innerHTML='<div class="ch-table-wrap wcs-data-table-scroll"><table class="wcs-data-table"><thead><tr>'+keys.map(k=>'<th>'+esc(labels[k]||global.CreditCovenantsData?.label(k)||k)+'</th>').join('')+'</tr></thead><tbody>'+rs.slice(a.page*a.pageSize,(a.page+1)*a.pageSize).map(r=>'<tr>'+keys.map((k,j)=>'<td>'+(!a.drill&&j===0?'<button type="button" class="ch-row-link" data-source-record="'+rs.indexOf(r)+'">'+esc(formatted(k,r[k]))+'</button>':esc(formatted(k,r[k])))+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rs.length?'<p class="ch-empty">No matching records in this selection.</p>':'')+'</div>';
+  const area=a.panel.querySelector('.cd-records');area.innerHTML='<div class="ch-table-wrap credit-data-table-scroll"><table class="credit-data-table"><thead><tr>'+keys.map(k=>'<th>'+esc(labels[k]||global.CreditCovenantsData?.label(k)||k)+'</th>').join('')+'</tr></thead><tbody>'+rs.slice(a.page*a.pageSize,(a.page+1)*a.pageSize).map(r=>'<tr>'+keys.map((k,j)=>'<td>'+(!a.drill&&j===0?'<button type="button" class="ch-row-link" data-source-record="'+rs.indexOf(r)+'">'+esc(formatted(k,r[k]))+'</button>':esc(formatted(k,r[k])))+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rs.length?'<p class="ch-empty">No matching records in this selection.</p>':'')+'</div>';
   global.CreditTables.bindRows({table:area.querySelector('table'),rows:rs.slice(a.page*a.pageSize,(a.page+1)*a.pageSize)});
   global.CreditTables.decorate({table:area.querySelector('table'),rows:scope,columns,state:a.tableState,onChange:()=>{a.page=0;sourceTable(a);},matched:rs.length});
   global.CreditTables.pagination({host:area,total:rs.length,page:a.page,pageSize:a.pageSize,onChange:(next,size)=>{a.page=next;a.pageSize=size;sourceTable(a);}});
@@ -1005,7 +979,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   renderRelated?.({rows,host,dataHost:relatedHost,profile:!dimension,onDataset:records=>{a.relatedRecords=records;a.query='';a.page=0;a.tableState=global.CreditTables.createState();a.panel.querySelector('[aria-label="Search drill-down records"]').value='';sourceTable(a);drillMode(a,'records');}});
   if(relatedHost.querySelector('.pj-leaf-datasets')){global.CreditControls?.tableToolbar(relatedHost);const bar=relatedHost.querySelector('.pj-leaf-datasets');if(!bar.querySelector('.pal-segments'))bar.remove();}
   alignExpandedSummary(a);
-  a.panel.querySelectorAll('[data-drill-level]').forEach(b=>b.onclick=()=>{a.trail=a.trail.slice(0,Number(b.dataset.drillLevel)+1);a.records=a.trail.at(-1).rows;resetDrillRecords(a);renderDrillAnalysis(a,a.trail.at(-1).preferred);drillMode(a,'analysis');});global.WCSUI.enhance(host);
+  a.panel.querySelectorAll('[data-drill-level]').forEach(b=>b.onclick=()=>{a.trail=a.trail.slice(0,Number(b.dataset.drillLevel)+1);a.records=a.trail.at(-1).rows;resetDrillRecords(a);renderDrillAnalysis(a,a.trail.at(-1).preferred);drillMode(a,'analysis');});global.CreditUI.enhance(host);
  }
  function resetDrillRecords(a){a.relatedRecords=null;a.query='';a.page=0;a.tableState=global.CreditTables.createState();a.panel.querySelector('[aria-label="Search drill-down records"]').value='';sourceTable(a);}
 
@@ -1026,7 +1000,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
  function drillTable(records,selection,element,trigger){
   const card=element?.closest('.ch-card');if(!card||!records.length)return false;
   const current=inlineDrills.get(card);if(current?.terminal&&records.length===current.records.length&&records.every(r=>current.records.includes(r))){current.controls.querySelector('[data-inline-mode="chart"]').click();return true;}
-  global.WCSUI.closePopover();const head=card.querySelector(':scope>.ch-card-head,:scope>.ch-toolbar'),host=document.createElement('div');host.className='cd-inline-drill cd-table-drill';
+  global.CreditUI.closePopover();const head=card.querySelector(':scope>.ch-card-head,:scope>.ch-toolbar'),host=document.createElement('div');host.className='cd-inline-drill cd-table-drill';
   const original=[...card.children].filter(el=>el!==head).map(el=>[el,el.hidden]);
   if(head)for(const el of head.children){if(el.matches('.ch-actions,.cc-table-actions,.cd-drill-actions,.pj-drill-actions,.cd-chart-controls,.pal-segments,button,label'))original.push([el,el.hidden]);}
   const scrollHost=card.closest('.ca-overlay-body'),a={id:'table-records',tableOrigin:true,card,element,head,host,original,parentInline:inlineDrills.get(card),trigger:trigger||document.activeElement,scrollHost,originScroll:scrollHost?scrollHost.scrollTop:window.scrollY,className:card.className,minHeight:card.style.minHeight,plotHeight:320,records,trail:[{label:selection||'Selected records',rows:records}],mode:'chart',downloadTitle:$('#ch-download').title,downloadDisabled:$('#ch-download').disabled};
@@ -1053,12 +1027,12 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   a.relatedRecords=null;
   renderRelated?.({rows,host:plot,dataHost:table,profile:!dimension,onDataset:(records,key)=>{a.relatedRecords=records;a.relatedDataset=key;a.query='';a.page=0;a.tableState=global.CreditTables.createState();search.querySelector('input').value='';setView('records');}});
   // Populate related datasets first, then render the active table exactly once.
-  setView(a.mode);global.WCSUI.enhance(a.host);
+  setView(a.mode);global.CreditUI.enhance(a.host);
  }
  function drillInPlace(id,records,selection,element){
   if(onChartDrill?.(id,records,selection,element))return;
   const el=element||$('#'+id),card=el?.closest('.ch-card');if(!card)return drill(id,records,selection);
-  global.WCSUI.closePopover();clearInline();const originalHeight=card.getBoundingClientRect().height,plotHeight=el.getBoundingClientRect().height;const head=card.querySelector('.ch-card-head'),host=document.createElement('div');host.className='cd-inline-drill';
+  global.CreditUI.closePopover();clearInline();const originalHeight=card.getBoundingClientRect().height,plotHeight=el.getBoundingClientRect().height;const head=card.querySelector('.ch-card-head'),host=document.createElement('div');host.className='cd-inline-drill';
   const original=[...card.children].filter(x=>x!==head).map(x=>[x,x.hidden]);const controls=head?.querySelectorAll('.cd-chart-controls,:scope>.cw-icon-btn');controls?.forEach(control=>original.push([control,control.hidden]));original.forEach(([x])=>x.hidden=true);
   const a={id,card,element:el,host,original,originScroll:active?active.overlay.body.scrollTop:window.scrollY,className:card.className,minHeight:card.style.minHeight,plotHeight:plotHeight||320,records:records||[],trail:[{label:selection||'Selected group',rows:records||[]}],mode:'chart'};
   card.style.minHeight='0px';card.classList.add('cd-inline-active');card.append(host);inlineDrills.set(card,a);drawInline(a);a.card.scrollIntoView({block:'start',behavior:'instant'});
@@ -1069,11 +1043,11 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   $('#ch-download').disabled=!(active?.exportRows||root._exportRows||[]).length;$('#ch-download').title=d.downloadTitle;if(inlineFocus)inlineExport(inlineFocus);d.trigger?.focus({preventScroll:true});window.scrollTo({top:d.scroll,behavior:'instant'});
  }
  function drill(id,records,selection,title){
-  closeDrill();global.WCSUI.closePopover();const m=meta(id),panel=document.createElement('section');panel.className='cd-detail-page cd-drill-page';panel.id='cd-record-drill';panel.setAttribute('aria-label','Selection explorer');
+  closeDrill();global.CreditUI.closePopover();const m=meta(id),panel=document.createElement('section');panel.className='cd-detail-page cd-drill-page';panel.id='cd-record-drill';panel.setAttribute('aria-label','Selection explorer');
   const trigger=document.activeElement,scroll=window.scrollY,parentScroll=active?.overlay.body.scrollTop||0;const rows=records??getRows(id)??[],hidden=[...root.querySelectorAll('#cd-chart-analysis')].map(el=>[el,el.hidden]);hidden.forEach(([el])=>el.hidden=true);
   const a={id,panel,hidden,records:rows,source:true,drill:true,query:'',page:0,pageSize:10,trigger,scroll,parentScroll,downloadTitle:$('#ch-download').title,mode:'analysis',trail:[{label:selection||title||m.title||'Selected population',rows}]};drilled=a;
   panel.innerHTML='<div class="cd-detail-heading"><div><span class="cd-eyebrow">EXPLORE SELECTION</span><h2 tabindex="-1">'+esc(title||m.title)+'</h2><p data-drill-scope aria-live="polite"></p></div><div class="cd-detail-actions"><button type="button" class="ch-btn cd-back-dashboard" data-close-drill>'+backIcon+'Back to dashboard</button></div></div><div class="cd-explorer-navigation"><nav data-drill-breadcrumbs aria-label="Drill-down path"></nav><div class="pal-segments" role="tablist" aria-label="Selection view"><button type="button" role="tab" data-drill-mode="analysis" aria-controls="cd-explorer-analysis">Chart</button><button type="button" role="tab" data-drill-mode="records" aria-controls="cd-explorer-records">Data</button></div></div><div id="cd-explorer-analysis" data-drill-analysis></div><section id="cd-explorer-records" class="ch-card cd-source-card cw-framed-card"><div class="ch-toolbar"><div><h2>Supporting records</h2><p class="cd-record-note">'+esc(selection||'Selected population')+'</p></div><div class="ch-actions"><label class="cd-search-label ct-global-search"><input type="search" aria-label="Search drill-down records" placeholder="Search all records…"></label><button class="cw-icon-btn cd-section-method" data-drill-method aria-label="Methodology for drill-down records">'+infoIcon+'</button></div></div><div class="cd-records"></div></section>';
-  a.overlay=global.CreditAnalysisOverlay({root,panel,title:title||m.title,onClose:backToDashboard});panel.dataset.nested=String(!!active);root.classList.add('cd-detail-active');$('.ch-skip').setAttribute('href','#cd-record-drill');panel.querySelector('[data-close-drill]').onclick=active?closeDrill:backToDashboard;if(active)panel.querySelector('[data-close-drill]').innerHTML=backIcon+'Back to analysis';panel.querySelector('input').oninput=e=>{a.query=e.target.value.trim().toLowerCase();a.page=0;sourceTable(a);};panel.querySelector('[data-drill-method]').onclick=()=>methodology(id,{title:'Drill-down records',note:selection||title||m.title,explanation:['All source records attached to the clicked bar, slice, summary count or table group, within the current filters. The table preserves supplied fields and identifiers. Records are not limited to the first page.','Dataset tabs separate selected records, same-date related monitoring and facilities, activity, available previous snapshots and source coverage. Exact keys, compatible CA identifiers and reporting dates govern linkage. Missing identifiers are never guessed. Search and column filters refine only the active dataset. Download includes every matching row across all pages. Back preserves dashboard filters.']});sourceTable(a);renderDrillAnalysis(a);panel.querySelectorAll('[data-drill-mode]').forEach(b=>{b.onclick=()=>drillMode(a,b.dataset.drillMode);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const mode=e.key==='Home'?'analysis':e.key==='End'?'records':a.mode==='analysis'?'records':'analysis';drillMode(a,mode);panel.querySelector('[data-drill-mode="'+mode+'"]').focus();};});drillMode(a,'analysis');global.WCSUI.enhance(panel);panel.querySelector('.cd-detail-heading h2').focus({preventScroll:true});
+  a.overlay=global.CreditAnalysisOverlay({root,panel,title:title||m.title,onClose:backToDashboard});panel.dataset.nested=String(!!active);root.classList.add('cd-detail-active');$('.ch-skip').setAttribute('href','#cd-record-drill');panel.querySelector('[data-close-drill]').onclick=active?closeDrill:backToDashboard;if(active)panel.querySelector('[data-close-drill]').innerHTML=backIcon+'Back to analysis';panel.querySelector('input').oninput=e=>{a.query=e.target.value.trim().toLowerCase();a.page=0;sourceTable(a);};panel.querySelector('[data-drill-method]').onclick=()=>methodology(id,{title:'Drill-down records',note:selection||title||m.title,explanation:['All source records attached to the clicked bar, slice, summary count or table group, within the current filters. The table preserves supplied fields and identifiers. Records are not limited to the first page.','Dataset tabs separate selected records, same-date related monitoring and facilities, activity, available previous snapshots and source coverage. Exact keys, compatible CA identifiers and reporting dates govern linkage. Missing identifiers are never guessed. Search and column filters refine only the active dataset. Download includes every matching row across all pages. Back preserves dashboard filters.']});sourceTable(a);renderDrillAnalysis(a);panel.querySelectorAll('[data-drill-mode]').forEach(b=>{b.onclick=()=>drillMode(a,b.dataset.drillMode);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const mode=e.key==='Home'?'analysis':e.key==='End'?'records':a.mode==='analysis'?'records':'analysis';drillMode(a,mode);panel.querySelector('[data-drill-mode="'+mode+'"]').focus();};});drillMode(a,'analysis');global.CreditUI.enhance(panel);panel.querySelector('.cd-detail-heading h2').focus({preventScroll:true});
  }
  function drillMetric(key){const id='metric-'+key;if(getCustomDefinition?.(id)||metricNames[key]){openMetric(key);return;}drill(id,getRows(id)??getRows(key)??[],null,key);}
 
@@ -1081,7 +1055,7 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   if(onExpand?.(id,selectedRows,selection))return;
   clearInline();
   if(active?.id===id){active.records=selectedRows||active.allRecords||getRows(id)||values(id);active.source=!!(selectedRows||getRows(id));active.selection=selection||'';active.query='';active.tableState=global.CreditTables.createState();active.page=0;active.panel.querySelector('.cd-search-label input').value='';active.panel.querySelectorAll('[data-source-filter]').forEach(b=>b.setAttribute('aria-pressed','false'));active.panel.querySelector('.cd-record-note').textContent=selection?'Selected point: '+selection:'All supporting records for this chart';sourceTable();active.selectTableView?.('records');return;}
-  if(active)restore();const m=meta(id);if(!m.card)return;global.WCSUI.closePopover();
+  if(active)restore();const m=meta(id);if(!m.card)return;global.CreditUI.closePopover();
   const chart=chartFor(id),placeholder=document.createComment('Chart position'),panel=document.createElement('section');panel.className='cd-detail-page';panel.id='cd-chart-analysis';panel.setAttribute('aria-label',m.title+' expanded analysis');m.card.before(placeholder);
   const hidden=[];
   panel.innerHTML='<div class="cd-detail-heading"><div><span class="cd-eyebrow">EXPANDED CHART</span><h2 tabindex="-1">'+esc(m.title)+'</h2><p>Current filters and chart controls are retained.</p></div><button type="button" class="ch-btn cd-back-dashboard" data-close-chart>'+backIcon+'Back to dashboard</button></div><div class="cd-analysis-kpis"></div><div class="cd-chart-slot"></div><div class="cd-analysis-grid"></div><section class="ch-card cd-source-card"><div class="ch-toolbar"><div><h2>'+(getRows(id)?'Supporting records':'Chart values')+'</h2><p class="cd-record-note">'+esc(selection?'Selected point: '+selection:'All supporting records for this chart')+'</p></div><div class="ch-actions"><button class="cw-icon-btn cd-section-method" data-source-method aria-label="Methodology for supporting records">'+infoIcon+'</button></div></div><div class="cd-record-toolbar"><div class="cd-source-filters pal-segments" role="group" aria-label="Supporting record category"></div><label class="cd-search-label ct-global-search"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><input type="search" aria-label="Search expanded chart data" placeholder="Search records…"></label></div><div class="cd-records"></div></section>';
@@ -1243,7 +1217,7 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
  }
  function clearInline(card,restorePosition=false){const list=card?[inline.get(card)].filter(Boolean):[...inline.values()];for(const a of list){root.dispatchEvent(new CustomEvent('credit:table-reset',{detail:{panel:a.card}}));a.charts.forEach(c=>c.destroy());a.host.remove();a.controls?.remove();a.hidden.forEach(([el,hidden])=>el.hidden=hidden);a.card.style.minHeight=a.minHeight;a.card.className=a.className;inline.delete(a.card);if(inlineFocus===a)inlineFocus=null;getCharts().find(c=>c.renderTo===a.element)?.reflow();if(restorePosition){a.card.querySelector('[data-chart-expand]')?.focus({preventScroll:true});global.scrollTo({top:a.originScroll,behavior:'instant'});}}syncExport();}
  function inlineTable(a){const records=a.leaf?.datasets[a.dataset]||a.rows,state=a.tableState??=global.CreditTables.createState(),keys=[...new Set(['relationship_id','relationship_name','facility_id','region','product','owner_name','banker_name','tfa','osuc','status','as_of_date',...records.flatMap(Object.keys)])].filter(k=>records.some(r=>Object.hasOwn(r,k))).filter(k=>!k.startsWith('pal_')&&k!=='demo_scenario'),columns=keys.map(key=>({key,label:labels[key]||key.replaceAll('_',' '),format:v=>textValue(key,v)})),rows=global.CreditTables.select(records,columns,state);a.exportRows=rows;state.page=Math.min(state.page,Math.max(0,Math.ceil(rows.length/state.pageSize)-1));const area=a.host.querySelector('.cd-records'),shown=rows.slice(state.page*state.pageSize,(state.page+1)*state.pageSize);
- area.innerHTML='<div class="wcs-data-table-scroll"><table class="wcs-data-table"><thead></thead><tbody>'+shown.map(r=>'<tr>'+keys.map(k=>'<td>'+esc(textValue(k,r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+ area.innerHTML='<div class="credit-data-table-scroll"><table class="credit-data-table"><thead></thead><tbody>'+shown.map(r=>'<tr>'+keys.map(k=>'<td>'+esc(textValue(k,r[k]))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
  global.CreditTables.bindRows({table:area.querySelector('table'),rows:shown});
  global.CreditTables.decorate({table:area.querySelector('table'),rows:records,columns,state,onChange:()=>{state.page=0;inlineTable(a);},matched:rows.length,local:true});global.CreditTables.pagination({host:area,total:rows.length,page:state.page,pageSize:state.pageSize,onChange:(page,size)=>{state.page=page;state.pageSize=size;inlineTable(a);}});syncExport();}
  // Summary rows keep the exact dataset array used by the supporting table.
@@ -1260,13 +1234,13 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
  const heading=ids.length===1?'Facility '+ids[0]:rels.length===1?'Relationship '+rels[0]:'Selected records';
  let html='<div class="pj-leaf"><h2 class="pj-leaf-heading">'+esc(heading)+'</h2>'+section('Relationship & ownership',fields(['relationship_id','relationship_name','facility_id','ca_id','region','product','banker_name','owner_name','team_lead','owner_role']));
  if(facilities.length){
-  html+=section('Facility balances · USD','<div class="wcs-data-table-scroll"><table class="wcs-data-table" data-table-mode="summary" data-pj-facilities><thead><tr><th>Facility</th><th>TFA</th><th>OSUC</th><th>Outstanding</th><th>Source date</th></tr></thead><tbody>'+facilities.map(r=>'<tr><td>'+esc(r.facility_id)+'</td>'+['tfa','osuc','total_os'].map(k=>'<td>'+esc(Number.isFinite(r[k])?'$'+textValue(k,r[k]):'Unavailable')+'</td>').join('')+'<td>'+esc(r.as_of_date)+'</td></tr>').join('')+'</tbody></table></div>');
+  html+=section('Facility balances · USD','<div class="credit-data-table-scroll"><table class="credit-data-table" data-table-mode="summary" data-pj-facilities><thead><tr><th>Facility</th><th>TFA</th><th>OSUC</th><th>Outstanding</th><th>Source date</th></tr></thead><tbody>'+facilities.map(r=>'<tr><td>'+esc(r.facility_id)+'</td>'+['tfa','osuc','total_os'].map(k=>'<td>'+esc(Number.isFinite(r[k])?'$'+textValue(k,r[k]):'Unavailable')+'</td>').join('')+'<td>'+esc(r.as_of_date)+'</td></tr>').join('')+'</tbody></table></div>');
  }
  const dates=['as_of_date','facility_first_approval_date','origination_date','renewal_date','maturity_date','ca_expiry_date','ca_expiration_date','due_date','effective_due_date','deferred_date','status','ccm_status','days_past_due','source_aging_bucket'];
  if(dates.some(k=>records.some(r=>present(r[k]))))html+=section('Dates & status',fields(dates));
  if(!a.c.history&&a.leaf.linked.matched<a.leaf.linked.total)html+='<p class="pj-leaf-note">'+esc(a.leaf.linked.total-a.leaf.linked.matched)+' selected records have no direct, unambiguous same-date facility match. Explicit covenant associations may provide related facilities; original records remain available in Data.</p>';
  const categories=Object.keys(domains).filter(k=>a.leaf.datasets[k]);
- if(categories.length)html+=section('Related monitoring','<p class="pj-leaf-note">Selected facilities · same reporting date · all supplied statuses</p><div class="wcs-data-table-scroll"><table class="wcs-data-table" data-table-mode="summary" data-pj-related-table><thead><tr><th>Area</th><th>Source records</th><th>Past due</th><th>Coming due</th></tr></thead><tbody>'+categories.map(k=>{const rs=a.leaf.datasets[k];return '<tr><td><button type="button" class="ch-row-link" data-pj-related="'+k+'">'+esc(domains[k])+'</button></td><td>'+rs.length+'</td><td>'+rs.filter(r=>r.status==='PAST_DUE').length+'</td><td>'+rs.filter(r=>r.coming_due&&!r.action_required).length+'</td></tr>';}).join('')+'</tbody></table></div>');
+ if(categories.length)html+=section('Related monitoring','<p class="pj-leaf-note">Selected facilities · same reporting date · all supplied statuses</p><div class="credit-data-table-scroll"><table class="credit-data-table" data-table-mode="summary" data-pj-related-table><thead><tr><th>Area</th><th>Source records</th><th>Past due</th><th>Coming due</th></tr></thead><tbody>'+categories.map(k=>{const rs=a.leaf.datasets[k];return '<tr><td><button type="button" class="ch-row-link" data-pj-related="'+k+'">'+esc(domains[k])+'</button></td><td>'+rs.length+'</td><td>'+rs.filter(r=>r.status==='PAST_DUE').length+'</td><td>'+rs.filter(r=>r.coming_due&&!r.action_required).length+'</td></tr>';}).join('')+'</tbody></table></div>');
  else if(!a.c.history)html+='<p class="pj-leaf-note">No same-date monitoring records are linked in the available page scope.</p>';
  if(profile){host.innerHTML=html+'</div>';global.CreditTables.bindRows({table:host.querySelector('[data-pj-facilities]'),rows:facilities});}
  dataHost.querySelector('.pj-leaf-datasets')?.remove();const bar=document.createElement('div');bar.className='pj-leaf-datasets';bar.innerHTML='<h3>Supporting records</h3><div class="pal-segments" aria-label="Supporting datasets">'+Object.entries(a.leaf.datasets).filter(([key,rs])=>key==='records'||rs.length).map(([key,rs])=>'<button type="button" data-pj-dataset="'+key+'" aria-pressed="'+(key==='records')+'">'+esc(datasetLabels[key]||key)+' · '+rs.length+'</button>').join('')+'</div>';dataHost.prepend(bar);global.CreditTables.enhanceNumbers(host);
@@ -1280,7 +1254,7 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
  const setView=mode=>{a.mode=mode;controls.querySelectorAll('[data-pj-inline-view]').forEach(b=>{const selected=b.dataset.pjInlineView===mode;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1;});(plotHost.closest('.cw-donut-layout')||plotHost).hidden=mode==='data';a.host.querySelector('[data-pj-inline-data]').hidden=mode!=='data'&&!!n;controls.querySelector('label').hidden=mode!=='data'&&!!n;if(mode==='data'||!n)inlineTable(a);else a.charts.forEach(c=>c.reflow());inlineFocus=a;syncExport();global.CreditControls?.enhance(controls);if(a.host.querySelector('.pj-drill-context').getBoundingClientRect().bottom<0)a.card.scrollIntoView({block:'start',behavior:'instant'});};
  a.host.querySelectorAll('[data-pj-dataset]').forEach(b=>b.onclick=()=>{a.dataset=b.dataset.pjDataset;a.tableState=global.CreditTables.createState();controls.querySelector('input').value='';a.host.querySelectorAll('[data-pj-dataset]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.pjDataset===a.dataset)));setView('data');});
  bindDatasetRows(a.host.querySelector('[data-pj-related-table]'),Object.fromEntries(Object.entries(a.leaf.datasets).filter(([key])=>Object.hasOwn(domains,key))),key=>a.host.querySelector('[data-pj-dataset="'+key+'"]').click());
- controls.querySelectorAll('[data-pj-inline-view]').forEach(b=>{b.onclick=()=>setView(b.dataset.pjInlineView);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();setView(e.key==='Home'?'charts':e.key==='End'?'data':a.mode==='data'?'charts':'data');controls.querySelector('[data-pj-inline-view="'+a.mode+'"]').focus();};});controls.querySelector('input').oninput=e=>{a.tableState.query=e.target.value;a.tableState.page=0;inlineTable(a);};setView(a.mode);syncExport();global.WCSUI.enhance(a.card);global.CreditControls?.enhance(controls);if(a.host.querySelector('.pj-drill-context').getBoundingClientRect().bottom<0)a.card.scrollIntoView({block:'start',behavior:'instant'});}
+ controls.querySelectorAll('[data-pj-inline-view]').forEach(b=>{b.onclick=()=>setView(b.dataset.pjInlineView);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();setView(e.key==='Home'?'charts':e.key==='End'?'data':a.mode==='data'?'charts':'data');controls.querySelector('[data-pj-inline-view="'+a.mode+'"]').focus();};});controls.querySelector('input').oninput=e=>{a.tableState.query=e.target.value;a.tableState.page=0;inlineTable(a);};setView(a.mode);syncExport();global.CreditUI.enhance(a.card);global.CreditControls?.enhance(controls);if(a.host.querySelector('.pj-drill-context').getBoundingClientRect().bottom<0)a.card.scrollIntoView({block:'start',behavior:'instant'});}
  function click(id,rows,selection,element){const el=element||$('#'+id),card=el?.closest('.ch-card');if(!card||card.closest('.cd-detail-page'))return false;const c=contract(id,rows||[],selection,getSettings());clearInline();const originalHeight=card.getBoundingClientRect().height,host=document.createElement('div');host.className='cd-inline-drill pj-inline';const head=card.querySelector('.ch-card-head'),hidden=[...card.children].filter(e=>e!==head).map(el=>[el,el.hidden]);head?.querySelectorAll('.pal-segments,[data-pal-setting],[data-chart-method]').forEach(el=>hidden.push([el,el.hidden]));hidden.forEach(([el])=>el.hidden=true);
  const a={inline:true,c,id,card,element:el,host,hidden,originScroll:global.scrollY,className:card.className,minHeight:card.style.minHeight,charts:[],rows:rows||[],used:[],mode:'charts',trail:[{label:selection||c.title,rows:rows||[],used:[],c}]};card.style.minHeight='0px';card.classList.add('pj-inline-active');card.append(host);inline.set(card,a);drawInline(a);a.card.scrollIntoView({block:'start',behavior:'instant'});return true;}
 
@@ -1345,7 +1319,7 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
   profile.innerHTML='<div class="ch-card-head"><h3>'+esc(relIds.length===1?[relIds[0],a.rows.find(r=>r.relationship_name)?.relationship_name].filter(Boolean).join(' — '):'Selection details')+'</h3>'+methodButton+'</div><dl class="pj-entity-facts">'+keys.filter(k=>k!=='relationship_id'&&k!=='relationship_name').map(key=>{const vals=[...new Set(a.rows.map(r=>r[key]).filter(present))];return vals.length?'<div><dt>'+esc(labels[key]||key)+'</dt><dd>'+esc(vals.length>3?number(vals.length)+' distinct':vals.join(' · '))+'</dd></div>':'';}).join('')+'</dl>';
   grid.append(profile);profile.querySelector('[data-pj-method]').onclick=()=>explain(a);
   if(facilityRows.length){
-   const card=document.createElement('section');card.className='ch-card cw-framed-card pj-facility-summary';card.innerHTML='<div class="ch-card-head"><h3>Facility balances</h3>'+methodButton+'</div><div class="wcs-data-table-scroll"><table class="wcs-data-table" data-table-mode="summary"><thead><tr><th>Facility</th><th>TFA · USD</th><th>OSUC · USD</th><th>Outstanding · USD</th></tr></thead><tbody>'+facilityRows.slice(0,10).map(r=>'<tr><td>'+esc(r.facility_id)+'</td>'+['tfa','osuc','total_os'].map(k=>'<td>'+esc(format(Number.isFinite(r[k])?r[k]:null,{measure:k}))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'+(facilityRows.length>10?'<p class="pj-scope-note">First 10 facilities · all facilities are available in Data.</p>':'');grid.append(card);card.querySelector('[data-pj-method]').onclick=()=>explain(a);global.CreditTables.bindRows({table:card.querySelector('table'),rows:facilityRows.slice(0,10)});
+   const card=document.createElement('section');card.className='ch-card cw-framed-card pj-facility-summary';card.innerHTML='<div class="ch-card-head"><h3>Facility balances</h3>'+methodButton+'</div><div class="credit-data-table-scroll"><table class="credit-data-table" data-table-mode="summary"><thead><tr><th>Facility</th><th>TFA · USD</th><th>OSUC · USD</th><th>Outstanding · USD</th></tr></thead><tbody>'+facilityRows.slice(0,10).map(r=>'<tr><td>'+esc(r.facility_id)+'</td>'+['tfa','osuc','total_os'].map(k=>'<td>'+esc(format(Number.isFinite(r[k])?r[k]:null,{measure:k}))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'+(facilityRows.length>10?'<p class="pj-scope-note">First 10 facilities · all facilities are available in Data.</p>':'');grid.append(card);card.querySelector('[data-pj-method]').onclick=()=>explain(a);global.CreditTables.bindRows({table:card.querySelector('table'),rows:facilityRows.slice(0,10)});
   }
  }
  // Insights are compact, calculated facts. Calculation caveats live in Methodology.
@@ -1363,7 +1337,7 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
  const categories=Object.keys(domains).filter(category=>relatedRows.some(r=>r.category===category));
  if(categories.length){
   const card=document.createElement('section');card.className='ch-card cw-framed-card pj-linked-monitoring';
-  card.innerHTML='<div class="ch-card-head"><div><h3>Linked monitoring</h3><p class="ch-card-sub">Same-date facilities · all supplied statuses</p></div>'+methodButton+'</div><div class="wcs-data-table-scroll"><table class="wcs-data-table" data-table-mode="summary"><thead><tr><th>Area</th><th>Source records</th><th>Actions required</th><th>Coming due</th></tr></thead><tbody>'+categories.map(category=>{const rows=relatedRows.filter(r=>r.category===category);return '<tr><td><button type="button" class="ch-row-link" data-pj-domain="'+category+'">'+esc(domains[category])+'</button></td><td>'+number(rows.length)+'</td><td>'+number(rows.filter(r=>r.action_required).length)+'</td><td>'+number(rows.filter(r=>r.coming_due&&!r.action_required).length)+'</td></tr>';}).join('')+'</tbody></table></div>';grid.append(card);
+  card.innerHTML='<div class="ch-card-head"><div><h3>Linked monitoring</h3><p class="ch-card-sub">Same-date facilities · all supplied statuses</p></div>'+methodButton+'</div><div class="credit-data-table-scroll"><table class="credit-data-table" data-table-mode="summary"><thead><tr><th>Area</th><th>Source records</th><th>Actions required</th><th>Coming due</th></tr></thead><tbody>'+categories.map(category=>{const rows=relatedRows.filter(r=>r.category===category);return '<tr><td><button type="button" class="ch-row-link" data-pj-domain="'+category+'">'+esc(domains[category])+'</button></td><td>'+number(rows.length)+'</td><td>'+number(rows.filter(r=>r.action_required).length)+'</td><td>'+number(rows.filter(r=>r.coming_due&&!r.action_required).length)+'</td></tr>';}).join('')+'</tbody></table></div>';grid.append(card);
   card.querySelector('[data-pj-method]').onclick=()=>explain(a);bindDatasetRows(card.querySelector('table'),Object.fromEntries(categories.map(key=>[key,a.datasets[key]])),key=>{a.panel.querySelector('[data-pj-dataset="'+key+'"]').click();setMode(a,'data');});
  }
  if(!grid.children.length)grid.innerHTML='<p class="ch-empty">No records match this selection.</p>';
@@ -1371,11 +1345,11 @@ global.CreditPortfolioJourney=function({root,esc,getRows,getData,getScope,getSet
  a.panel.querySelectorAll('[data-pj-dataset]').forEach(b=>b.onclick=()=>{a.dataset=b.dataset.pjDataset;renderTable(a);a.panel.querySelectorAll('[data-pj-dataset]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.pjDataset===a.dataset)));global.CreditControls?.enhance(a.panel);});
  a.panel.querySelector('input[type=search]').oninput=e=>{const t=tableState(a);t.query=e.target.value;t.page=0;renderTable(a);};
  a.panel.querySelectorAll('[data-pj-view]').forEach(b=>{b.onclick=()=>setMode(a,b.dataset.pjView);b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();setMode(a,e.key==='Home'?'charts':e.key==='End'?'data':a.mode==='charts'?'data':'charts');a.panel.querySelector('[data-pj-view="'+a.mode+'"]').focus();};});
- renderTable(a);setMode(a,a.mode);global.CreditTables.enhanceNumbers(a.panel);a.panel.querySelectorAll('[data-pj-method]').forEach(b=>b.setAttribute('aria-label','Methodology for '+(b.closest('.ch-card')?.querySelector('h2,h3')?.textContent||a.title)));global.WCSUI.enhance(a.panel);global.CreditControls?.enhance(a.panel);
+ renderTable(a);setMode(a,a.mode);global.CreditTables.enhanceNumbers(a.panel);a.panel.querySelectorAll('[data-pj-method]').forEach(b=>b.setAttribute('aria-label','Methodology for '+(b.closest('.ch-card')?.querySelector('h2,h3')?.textContent||a.title)));global.CreditUI.enhance(a.panel);global.CreditControls?.enhance(a.panel);
  }
  function tableState(a){return a.tableStates[a.dataset]??=global.CreditTables.createState();}
  function renderTable(a){const records=a.datasets[a.dataset]||[],state=tableState(a),preferred=['relationship_id','relationship_name','facility_id','covenant_id','category','status','ccm_status','source_aging_bucket','region','product','banker_name','owner_name','as_of_date','match_status','tfa','osuc','tfa_usd','osuc_usd'];const keys=[...new Set([...preferred,...records.flatMap(Object.keys)])].filter(k=>!k.startsWith('pal_')&&k!=='demo_scenario'&&records.some(r=>present(r[k])));const columns=keys.map(key=>({key,label:({relationship_id:'Relationship ID',facility_id:'Facility ID',owner_id:'Underwriter / specialist ID'})[key]||labels[key]||key.replaceAll('_',' '),format:v=>textValue(key,v)}));const rows=global.CreditTables.select(records,columns,state);a.exportRows=rows;state.page=Math.min(state.page,Math.max(0,Math.ceil(rows.length/state.pageSize)-1));const shown=rows.slice(state.page*state.pageSize,(state.page+1)*state.pageSize),area=a.panel.querySelector('.cd-records');a.panel.querySelector('input[type=search]').value=state.query;
- area.innerHTML='<div class="wcs-data-table-scroll"><table class="wcs-data-table"><thead></thead><tbody>'+shown.map((r,i)=>'<tr>'+keys.map(key=>'<td>'+(present(r[key])&&['relationship_id','facility_id'].includes(key)?'<button type="button" class="ch-row-link" data-pj-entity="'+key+'" data-pj-row="'+i+'">'+esc(textValue(key,r[key]))+'</button>':esc(textValue(key,r[key])))+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No matching records. Clear the table filters to broaden this view.</p>':'')+'</div>';
+ area.innerHTML='<div class="credit-data-table-scroll"><table class="credit-data-table"><thead></thead><tbody>'+shown.map((r,i)=>'<tr>'+keys.map(key=>'<td>'+(present(r[key])&&['relationship_id','facility_id'].includes(key)?'<button type="button" class="ch-row-link" data-pj-entity="'+key+'" data-pj-row="'+i+'">'+esc(textValue(key,r[key]))+'</button>':esc(textValue(key,r[key])))+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No matching records. Clear the table filters to broaden this view.</p>':'')+'</div>';
  global.CreditTables.bindRows({table:area.querySelector('table'),rows:shown});
  area.querySelectorAll('[data-pj-entity]').forEach(button=>button.onclick=()=>button.closest('table').dispatchEvent(new CustomEvent('credit:table-drill',{bubbles:true,detail:{rows:[shown[+button.dataset.pjRow]],label:global.CreditTables.rowLabel(shown[+button.dataset.pjRow]),table:button.closest('table'),trigger:button}})));
  global.CreditTables.decorate({table:area.querySelector('table'),rows:records,columns,state,onChange:()=>{state.page=0;renderTable(a);},matched:rows.length,local:true});global.CreditTables.pagination({host:area,total:rows.length,page:state.page,pageSize:state.pageSize,onChange:(page,size)=>{state.page=page;state.pageSize=size;renderTable(a);}});syncExport();}
@@ -1448,7 +1422,7 @@ global.CreditPAL=function(ctx){
  }
  function card(id,title,sub,controls=''){return '<section class="ch-card pal-card"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2><p class="ch-card-sub">'+esc(sub)+'</p></div><button class="pal-detail" data-pal-detail="'+id+'" aria-label="View '+esc(title)+' data">View data ↗</button></div>'+controls+'<div id="'+id+'" class="ch-chart"></div></section>';}
  function trendTabs(key,label,options){return '<div class="pal-trend-control"><span class="pal-control-label">'+esc(label)+'</span><div class="pal-segments" role="group" aria-label="'+esc(label)+'">'+options.map(([v,t])=>'<button type="button" data-pal-tab="'+key+'" data-value="'+esc(v)+'" aria-pressed="'+(String(settings[key])===String(v))+'">'+esc(t)+'</button>').join('')+'</div></div>';}
- function simpleTable(headers,rows,key){if(key)tableRows.set(key,rows);return '<div class="wcs-data-table-scroll"><table class="wcs-data-table"'+(key?' data-pal-table="'+key+'"':'')+'><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="'+(i?'num':'')+'">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((v,i)=>'<td class="'+(i?'num':'')+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
+ function simpleTable(headers,rows,key){if(key)tableRows.set(key,rows);return '<div class="credit-data-table-scroll"><table class="credit-data-table"'+(key?' data-pal-table="'+key+'"':'')+'><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="'+(i?'num':'')+'">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((v,i)=>'<td class="'+(i?'num':'')+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';}
  function chart(id,type,cats,series,rows,{stacked=false,kind='count',target=null,onPoint=null,height=310,axes=null,paired=false}={}){
   details[id]=rows;if(ctx.shouldDraw&&!ctx.shouldDraw(id))return;const el=$('#'+id);el.style.height=height+'px';if(!rows.length){el.innerHTML='<p class="ch-empty">No eligible records in this selection.</p>';return;}if(!global.Highcharts){el.innerHTML='<p class="ch-empty">Chart library unavailable. Use View data.</p>';return;}
   const c=global.Highcharts.chart(el,{chart:{type,height,...(paired?{marginTop:65,marginBottom:75}:{}),alignTicks:!axes,backgroundColor:'transparent',animation:false,style:{fontFamily:getComputedStyle(root).fontFamily},spacing:[16,16,8,6]},title:{text:null},credits:{enabled:false},colors:COLORS,accessibility:{description:ctx.state().tab==='portfolio'?'Select a chart point to explore that population locally; other charts remain unchanged.':'Select a chart point to inspect its source records.'},xAxis:{categories:cats,lineColor:'#E1E8EF',tickLength:0,labels:{style:{color:'#697586',fontSize:'11px'}}},yAxis:axes||{reversedStacks:false,title:{text:null},gridLineColor:'#E8ECF2',gridLineDashStyle:'Dash',allowDecimals:kind!=='count',labels:{formatter:function(){return format(this.value,kind);},style:{color:'#697586',fontSize:'10px'}},plotLines:target===null?[]:[{value:target,color:'#0F1632',width:1,dashStyle:'Dash',zIndex:5,label:{text:'12% target',style:{fontSize:'10px',color:'#0F1632'}}}]},legend:{enabled:id!=='creditClassificationChart'&&(type==='pie'||series.length>1),align:'center',verticalAlign:'bottom',itemStyle:{fontWeight:'normal',fontSize:'11px',color:'#697586'},symbolRadius:2},tooltip:{useHTML:false,formatter:function(){const p=this.point;if(id==='monitoringPriorityChart')return '<b>'+esc(cats[p.index])+'</b><br>'+esc(this.series.name)+': '+num(this.y)+'<br>Source dates: '+esc(p.custom.dates.join(', ')||'No records in current scope');if(id==='relationshipChart')return '<b>'+esc(cats[p.index]||p.name||'')+'</b><br>'+esc(measures[settings.measure])+': '+money(p.custom.exposure)+'<br>ROTCE: '+(p.custom.rotce===null?'Unavailable':pct(p.custom.rotce))+'<br>Target: 12%';return '<b>'+esc(p.name||cats[p.index]||'')+'</b><br>'+esc(this.series.name)+': '+format(this.y,kind)+(p.custom?.count!==undefined?'<br>Facilities: '+num(p.custom.count):'');}},plotOptions:{series:{animation:false,stacking:stacked?'normal':undefined,borderWidth:0,cursor:'pointer',point:{events:{click:function(){if(onPoint)onPoint(this);else ctx.openChart(id,this.options.custom?.rows||rows,(this.name||cats[this.index]||'Selected group')+' · '+this.series.name);}}}},column:id==='facilityTrendChart'?{borderRadius:3,groupPadding:.28,pointPadding:.04}:{borderRadius:3,maxPointWidth:34},bar:{borderRadius:3,maxPointWidth:20,...(paired?{pointWidth:16}:{})},pie:{innerSize:'68%',dataLabels:{enabled:false},showInLegend:true,borderWidth:2,borderColor:'#fff'}},series,responsive:{rules:[{condition:{maxWidth:420},chartOptions:{chart:{spacing:[12,4,4,0]},legend:{itemStyle:{fontSize:'10px'}}}}]}});ctx.addChart(c);if(type==='pie')global.CreditDonut?.(c,{esc,format:v=>format(v,kind),label:kind==='money'?'Total · USD':'Total '+(id==='covenantMonitoringChart'?'covenants':'facilities'),onSelect:p=>ctx.openChart(id,p.custom?.rows||rows,p.name)});
@@ -1480,7 +1454,7 @@ global.CreditPAL=function(ctx){
  function snapshot(rows){
   const counts=[['Facilities',unique(rows,'facility_id'),'facilities'],['Relationships',unique(rows,'relationship_id'),'relationships'],['CAs expired',unique(rows.filter(r=>r.pal_ca_expired),'relationship_id'),'caexpired'],['Facilities expired',unique(rows.filter(r=>r.pal_facility_expired),'facility_id'),'expired']];
   tableRows.set('coverage',counts.map(([name,count,key])=>summaryRow([],key==='caexpired'?rows.filter(r=>r.pal_ca_expired):key==='expired'?rows.filter(r=>r.pal_facility_expired):rows,name)));
-  return '<section class="ch-card pal-table-card" id="pal-snapshot" data-table-mode="summary"><div class="ch-card-head"><div><h2>Portfolio coverage</h2><p class="ch-card-sub">Current portfolio · select a count to inspect</p></div></div><div class="wcs-data-table-scroll"><table class="wcs-data-table" data-pal-table="coverage"><thead><tr><th scope="col">Measure</th><th scope="col" class="num">Count</th></tr></thead><tbody>'+counts.map(([name,count,key],i)=>'<tr><th scope="row"><span class="pal-snapshot-label"><i style="background:'+COLORS[i]+'" aria-hidden="true"></i>'+name+'</span></th><td class="num"><button class="ch-row-link" data-pal-rows="'+key+'" data-title="'+name+'" aria-label="View '+name.toLowerCase()+' records">'+num(count)+(global.CreditIcons?.icon('arrow')||'↗')+'</button></td></tr>').join('')+'</tbody></table></div></section>';
+  return '<section class="ch-card pal-table-card" id="pal-snapshot" data-table-mode="summary"><div class="ch-card-head"><div><h2>Portfolio coverage</h2><p class="ch-card-sub">Current portfolio · select a count to inspect</p></div></div><div class="credit-data-table-scroll"><table class="credit-data-table" data-pal-table="coverage"><thead><tr><th scope="col">Measure</th><th scope="col" class="num">Count</th></tr></thead><tbody>'+counts.map(([name,count,key],i)=>'<tr><th scope="row"><span class="pal-snapshot-label"><i style="background:'+COLORS[i]+'" aria-hidden="true"></i>'+name+'</span></th><td class="num"><button class="ch-row-link" data-pal-rows="'+key+'" data-title="'+name+'" aria-label="View '+name.toLowerCase()+' records">'+num(count)+(global.CreditIcons?.icon('arrow')||'↗')+'</button></td></tr>').join('')+'</tbody></table></div></section>';
  }
  function overview(rows){
   rows=filterRows(rows);
@@ -1852,7 +1826,7 @@ g.CreditMonitoring=function(ctx){
 })(window);
 
 ;
-/* Covenants domain: legacy field parity, shared aging and WCSpedia presentation. */
+/* Covenants domain: legacy field parity, shared aging and dashboard presentation. */
 (function(global){'use strict';
 const FIELDS={
  as_of_date:['As Of Date','As_Of_Date','Report_Date','Report Date'],region:['Region'],
@@ -1966,7 +1940,7 @@ global.CreditCovenants=function(ctx){
  function methodButton(id,title){return '<button class="cw-icon-btn cd-section-method" data-cov-method="'+id+'" aria-label="Methodology for '+esc(title)+'">'+icon('info')+'</button>';}
  function tableCard(id,title,headers,rows,rule,note='',mode='summary'){
   definition(id,title,scope,rule,note);registry[id].table={headers,rows};
-  return '<section '+(mode==='summary'?'data-expandable-table ':'')+'id="'+id+'" data-table-mode="'+mode+'" class="ch-card pal-table-card cov-table-card cw-framed-card'+(mode==='detail'?' cd-insight-card cd-insight-table cd-wide':'')+'"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2>'+(note?'<p class="ch-card-sub">'+esc(note)+'</p>':'')+'</div>'+methodButton(id,title)+'</div><div class="wcs-data-table-scroll"><table class="wcs-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No records in this scope.</p>':'')+'</div></section>';
+  return '<section '+(mode==='summary'?'data-expandable-table ':'')+'id="'+id+'" data-table-mode="'+mode+'" class="ch-card pal-table-card cov-table-card cw-framed-card'+(mode==='detail'?' cd-insight-card cd-insight-table cd-wide':'')+'"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2>'+(note?'<p class="ch-card-sub">'+esc(note)+'</p>':'')+'</div>'+methodButton(id,title)+'</div><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No records in this scope.</p>':'')+'</div></section>';
  }
  function chartCard(id,title,rows,rule,note='',controls=''){
   definition(id,title,rows,rule,note);
@@ -2152,7 +2126,7 @@ function navigatePage(target,nextDrill){
  let href=config.mode==='demo'?'./'+target.toLowerCase()+'.html':null;
  const id=String(config.pageIds?.[target]||'');
  if(config.mode!=='demo'&&/^[1-9]\d*$/.test(id))href=(config.contextPath||'/confluence')+'/pages/viewpage.action?pageId='+id;
- if(!href){const d=global.WCSUI.dialog({title:'Page link not configured',description:'Open '+(nav.find(n=>n[0]===target)?.[1]||target)+' from the native Confluence page tree. Its page ID must be added to the shared dashboard configuration to enable this shortcut.',body:'<p>The current dashboard and filters are unchanged.</p>'});d.element.classList.add('credit-ui-surface');return;}
+ if(!href){const d=global.CreditUI.dialog({title:'Page link not configured',description:'Open '+(nav.find(n=>n[0]===target)?.[1]||target)+' from the native Confluence page tree. Its page ID must be added to the shared dashboard configuration to enable this shortcut.',body:'<p>The current dashboard and filters are unchanged.</p>'});d.element.classList.add('credit-ui-surface');return;}
  const url=new URL(href,location.href);if(url.origin!==location.origin)return;
  for(const field of ['region','owner_id','team_lead','product'])if(state[field])url.searchParams.set('credit_'+field,state[field]);
  if(nextDrill&&['action_required','critical'].includes(nextDrill.key))url.searchParams.set('credit_drill',nextDrill.key);
@@ -2245,9 +2219,9 @@ function chart(id,type,groups,opts={}){const el=$('#'+id);const total=groups.red
 function lineChart(id,rows,measure){const dates=[...new Set(rows.map(r=>r.as_of_date))].sort();if(!global.Highcharts||!dates.length){$('#'+id).innerHTML='<div class="ch-empty">No trend observations.</div>';return;}charts.push(global.Highcharts.chart($('#'+id),{chart:{type:'areaspline',backgroundColor:'transparent',style:{fontFamily:getComputedStyle(root).fontFamily},animation:false},title:{text:null},credits:{enabled:false},legend:{enabled:false},xAxis:{categories:dates,labels:{style:{fontSize:'10px'}}},yAxis:{title:{text:'USD millions'},gridLineColor:'#E8ECF2',gridLineDashStyle:'Dash'},tooltip:{valuePrefix:'$',valueSuffix:'m',valueDecimals:1},plotOptions:{areaspline:{fillOpacity:.06},series:{animation:false,cursor:'pointer',point:{events:{click:function(){drillTo('as_of_date',this.category);}}}}},series:[{name:label(measure),color:'#005BFF',data:dates.map(d=>sum(rows.filter(r=>r.as_of_date===d),measure)/1e6)}]}));}
 function register(title,rows,cols){activeRows=rows;activeColumns=cols;return '<section class="ch-card" id="ch-register"><div class="ch-toolbar"><div><h2>'+esc(title)+'</h2><p class="ch-card-sub">'+(drill?'Filtered by '+esc(label(drill.key))+': '+esc(drill.value):'Select a row for source and record details')+'</p></div></div><div class="ch-register-controls"><label class="ch-register-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="ch-search" type="search" aria-label="Search register" placeholder="Search this register…" value="'+esc(search)+'"></label><span id="ch-register-count" role="status"></span></div><div id="ch-table"></div></section>';}
 function labelValue(v){return label(v);}
-function table(){if(!$('#ch-table'))return;let rows=activeRows.filter(r=>Object.values(r).some(v=>String(v??'').toLowerCase().includes(search.toLowerCase())));if(drill)rows=rows.filter(r=>String(r[drill.key])===String(drill.value));const columnScope=rows,columns=activeColumns.map(([key,label,f])=>({key,label,rangeScale:f==='m'?1e-6:f==='pct'?100:1,rangeUnit:f==='m'?'USD millions':f==='pct'?'percent':'',format:v=>f==='m'?money(v):f==='n'?num(v):f==='pct'?pct(v):f==='badge'?labelValue(v):v}));rows=global.CreditTables.select(rows,columns,tableState);page=Math.min(page,Math.max(0,Math.ceil(rows.length/pageSize)-1));const shown=rows.slice(page*pageSize,page*pageSize+pageSize);$('#ch-table').innerHTML='<div class="ch-table-wrap wcs-data-table-scroll"><table class="wcs-data-table"><thead></thead><tbody>'+shown.map((r,i)=>'<tr>'+activeColumns.map(([k,t,f],j)=>{const v=r[k];let out=f==='m'?money(v):f==='n'?num(v):f==='pct'?pct(v):String(v??'—');return '<td class="'+(f==='n'||f==='m'?'num':'')+'">'+(j===0?'<button class="ch-row-link" data-row="'+i+'">'+esc(out)+'</button>':f==='badge'?badge(v,(k==='status'&&r.action_required)||v==='SUBSTANDARD'):esc(out))+'</td>';}).join('')+'</tr>').join('')+'</tbody></table>'+(!shown.length?'<div class="ch-empty">No matching records. Clear filters or search to broaden the view.</div>':'')+'</div>';
+function table(){if(!$('#ch-table'))return;let rows=activeRows.filter(r=>Object.values(r).some(v=>String(v??'').toLowerCase().includes(search.toLowerCase())));if(drill)rows=rows.filter(r=>String(r[drill.key])===String(drill.value));const columnScope=rows,columns=activeColumns.map(([key,label,f])=>({key,label,rangeScale:f==='m'?1e-6:f==='pct'?100:1,rangeUnit:f==='m'?'USD millions':f==='pct'?'percent':'',format:v=>f==='m'?money(v):f==='n'?num(v):f==='pct'?pct(v):f==='badge'?labelValue(v):v}));rows=global.CreditTables.select(rows,columns,tableState);page=Math.min(page,Math.max(0,Math.ceil(rows.length/pageSize)-1));const shown=rows.slice(page*pageSize,page*pageSize+pageSize);$('#ch-table').innerHTML='<div class="ch-table-wrap credit-data-table-scroll"><table class="credit-data-table"><thead></thead><tbody>'+shown.map((r,i)=>'<tr>'+activeColumns.map(([k,t,f],j)=>{const v=r[k];let out=f==='m'?money(v):f==='n'?num(v):f==='pct'?pct(v):String(v??'—');return '<td class="'+(f==='n'||f==='m'?'num':'')+'">'+(j===0?'<button class="ch-row-link" data-row="'+i+'">'+esc(out)+'</button>':f==='badge'?badge(v,(k==='status'&&r.action_required)||v==='SUBSTANDARD'):esc(out))+'</td>';}).join('')+'</tr>').join('')+'</tbody></table>'+(!shown.length?'<div class="ch-empty">No matching records. Clear filters or search to broaden the view.</div>':'')+'</div>';
 if(state.tab==='deepdive'&&activeColumns.some(c=>c[2]==='m'))$('#ch-table table').insertAdjacentHTML('beforeend','<tfoot><tr>'+activeColumns.map(([k,t,f],i)=>'<td class="'+(f==='m'?'num':'')+'">'+(i===0?'Total matching':f==='m'?esc(money(sum(rows,k))):'')+'</td>').join('')+'</tr></tfoot>');
-global.CreditTables.bindRows({table:$('#ch-table table'),rows:shown,resolve:r=>covenants.getTableRows(r)??[r]});root._exportRows=rows;$('#ch-download').disabled=!rows.length;$('#ch-download').title='Download the filtered register as CSV';$('#ch-register-count').textContent=num(rows.length)+' matching records';global.CreditTables.pagination({host:$('#ch-table'),total:rows.length,page,pageSize,onChange:(next,size)=>{page=next;pageSize=size;table();}});global.CreditTables.decorate({table:$('#ch-table table'),rows:columnScope,columns,state:tableState,onChange:()=>{page=0;table();},matched:rows.length});global.WCSUI.enhance($('#ch-table'));
+global.CreditTables.bindRows({table:$('#ch-table table'),rows:shown,resolve:r=>covenants.getTableRows(r)??[r]});root._exportRows=rows;$('#ch-download').disabled=!rows.length;$('#ch-download').title='Download the filtered register as CSV';$('#ch-register-count').textContent=num(rows.length)+' matching records';global.CreditTables.pagination({host:$('#ch-table'),total:rows.length,page,pageSize,onChange:(next,size)=>{page=next;pageSize=size;table();}});global.CreditTables.decorate({table:$('#ch-table table'),rows:columnScope,columns,state:tableState,onChange:()=>{page=0;table();},matched:rows.length});global.CreditUI.enhance($('#ch-table'));
 }
 function showRows(title,records){if(state.tab==='portfolio'&&portfolioJourney){const key=Object.entries({tfa:'Total facility amount',total_os:'Outstanding',unused_commitment:'Unused commitment',unused_uncommitted:'Unused uncommitted',facilities:'Facilities',relationships:'Relationships',caexpired:'CAs expired',expired:'Facilities expired'}).find(([,name])=>name===title)?.[0]||(/Pending closure/i.test(title)?'pal-pipeline':'portfolio-summary');portfolioJourney.open(key,records,title);return;}chartDetails.drill('source-records',records,title,title);}
 
@@ -2321,7 +2295,7 @@ async function render(targets){
   else throw Error('Unknown dashboard page');
   if(!partialTargets||partialTargets.has('ch-register'))table();
   wireContent();workspace?.apply(state.tab,partialTargets);chartDetails?.apply(partialTargets);
-  global.CreditTables.enhanceStatic(root);global.WCSUI.enhance(root);global.CreditControls?.enhance(root);global.CreditControls?.tableToolbar(root);
+  global.CreditTables.enhanceStatic(root);global.CreditUI.enhance(root);global.CreditControls?.enhance(root);global.CreditControls?.tableToolbar(root);
  }catch(e){
   if(turn===serial&&!startupCancelled){pendingTargets=undefined;partialTargets=null;clearCharts();$('#ch-content').innerHTML='<div class="ch-error"><h2>Data could not be loaded</h2><p>'+esc(e.message)+'</p><button class="ch-btn" data-retry>Retry</button></div>';$('#ch-content [data-retry]').onclick=()=>render();}
  }finally{
@@ -2332,7 +2306,7 @@ function wireContent(){const s=$('#ch-search');if(s)s.oninput=()=>{search=s.valu
 function exportCSV(){const rs=chartDetails?.tableExportRows()??portfolioJourney?.exportRows()??chartDetails?.exportRows()??root._exportRows??[];if(!rs.length)return;const keys=[...new Set(rs.flatMap(Object.keys))];const cell=v=>'"'+(typeof v==='string'?v.replace(/^(\s*[=+@\-]|[\t\r])/,"'$&"):String(v??'')).replaceAll('"','""')+'"';const str='\uFEFF'+[keys,...rs.map(r=>keys.map(k=>r[k]))].map(row=>row.map(cell).join(',')).join('\r\n');const u=URL.createObjectURL(new Blob([str],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='credit-'+state.tab+'-'+manifest.bundle_id+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 try{
 if(config.mode!=='demo'&&new URL(config.baseUrl,location.href).origin!==location.origin)throw Error('Production attachment base must be on the same Confluence origin');
-root.replaceChildren();overlay=global.WCSHeaderLoading?.claim(root)||global.WCSLoadingOverlay?.create({target:root});overlay?.show('Loading Lending Analytics…');await overlay?.paint?.();
+root.replaceChildren();overlay=global.CreditLoadingOverlay?.create({target:root});overlay?.show('Loading Lending Analytics…');await overlay?.paint?.();
 async function initialize(){
 manifest=config.mode==='demo'?global.CREDIT_DEMO?.manifest:await readJSON(attachment('credit-manifest.json'));if(!manifest||manifest.schema_version!==2||!manifest.bundle_id||!manifest.files)throw Error('Unsupported or missing release manifest');if(config.mode!=='demo'&&manifest.is_demo&&config.allowSampleData!==true)throw Error('Illustrative data cannot be loaded in production mode. Publish an approved Access export.');releaseLoader=global.CreditDataCache.createLoader({manifest,attachment,validate:validateRows,contracts,allowDemo:config.allowSampleData===true});await Promise.all([load('monitoring'),load('sources')]);global.CreditDataCache.verifySources('monitoring',data.monitoring,data.sources);if(startupCancelled)return;
 root.innerHTML='<a class="ch-skip" href="#ch-content">Skip to dashboard</a><div class="ch-layout"><main class="ch-main">'+pageBreadcrumb()+'<div class="ch-top"><div><h1 id="ch-title"'+(config.mode!=='demo'?' class="ch-native-title"':'')+'></h1><p class="ch-subtitle" id="ch-subtitle"></p></div><div class="ch-actions"><button class="ch-btn" id="ch-customize">▦ Customize layout</button><button class="ch-btn cw-primary" id="ch-download"><svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download data</button><div class="ch-updated"><span>Last updated</span><strong id="ch-last-updated">—</strong></div></div></div><section class="ch-filters" aria-label="Global filters"><div class="ch-filter-grid">'+[['region','Region'],['owner_id','Underwriter / specialist'],['team_lead','Team lead'],['product','Product']].map(([k,t])=>'<label>'+t+'<select id="ch-'+k+'"><option value="">All '+(k==='owner_id'?'owners':t.toLowerCase()+'s')+'</option>'+[...new Map(data.monitoring.map(r=>[r[k],k==='owner_id'?r.owner_name:r[k]])).entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([v,l])=>'<option value="'+esc(v)+'">'+esc(l)+'</option>').join('')+'</select></label>').join('')+'<button class="ch-btn ch-reset" id="ch-reset">Reset filters</button></div><div class="ch-filter-foot"><span id="ch-filter-status"></span><span id="ch-drill"></span><span>Select chart points to inspect supporting records</span></div></section><div id="ch-content" tabindex="-1"></div><footer class="ch-footer"><span>Wealth Credit Services · Internal use</span><span>Source dates retained for every record</span></footer></main></div>';
@@ -2343,5 +2317,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="505a9eb80728:trends";
+window.CREDIT_PAGE_BUILD="21d315e4b856:trends";
 })();

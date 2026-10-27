@@ -14,7 +14,7 @@
       "LPTM-Hub/PAL-ETL.html:7717",
       "Facility \u00d7 source snapshot",
       "TFA, OS, OSUC, classification, owners, maturity, new business",
-      "Exact regional field maps in Legacy Mappings; currency basis must be confirmed"
+      "Exact regional field maps in schema/legacy-mappings.json; currency basis must be confirmed"
     ],
     [
       "Portfolio_current.xlsx / .xlsb",
@@ -22,7 +22,7 @@
       "LPTM-Hub/PAL-dashboard.html:3356; PAL-ETL.html:5399",
       "Facility snapshot",
       "Portfolio / deep dive; facility maturity candidates",
-      "Legacy reader .xlsx and writer .xlsb mismatch. Replace with prepared JSON."
+      "Legacy reader .xlsx and writer .xlsb mismatch. Map into the canonical Portfolio.xlsx Data sheet."
     ],
     [
       "Covenants_current.xlsx / .xlsb",

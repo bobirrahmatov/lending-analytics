@@ -1,2 +1,0 @@
-/* Legacy compatibility entrypoint. New pages load only wcspedia-style.css. */
-@import url("wcspedia-style.css");

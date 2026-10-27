@@ -1,4 +1,4 @@
-/* Covenants domain: legacy field parity, shared aging and WCSpedia presentation. */
+/* Covenants domain: legacy field parity, shared aging and dashboard presentation. */
 (function(global){'use strict';
 const FIELDS={
  as_of_date:['As Of Date','As_Of_Date','Report_Date','Report Date'],region:['Region'],
@@ -112,7 +112,7 @@ global.CreditCovenants=function(ctx){
  function methodButton(id,title){return '<button class="cw-icon-btn cd-section-method" data-cov-method="'+id+'" aria-label="Methodology for '+esc(title)+'">'+icon('info')+'</button>';}
  function tableCard(id,title,headers,rows,rule,note='',mode='summary'){
   definition(id,title,scope,rule,note);registry[id].table={headers,rows};
-  return '<section '+(mode==='summary'?'data-expandable-table ':'')+'id="'+id+'" data-table-mode="'+mode+'" class="ch-card pal-table-card cov-table-card cw-framed-card'+(mode==='detail'?' cd-insight-card cd-insight-table cd-wide':'')+'"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2>'+(note?'<p class="ch-card-sub">'+esc(note)+'</p>':'')+'</div>'+methodButton(id,title)+'</div><div class="wcs-data-table-scroll"><table class="wcs-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No records in this scope.</p>':'')+'</div></section>';
+  return '<section '+(mode==='summary'?'data-expandable-table ':'')+'id="'+id+'" data-table-mode="'+mode+'" class="ch-card pal-table-card cov-table-card cw-framed-card'+(mode==='detail'?' cd-insight-card cd-insight-table cd-wide':'')+'"><div class="ch-card-head"><div><h2>'+esc(title)+'</h2>'+(note?'<p class="ch-card-sub">'+esc(note)+'</p>':'')+'</div>'+methodButton(id,title)+'</div><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr>'+headers.map(h=>'<th scope="col">'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(v=>'<td>'+esc(v??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table>'+(!rows.length?'<p class="ch-empty">No records in this scope.</p>':'')+'</div></section>';
  }
  function chartCard(id,title,rows,rule,note='',controls=''){
   definition(id,title,rows,rule,note);

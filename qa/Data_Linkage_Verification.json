@@ -45,7 +45,7 @@
   },
   "limitations": [
     "Synthetic records only; not source-system reconciliation.",
-    "Production file and page IDs remain unconfigured.",
+    "Native page and attachment IDs are configured; live Confluence publication is not verified by this fixture.",
     "Base Activity schema omits facility/CA and richer activity fields; preserve them through an explicitly extended ETL contract.",
     "Base Documents schema supports a reference list, not entity linkage without optional entity/date fields.",
     "Daily history lacks relationship_id/facility_id for current terminal related-history matching; do not claim full historical entity drill-through.",

@@ -17,7 +17,7 @@ assert.match(d.querySelector('.pal-variance').textContent,/unavailable/);
 assert.equal(d.querySelector('#ch-content').children[0].className,'pal-metrics');assert.equal(d.querySelector('.pal-summary'),null);assert.equal(d.querySelector('#creditClassificationChart').closest('.ch-card').nextElementSibling.id,'pal-snapshot','Coverage follows New Facilities Approved');
 assert.equal(d.querySelector('#newDealsChart').closest('.ch-card').nextElementSibling.id,'pal-pipeline','New deals and Pending Closure remain adjacent');
 assert.equal(root._exportRows.length,5);assert.equal(d.querySelector('#ch-download').disabled,false);assert.equal(d.querySelectorAll('#pal-snapshot [data-pal-rows]').length,4);
-assert.ok(d.querySelector('#pal-pipeline > .wcs-data-table-scroll > .wcs-data-table'));
+assert.ok(d.querySelector('#pal-pipeline > .credit-data-table-scroll > .credit-data-table'));
 assert.equal(d.querySelectorAll('#pal-snapshot tbody tr').length,4);assert.equal(d.querySelectorAll('[data-pal-navigate]').length,0);assert.equal(pal.getRows('pal-pipeline').length,2);
 assert.deepEqual([...d.querySelectorAll('#ch-content section.ch-card')].map(el=>el.querySelector('.ch-chart')?.id||el.id),['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends']);
 assert.equal(d.querySelector('#relationshipChart').previousElementSibling.querySelector('strong').textContent,'$500');

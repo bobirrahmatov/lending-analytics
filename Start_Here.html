@@ -23,16 +23,16 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 <header>
 <div class="eyebrow">WEALTH CREDIT SERVICES · 27 OCTOBER 2026</div>
 <h1>Lending Analytics · Installation guide</h1>
-<p>The complete application, Confluence page fragments, shared components, data contracts, illustrative examples, Access modules and local verification records.</p>
+<p>The complete application, Confluence page fragments, shared components, data contracts, sample Excel inputs and local verification records. Everyone in the Confluence space uses the same dashboard; no separate account or access setup is required.</p>
 <div class="actions"><a class="button" href="pages/lendinganalytics.html">Open Lending Analytics</a><a class="button" href="pages/portfolio.html">Open Portfolio</a><a class="button" href="pages/overview.html">Open Underwriter Summary</a></div>
-<p class="note"><strong>Illustrative preview.</strong> The included records are synthetic examples, not live lending results. The wcs page IDs and attachment page 3845862527 are configured. The supplied native macros explicitly allow these sample files; set allowSampleData to false before publishing approved live inputs. Live Confluence installation and Windows Access execution remain to be verified.</p>
+<p class="note"><strong>Illustrative preview.</strong> The included records are synthetic examples, not live lending results. The wcs page IDs and attachment page 3845862527 are configured. The supplied native macros explicitly allow these sample files; set allowSampleData to false before publishing approved live inputs. Live Confluence installation and real source coverage remain to be verified.</p>
 </header>
 
 <section>
 <h2>Start with these files</h2>
 <ul>
-<li><a href="Lending_Analytics_Deployment.txt">Current deployment contract</a>: page structure, native navigation, macros, cache behavior, large-file publication and validation limits.</li>
-<li><a href="confluence-pages/lendinganalytics.html">Lending Analytics page macro</a>, <a href="Shared_WCSpedia_Include.html">shared navBar includes</a> and <a href="attachments/">application attachments</a>. The separate Confluence_Deployment.zip contains these assets and all matching page fragments.</li>
+<li><a href="Lending_Analytics_Deployment.txt">Current deployment contract</a>: page structure, native navigation, macros, cache behavior, attachment publication and validation limits.</li>
+<li><a href="confluence-pages/lendinganalytics.html">Lending Analytics page macro</a>, <a href="attachments/">application attachments</a>. The separate Confluence_Deployment.zip contains these assets and all matching page fragments. The optional <a href="Space_File_Drop_Guard.html">space file-drop guard</a> is independent of the dashboard.</li>
 <li><a href="Data_Integration_Kit/index.html">Data integration guide</a>: each page's sources, primary keys, joins, field dictionaries, examples and remaining ETL gaps.</li>
 <li><a href="excel/runtime/README.txt">Excel attachment samples</a>: six fixed-name workbooks, a manifest and previous snapshot, ready for an explicitly configured sample walkthrough. Each file retains its sample marker.</li>
 <li><a href="tools/README.txt">Build and tooling guide</a>: maintained build commands, release validation and clearly identified historical generators.</li>
@@ -65,13 +65,13 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 <h2>Build, preview and deploy</h2>
 <p>Serve the extracted project over local HTTP, then open <code>/pages/lendinganalytics.html</code> (this file is the separate installation guide). For example, from the project folder:</p>
 <pre>python3 -m http.server 8770 --bind 127.0.0.1</pre>
-<p>The default build uses the bundled WCSpedia source snapshot. No unrelated wealth workspace or application backend is required:</p>
+<p>The build uses this repository’s dashboard components. It requires no knowledge-management application, staging database or backend:</p>
 <pre>python3 tools/build_pages.py
 python3 tools/verify_page_package.py
 python3 tools/build_integration_kit.py
 python3 tools/package_release.py</pre>
-<p>For Confluence, <a href="attachments/credit-pages.js">the native page IDs</a> and attachment host 3845862527 are already configured in the wcs space. Keep the existing <code>{include:wcs:navBar}</code>, one global stylesheet and native sidebar. Use <a href="Shared_WCSpedia_Include.html">the shared inclusion instructions</a> and one matching settings → logic → HTMLPage sequence per page. The fragments are intended for approved HTML macros, not standalone browser pages.</p>
-<p>For the requested sample walkthrough, upload the contents of excel/runtime/ to attachment page 3845862527; the provided macros use allowSampleData:true. For live use, set it to false and publish approved files marked is_demo:false. Upload all matching workbooks first and credit-manifest.json last. Every workbook Metadata sheet must match the manifest bundle ID; mixed releases are rejected. Never replace existing live datasets with starter samples. See <a href="tools/schema.json">the output schema</a>, <a href="tools/input-schema.json">the staging schema</a> and the integration guide before preparing live data.</p>
+<p>For Confluence, <a href="attachments/credit-pages.js">the native page IDs</a> and attachment host 3845862527 are already configured in the wcs space. Keep the native Confluence sidebar and page tree. Each supplied page fragment loads the same <code>credit-style.css</code>, UI controls and loading helper, followed by its matching settings → logic → HTMLPage sequence. No shared knowledge-management navbar or access page is required. The fragments are intended for approved HTML macros, not standalone browser pages.</p>
+<p>For the requested sample walkthrough, upload the contents of excel/runtime/ to attachment page 3845862527; the provided macros use allowSampleData:true. For live use, set it to false and publish approved files marked is_demo:false. Upload all matching workbooks first and credit-manifest.json last. Every workbook Metadata sheet must match the manifest bundle ID; mixed releases are rejected. Never replace existing live datasets with starter samples. See <a href="tools/schema.json">the output schema</a>, <a href="tools/input-schema.json">the upstream mapping schema</a> and the integration guide before preparing live data.</p>
 </section>
 
 <section>
@@ -89,10 +89,9 @@ python3 tools/package_release.py</pre>
 <li><a href="qa/Portfolio_Three_Card_Row_Verification.txt">Portfolio three-card row and responsive layout</a>.</li>
 <li><a href="qa/Reset_Tab_Performance_Verification.txt">Reset, tab scheduling and chart lifecycle regression checks</a>.</li>
 <li><a href="qa/Table_Drill_Adaptive_Verification.txt">Table drilling and adaptive chart checks</a>.</li>
-<li><a href="qa/Navigation_Data_Handoff_Verification.txt">Navigation and data handoff checks</a>.</li>
 <li><a href="qa/Data_Linkage_Verification.json">Machine-readable data linkage audit</a>.</li>
 </ul>
-<p class="muted">These are local tests and illustrative fixtures. They do not establish live Confluence permissions, Windows Access execution or complete production-source coverage. Local large-data processing timings exclude network transfer and do not establish a five-second end-to-end live guarantee.</p>
+<p class="muted">These are local tests and illustrative fixtures. They do not establish live Confluence behavior or complete production-source coverage. Local large-data processing timings exclude network transfer and do not establish a five-second end-to-end live guarantee.</p>
 </section>
 </main>
 </body>

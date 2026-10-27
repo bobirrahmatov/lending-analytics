@@ -1,23 +1,23 @@
-/* Shared WCSpedia controls; only presentation preferences are persisted. */
+/* Shared dashboard controls; only presentation preferences are persisted. */
 (function(global){'use strict';
 const paths={grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',chart:'<path d="M4 20h17M7 16V9m6 7V4m6 12v-5"/>',trend:'<path d="m3 17 6-6 4 3 8-10M15 4h6v6"/>',search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',document:'<path d="M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h6"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 6"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18M8 15h3"/>',shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6zM8 12l3 3 5-6"/>',building:'<path d="M4 21V5h11v16M15 11h5v10M8 9h3M8 13h3M8 17h3M2 21h20"/>',activity:'<path d="M2 12h5l3-8 4 16 3-8h5"/>',check:'<path d="m5 12 4 4L19 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',up:'<path d="m6 14 6-6 6 6"/>',down:'<path d="m6 10 6 6 6-6"/>',arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',panel:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',filter:'<path d="M3 6h18M6 12h12M9 18h6"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',wallet:'<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M16 11h5v5h-5zM3 8h18"/>',info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/>'};
-const icon=name=>name==='close'&&global.WCSUI?.icon?global.WCSUI.icon('close'):'<svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.grid)+'</svg>';
+const icon=name=>name==='close'&&global.CreditUI?.icon?global.CreditUI.icon('close'):'<svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(paths[name]||paths.grid)+'</svg>';
 // Shared inline SVG tiles for dashboard and expanded-analysis cards.
 global.CreditIcons={icon,metric:(name,index)=>'<span class="cw-metric-icon cw-metric-'+index%4+'">'+icon(name)+'</span>'};
 // Native top-layer analysis shell. Panels remain under the dashboard root so
 // scoped styles, delegated controls and record exports keep the same context.
 global.CreditAnalysisOverlay=function({root,panel,title,onClose}){
- const dialog=document.createElement('dialog');dialog.className='wcs-ui-dialog ca-overlay';
+ const dialog=document.createElement('dialog');dialog.className='credit-ui-dialog ca-overlay';
  dialog.setAttribute('aria-label',title||'Chart analysis');
  const bar=document.createElement('div');bar.className='ca-overlay-bar';
  const label=document.createElement('span');label.className='ca-overlay-label';label.textContent='Expanded view';
  const actions=document.createElement('div');actions.className='ca-overlay-actions';
  const download=document.createElement('button');download.type='button';download.className='ch-btn cw-primary ca-overlay-download';download.textContent='Download data';
- const close=document.createElement('button');close.type='button';close.className='ch-btn ca-overlay-close wcs-ui-close';close.setAttribute('aria-label','Close analysis');close.innerHTML=icon('close');
+ const close=document.createElement('button');close.type='button';close.className='ch-btn ca-overlay-close credit-ui-close';close.setAttribute('aria-label','Close analysis');close.innerHTML=icon('close');
  const body=document.createElement('div');body.className='ca-overlay-body';
  actions.append(download,close);bar.append(label,actions);body.append(panel);dialog.append(bar,body);root.append(dialog);
  const doc=document.documentElement,overflow=doc.style.overflow,scroll=global.scrollY;
- global.WCSUI?.closePopover();
+ global.CreditUI?.closePopover();
  // The fallback retains readable content in test/legacy DOMs; supported browsers
  // use showModal to cover host navigation and make the background inert.
  if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
@@ -29,7 +29,7 @@ global.CreditAnalysisOverlay=function({root,panel,title,onClose}){
  dialog.addEventListener('cancel',event=>{event.preventDefault();onClose();});
  dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)onClose();});
  let removed=false;
- return {dialog,body,dispose(){if(removed)return;removed=true;observer.disconnect();global.WCSUI?.closePopover();if(typeof dialog.close==='function')dialog.close();dialog.remove();doc.style.overflow=overflow;global.scrollTo({top:scroll,behavior:'instant'});}};
+ return {dialog,body,dispose(){if(removed)return;removed=true;observer.disconnect();global.CreditUI?.closePopover();if(typeof dialog.close==='function')dialog.close();dialog.remove();doc.style.overflow=overflow;global.scrollTo({top:scroll,behavior:'instant'});}};
 };
 // One accessible side-label treatment for every Highcharts pie in the dashboard.
 global.CreditDonut=function(chart,{esc,format,label='Total',onSelect}={}){
@@ -55,7 +55,7 @@ global.CreditControls=(()=>{
   marker.style.transition=animate?'':'none';marker.style.width=a.width+'px';marker.style.height=a.height+'px';marker.style.transform='translate('+(a.left-b.left+group.scrollLeft)+'px,'+(a.top-b.top+group.scrollTop)+'px)';
  }
  function enhance(root){
-  global.WCSUI?.enhance(root);
+  global.CreditUI?.enhance(root);
   root.querySelectorAll(selector).forEach(g=>{
    const button=g.querySelector('button[aria-pressed=true],button[aria-selected=true]'),saved=pending.get(key(g));
    position(g,button);
@@ -92,8 +92,8 @@ global.CreditControls=(()=>{
 })();
 
 global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
- let host=document.getElementById('wcspedia');if(!host){host=document.createElement('div');host.id='wcspedia';host.className='credit-ui-host';root.before(host);host.append(root);}
- const UI=global.WCSUI;if(!UI)throw Error('Shared WCSpedia controls did not load.');
+ let host=document.getElementById('credit-ui');if(!host){host=document.createElement('div');host.id='credit-ui';host.className='credit-ui-host';root.before(host);host.append(root);}
+ const UI=global.CreditUI;if(!UI)throw Error('Dashboard controls did not load.');
  // Published page composition is shared by every reader; no browser-only preferences.
  let tab='',widgets=[],grid=null;
  const $=s=>root.querySelector(s);root.classList.add('cw-app');
@@ -128,7 +128,7 @@ global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
   const fieldHTML=f=>'<div class="form-group"><label for="cw-filter-'+f.key+'">'+esc(f.label)+'</label><select id="cw-filter-'+f.key+'" data-filter-key="'+f.key+'" aria-label="'+esc(f.label)+'" '+(f.disabled?'disabled':'')+'>'+f.options.map(([v,t])=>'<option value="'+esc(v)+'" '+(v===f.value?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>'+(f.disabled?'<small class="cw-field-note">Not supplied in this snapshot.</small>':'')+'</div>';
   const groups=[['shared',tab==='portfolio'?'Portfolio scope':'Dashboard scope',tab==='portfolio'?'Applies to portfolio and monitoring charts.':'Applies to this dashboard’s metrics, charts and records.'],['portfolio','Facility attributes','Applies to facility metrics, charts and downloads. Monitoring cards keep their own source population.']];
   filterButton.setAttribute('aria-expanded','true');
-  filterDrawer=UI.dialog({placement:'right',title:tab==='portfolio'?'Portfolio filters':'Dashboard filters',description:'Refine your view. Changes take effect when you apply.',closeLabel:'Close filters',body:'<div class="wcs-ui-drawer-scroll">'+groups.filter(([key])=>fields.some(f=>f.group===key)).map(([key,title,note])=>'<section class="cw-filter-section"><h3>'+title+'</h3><p>'+note+'</p>'+fields.filter(f=>f.group===key).map(fieldHTML).join('')+'</section>').join('')+'</div><div class="cw-filter-preview" role="status" aria-live="polite"></div><div class="wcs-ui-drawer-footer"><button class="button secondary" data-filter-reset>Reset</button><div class="cw-filter-actions"><button class="button secondary" data-filter-cancel>Cancel</button><button class="button" data-filter-apply>Apply filters</button></div></div>',onClose:()=>{filterDrawer=null;filterButton.setAttribute('aria-expanded','false');}});
+  filterDrawer=UI.dialog({placement:'right',title:tab==='portfolio'?'Portfolio filters':'Dashboard filters',description:'Refine your view. Changes take effect when you apply.',closeLabel:'Close filters',body:'<div class="credit-ui-drawer-scroll">'+groups.filter(([key])=>fields.some(f=>f.group===key)).map(([key,title,note])=>'<section class="cw-filter-section"><h3>'+title+'</h3><p>'+note+'</p>'+fields.filter(f=>f.group===key).map(fieldHTML).join('')+'</section>').join('')+'</div><div class="cw-filter-preview" role="status" aria-live="polite"></div><div class="credit-ui-drawer-footer"><button class="button secondary" data-filter-reset>Reset</button><div class="cw-filter-actions"><button class="button secondary" data-filter-cancel>Cancel</button><button class="button" data-filter-apply>Apply filters</button></div></div>',onClose:()=>{filterDrawer=null;filterButton.setAttribute('aria-expanded','false');}});
   filterDrawer.element.classList.add('cw-filter-drawer','cw-dashboard-drawer');
   function preview(){const count=filters.count(draft);filterDrawer.body.querySelector('.cw-filter-preview').textContent=count===null?'Apply to update this dashboard.':count.toLocaleString()+' matching facilities'+(count===0?' · Try a broader selection.':'');}
   filterDrawer.body.querySelectorAll('[data-filter-key]').forEach(field=>field.onchange=()=>{draft[field.dataset.filterKey]=field.value;preview();});

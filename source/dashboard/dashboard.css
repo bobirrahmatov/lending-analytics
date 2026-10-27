@@ -1,5 +1,5 @@
-/* Dashboard component source. Bundled into the ONE global wcspedia-style.css. */
-#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--wcs-theme-text,#17355f));--ink:var(--ds-text,var(--wcs-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--wcs-theme-muted,#5b6c7e));--line:var(--ds-border,var(--wcs-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--wcs-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--wcs-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-shadow:0 1px 3px #17355f0d,0 0 0 5px var(--pale),0 0 0 6px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
+/* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
+#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--credit-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-shadow:0 1px 3px #17355f0d,0 0 0 5px var(--pale),0 0 0 6px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
 :is(#credit-hub,.credit-ui-surface) * { box-sizing:border-box }
 :is(#credit-hub,.credit-ui-surface) [hidden] { display:none!important }
 :is(#credit-hub,.credit-ui-surface) :is(h1,h2,h3,p) { margin:0 }
@@ -73,9 +73,9 @@
 :is(#credit-hub,.credit-ui-surface) .ch-toolbar { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap }
 :is(#credit-hub,.credit-ui-surface) .ch-toolbar input { width:230px }
 :is(#credit-hub,.credit-ui-surface) .ch-table-wrap { overflow:auto;max-height:510px;border:1px solid var(--border);border-radius:6px }
-:is(#credit-hub,.credit-ui-surface) table:not(.wcs-data-table) { border-collapse:separate;border-spacing:0;width:100%;font-size:11px }
-:is(#credit-hub,.credit-ui-surface) table:not(.wcs-data-table) :is(td,th) { padding:11px 12px;text-align:left;border-bottom:1px solid #EEF0F3;white-space:nowrap }
-:is(#credit-hub,.credit-ui-surface) table:not(.wcs-data-table) th { position:sticky;top:0;z-index:1;background:var(--head);font-size:10px;color:#77818F;font-weight:500 }
+:is(#credit-hub,.credit-ui-surface) table:not(.credit-data-table) { border-collapse:separate;border-spacing:0;width:100%;font-size:11px }
+:is(#credit-hub,.credit-ui-surface) table:not(.credit-data-table) :is(td,th) { padding:11px 12px;text-align:left;border-bottom:1px solid #EEF0F3;white-space:nowrap }
+:is(#credit-hub,.credit-ui-surface) table:not(.credit-data-table) th { position:sticky;top:0;z-index:1;background:var(--head);font-size:10px;color:#77818F;font-weight:500 }
 :is(#credit-hub,.credit-ui-surface) th button { background:none;border:0;padding:0;font:inherit }
 :is(#credit-hub,.credit-ui-surface) .num { text-align:right;font-variant-numeric:tabular-nums }
 :is(#credit-hub,.credit-ui-surface) tr:hover td { background:var(--hover) }
@@ -110,11 +110,11 @@
 #credit-hub .ch-skip { position:absolute;left:-10000px }
 #credit-hub .ch-skip:focus { left:16px;top:12px;z-index:100;background:#fff;padding:10px }
 #credit-hub .cw-layout-notice { display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 12px;background:#EDF3FD;border-radius:6px;font-size:11px;margin-bottom:12px }
-#wcspedia .credit-ui-surface { font-family:inherit }
-#wcspedia .credit-ui-surface .wcs-ui-dialog-heading h2 { font-size:21px;font-weight:500 }
-#wcspedia .credit-ui-surface .wcs-ui-dialog-heading p { font-size:12px }
-#wcspedia .credit-ui-surface .wcs-ui-dialog-heading { padding:22px 24px 18px }
-#wcspedia .credit-ui-surface .wcs-ui-dialog-body { padding:20px 24px 24px }
+#credit-ui .credit-ui-surface { font-family:inherit }
+#credit-ui .credit-ui-surface .credit-ui-dialog-heading h2 { font-size:21px;font-weight:500 }
+#credit-ui .credit-ui-surface .credit-ui-dialog-heading p { font-size:12px }
+#credit-ui .credit-ui-surface .credit-ui-dialog-heading { padding:22px 24px 18px }
+#credit-ui .credit-ui-surface .credit-ui-dialog-body { padding:20px 24px 24px }
 .credit-ui-surface .ch-detail { display:grid;grid-template-columns:190px minmax(0,1fr);gap:9px 18px;font-size:12px }
 .credit-ui-surface .ch-detail dt { color:var(--muted) }
 .credit-ui-surface .ch-detail dd { margin:0;overflow-wrap:anywhere }
@@ -229,25 +229,25 @@
 #credit-hub .ch-sort-icon { width:13px;height:13px;vertical-align:middle;margin-left:7px;color:#9299A4 }
 #credit-hub th[aria-sort]:not([aria-sort=none]) .ch-sort-icon { color:var(--blue) }
 #credit-hub .ch-page-size { display:flex;flex-direction:row;align-items:center;gap:10px;white-space:nowrap;font-size:11px }
-#credit-hub .ch-page-size .wcs-ui-select { min-width:70px }
+#credit-hub .ch-page-size .credit-ui-select { min-width:70px }
 @media(max-width:800px) {
 #credit-hub .ch-register-controls { align-items:stretch;flex-direction:column;padding:12px }
 #credit-hub .ch-register-search { width:100% }
 #credit-hub #ch-register .ch-pagination { flex-wrap:wrap;gap:12px;padding:12px }
 #credit-hub .ch-page-size { flex-basis:100% }
-#credit-hub .ch-page-size .wcs-ui-select { width:80px }
+#credit-hub .ch-page-size .credit-ui-select { width:80px }
 }
 /* Content only: host typography, native page title and native sidebar geometry. */
 #credit-hub .ch-layout { min-width:0; }
 #credit-hub .ch-main { background:transparent;padding:12px 7px 28px; }
 #credit-hub .ch-native-title { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap; }
-#wcspedia #credit-hub svg.highcharts-root { width:100%;height:100%; }
+#credit-ui #credit-hub svg.highcharts-root { width:100%;height:100%; }
 #credit-hub .ch-top { padding:0 6px; }
 #credit-hub .ch-filters { padding:16px;background:var(--head);border:1px solid var(--border);border-radius:12px; }
 @media(max-width:500px) { #credit-hub .ch-main { padding:8px 7px 20px; } #credit-hub .ch-top { align-items:flex-start; } }
 @media print { #credit-hub .ch-actions { display:none; } }
 
-/* Portfolio composition and filter chips; shared WCSpedia controls own dropdowns. */
+/* Portfolio composition and filter chips; shared Lending Analytics controls own dropdowns. */
 #credit-hub[data-view=portfolio] .ch-top{align-items:center;margin-bottom:20px;padding:4px 6px}
 #credit-hub[data-view=portfolio] .ch-subtitle{font-size:12px;margin-top:8px}
 #credit-hub[data-view=portfolio] .ch-top .ch-btn{min-height:40px;padding:9px 13px;font-size:13px;border-radius:8px}
@@ -260,18 +260,18 @@
 #credit-hub .cw-filter-chip:hover{background:#EAF0FC;border-color:#255BE3}
 #credit-hub .cw-filter-chip svg{width:14px;height:14px}
 #credit-hub .cw-clear-filters{border:0;background:none;color:#255BE3;padding:7px;font-size:12px;text-decoration:underline;text-underline-offset:3px}
-#wcspedia .cw-filter-section+.cw-filter-section{border-top:1px solid var(--line);margin-top:24px;padding-top:24px}
-#wcspedia .cw-filter-section h3{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px}
-#wcspedia .cw-filter-section>p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:20px}
-#wcspedia .cw-field-note{display:block;font-size:11px;color:var(--muted);margin-top:6px}
-#wcspedia .cw-filter-actions{display:flex;gap:8px}
-#wcspedia .cw-filter-drawer .button{min-height:42px;font-size:13px;padding:10px 15px}
-#wcspedia .cw-filter-preview{padding:12px 24px;color:var(--muted);background:var(--head,#F8F9FB);font-size:12px;flex:none}
+#credit-ui .cw-filter-section+.cw-filter-section{border-top:1px solid var(--line);margin-top:24px;padding-top:24px}
+#credit-ui .cw-filter-section h3{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:6px}
+#credit-ui .cw-filter-section>p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+#credit-ui .cw-field-note{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+#credit-ui .cw-filter-actions{display:flex;gap:8px}
+#credit-ui .cw-filter-drawer .button{min-height:42px;font-size:13px;padding:10px 15px}
+#credit-ui .cw-filter-preview{padding:12px 24px;color:var(--muted);background:var(--head,#F8F9FB);font-size:12px;flex:none}
 @media(max-width:650px){#credit-hub[data-view=portfolio] .ch-top{align-items:flex-start;flex-direction:column}#credit-hub[data-view=portfolio] .ch-demo{align-items:flex-start;flex-direction:column}#credit-hub[data-view=portfolio] .pal-summary{grid-template-columns:repeat(2,minmax(0,1fr))}#credit-hub[data-view=portfolio] .pal-summary button{padding:12px;font-size:11px}#credit-hub[data-view=portfolio] .pal-summary strong{font-size:19px}}
 
 #credit-hub #ch-drill:not(:empty){display:block;margin:0 6px 18px}
 
-/* Shared WCSpedia interaction components and chart workspace layout. */
+/* Shared Lending Analytics interaction components and chart workspace layout. */
 #credit-hub .ch-top{gap:20px;flex-wrap:wrap}
 #credit-hub .ch-top>.ch-actions{gap:9px}
 #credit-hub .ch-top .ch-btn{min-height:40px;padding:9px 13px;font-size:13px;border-radius:8px;white-space:nowrap}
@@ -305,24 +305,24 @@
 #credit-hub .cd-search-label{display:block;font-size:12px;color:var(--muted);width:300px;max-width:100%;margin:0 0 16px}
 #credit-hub .cd-search-label input{display:block;margin-top:7px;width:100%;height:42px;border:1px solid var(--line);border-radius:8px;background:white;padding:10px 12px;color:var(--ink);font:inherit}
 #credit-hub .cd-records .ch-table-wrap{border:1px solid var(--line);border-radius:10px;background:white;overflow:auto}
-#credit-hub .cd-records table:not(.wcs-data-table) td{padding:14px;font-size:12px;white-space:nowrap}
-#credit-hub .cd-records table:not(.wcs-data-table) th{text-transform:capitalize;font-size:11px;background:var(--pale);padding:12px 14px}
+#credit-hub .cd-records table:not(.credit-data-table) td{padding:14px;font-size:12px;white-space:nowrap}
+#credit-hub .cd-records table:not(.credit-data-table) th{text-transform:capitalize;font-size:11px;background:var(--pale);padding:12px 14px}
 #credit-hub .cd-records .ch-pagination{margin-top:12px;gap:10px;flex-wrap:wrap}
-#wcspedia .cw-editor.wcs-ui-drawer{width:min(540px,100%)}
-#wcspedia .cw-editor .cw-presets{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-#wcspedia .cw-editor .cw-presets button[aria-pressed=true]{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);background:var(--tint)}
-#wcspedia .cw-editor .cw-preview i{background:#D4D4D4}
-#wcspedia .cw-editor .cw-widget-thumb{background:var(--pale);color:var(--muted);border-color:var(--line);width:40px;height:40px}
-#wcspedia .cw-editor .cw-widget-option{gap:12px}
-#wcspedia .cw-editor .cw-widget-info{min-width:0;flex:1}
-#wcspedia .cw-editor .cw-widget-info h3{line-height:1.4;font-size:13px}
-#wcspedia .cw-editor .cw-widget-add{font-size:11px;min-width:65px;padding:8px}
-#wcspedia .cw-editor .cw-drawer-footer{padding:18px 24px;flex-direction:column;align-items:stretch}
-#wcspedia .cw-editor .cw-drawer-footer>div{justify-content:flex-end}
-#wcspedia .cw-editor .cw-save-status{font-size:11px;line-height:1.5;color:var(--muted)}
-#wcspedia .cd-methodology section+section{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
-#wcspedia .cd-methodology h3{font-size:14px;font-weight:600;margin:0 0 10px;color:var(--ink)}
-#wcspedia .cd-methodology p{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 10px}
+#credit-ui .cw-editor.credit-ui-drawer{width:min(540px,100%)}
+#credit-ui .cw-editor .cw-presets{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#credit-ui .cw-editor .cw-presets button[aria-pressed=true]{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue);background:var(--tint)}
+#credit-ui .cw-editor .cw-preview i{background:#D4D4D4}
+#credit-ui .cw-editor .cw-widget-thumb{background:var(--pale);color:var(--muted);border-color:var(--line);width:40px;height:40px}
+#credit-ui .cw-editor .cw-widget-option{gap:12px}
+#credit-ui .cw-editor .cw-widget-info{min-width:0;flex:1}
+#credit-ui .cw-editor .cw-widget-info h3{line-height:1.4;font-size:13px}
+#credit-ui .cw-editor .cw-widget-add{font-size:11px;min-width:65px;padding:8px}
+#credit-ui .cw-editor .cw-drawer-footer{padding:18px 24px;flex-direction:column;align-items:stretch}
+#credit-ui .cw-editor .cw-drawer-footer>div{justify-content:flex-end}
+#credit-ui .cw-editor .cw-save-status{font-size:11px;line-height:1.5;color:var(--muted)}
+#credit-ui .cd-methodology section+section{margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+#credit-ui .cd-methodology h3{font-size:14px;font-weight:600;margin:0 0 10px;color:var(--ink)}
+#credit-ui .cd-methodology p{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 10px}
 @media(max-width:650px){
  #credit-hub .ch-top>.ch-actions{width:100%}
  #credit-hub .ch-updated{flex-basis:100%;border:0;margin:5px 0 0;padding:0;flex-direction:row;gap:8px}
@@ -334,7 +334,7 @@
  #credit-hub .cd-source-card .ch-toolbar{flex-wrap:wrap}
 }
 
-/* Portfolio cards use the same brand tokens, buttons and tables as WCSpedia. */
+/* Portfolio cards use the same brand tokens, buttons and tables as Lending Analytics. */
 #credit-hub .ch-kpis,#credit-hub .pal-metrics{padding:0;border:0;background:transparent;gap:16px;margin-bottom:24px}
 #credit-hub .ch-card,#credit-hub .pal-metric,#credit-hub .ch-kpi{background:var(--page);border-color:var(--line);border-radius:14px;box-shadow:0 1px 3px #17355f06}
 #credit-hub .ch-kpi,#credit-hub .pal-metric{padding:22px;min-height:160px}
@@ -352,16 +352,16 @@
 #credit-hub .pal-summary button>span:last-child{color:var(--blue);align-self:center}
 #credit-hub .pal-summary button:hover{background:var(--pale)}
 #credit-hub .cd-chart-controls .pal-control-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-#credit-hub .cd-chart-controls .wcs-ui-select-trigger{height:40px;min-height:40px}
+#credit-hub .cd-chart-controls .credit-ui-select-trigger{height:40px;min-height:40px}
 #credit-hub .pal-deal-totals{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:4px 0 16px;border-bottom:1px solid var(--line);margin-bottom:10px}
 #credit-hub .pal-deal-totals>div{display:flex;flex-direction:column;gap:5px}
 #credit-hub .pal-deal-totals span,#credit-hub .pal-deal-totals small{font-size:12px;color:var(--muted);font-weight:400}
 #credit-hub .pal-deal-totals strong{font-size:26px;color:var(--navy);font-variant-numeric:tabular-nums}
 #credit-hub .pal-table-card{padding:0;overflow:hidden}
 #credit-hub .pal-table-card .ch-card-head{padding:22px;margin:0}
-#wcspedia #credit-hub .pal-table-card .wcs-data-table-scroll{border:0;border-radius:0}
-#wcspedia #credit-hub #pal-pipeline .wcs-data-table tr:last-child td{background:var(--pale);font-weight:600}
-#wcspedia #credit-hub .wcs-data-table .num{text-align:right}
+#credit-ui #credit-hub .pal-table-card .credit-data-table-scroll{border:0;border-radius:0}
+#credit-ui #credit-hub #pal-pipeline .credit-data-table tr:last-child td{background:var(--pale);font-weight:600}
+#credit-ui #credit-hub .credit-data-table .num{text-align:right}
 #credit-hub .ch-btn{border-radius:var(--control-radius,6px);color:var(--navy);border-color:var(--line)}
 #credit-hub .ch-demo{background:var(--pale);color:var(--muted)}
 #credit-hub .ch-demo strong{color:var(--blue);border-color:#dce5f3;background:#edf3fd}
@@ -394,7 +394,7 @@
 #credit-hub [data-widget=newDealsChart] .cd-chart-controls .pal-select{min-width:90px;max-width:100px}
 #credit-hub [data-widget=relationshipChart] .cd-chart-controls .pal-select{min-width:76px;max-width:132px}
 #credit-hub [data-widget=relationshipChart] .cd-chart-controls .pal-select:last-of-type{min-width:96px;max-width:96px}
-#wcspedia #credit-hub [data-widget=relationshipChart] .wcs-ui-select-trigger,#wcspedia #credit-hub [data-widget=newDealsChart] .wcs-ui-select-trigger{height:40px;min-height:40px;font-size:12px;padding:5px 9px}
+#credit-ui #credit-hub [data-widget=relationshipChart] .credit-ui-select-trigger,#credit-ui #credit-hub [data-widget=newDealsChart] .credit-ui-select-trigger{height:40px;min-height:40px;font-size:12px;padding:5px 9px}
 #credit-hub .pal-table-card .ch-card-head>.pal-segments{flex:0 0 auto}
 #credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:1200px){#credit-hub .pal-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#credit-hub .pal-metric-value strong{font-size:27px}}
@@ -417,12 +417,12 @@
 #credit-hub .ch-chart-summary span{font-size:12px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere}
 #credit-hub .cw-framed-card .pal-deal-totals{margin-top:8px;padding-bottom:18px;margin-bottom:18px}
 #credit-hub .pal-table-card.cw-framed-card{display:flex;flex-direction:column}
-#wcspedia #credit-hub #pal-pipeline .wcs-data-table-scroll{flex:1;display:flex}
-#wcspedia #credit-hub #pal-pipeline .wcs-data-table{width:100%;min-width:0;align-self:stretch}
-#wcspedia #credit-hub #pal-pipeline .wcs-data-table td,#wcspedia #credit-hub #pal-pipeline .wcs-data-table th{padding:16px 20px}
+#credit-ui #credit-hub #pal-pipeline .credit-data-table-scroll{flex:1;display:flex}
+#credit-ui #credit-hub #pal-pipeline .credit-data-table{width:100%;min-width:0;align-self:stretch}
+#credit-ui #credit-hub #pal-pipeline .credit-data-table td,#credit-ui #credit-hub #pal-pipeline .credit-data-table th{padding:16px 20px}
 #credit-hub .ch-kpis{padding:6px;gap:8px;border:1px solid var(--line);border-radius:20px;background:var(--pale)}
 #credit-hub .ch-kpi{border-radius:15px}
-@media(max-width:650px){#credit-hub .cw-widget-grid{gap:24px;margin-inline:5px}#credit-hub .ch-chart-summary{gap:12px;margin-top:4px}#credit-hub .ch-chart-summary strong{font-size:23px}#credit-hub .ch-chart-summary span{font-size:11px}#wcspedia #credit-hub #pal-pipeline .wcs-data-table td,#wcspedia #credit-hub #pal-pipeline .wcs-data-table th{padding:14px 12px}}
+@media(max-width:650px){#credit-hub .cw-widget-grid{gap:24px;margin-inline:5px}#credit-hub .ch-chart-summary{gap:12px;margin-top:4px}#credit-hub .ch-chart-summary strong{font-size:23px}#credit-hub .ch-chart-summary span{font-size:11px}#credit-ui #credit-hub #pal-pipeline .credit-data-table td,#credit-ui #credit-hub #pal-pipeline .credit-data-table th{padding:14px 12px}}
 
 /* Center section metrics and pair approval donuts with a readable value legend. */
 #credit-hub .ch-chart-summary>div,#credit-hub .pal-deal-totals>div{align-items:center;text-align:center}
@@ -447,7 +447,7 @@
 #credit-hub .cd-insight-card{margin:0;padding:0;overflow:hidden;min-width:0;border-radius:16px;box-shadow:0 0 0 5px var(--pale),0 0 0 6px var(--line)}
 #credit-hub .cd-insight-card .ch-card-head{padding:20px;margin:0}
 #credit-hub .cd-insight-card h3{font-size:15px;line-height:1.4;color:var(--navy)}
-#credit-hub .cd-insight-card .wcs-data-table-scroll{border:0;border-radius:0}
+#credit-hub .cd-insight-card .credit-data-table-scroll{border:0;border-radius:0}
 #credit-hub .cd-insight-chart{height:300px;padding:0 14px 10px;min-width:0}
 #credit-hub .cd-wide{grid-column:1/-1}
 #credit-hub .cd-source-filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
@@ -472,10 +472,10 @@
 #credit-hub .pal-snapshot-section+div{border-left:1px solid var(--line)}
 #credit-hub .pal-snapshot-section>h3{margin:20px 20px 5px;color:var(--navy);font-size:14px}
 #credit-hub .pal-snapshot-section>.ch-card-sub{margin:0 20px 18px}
-#credit-hub .pal-snapshot-section .wcs-data-table-scroll{border:0;border-radius:0}
-#wcspedia #credit-hub #pal-snapshot .wcs-data-table{width:100%;min-width:0}
-#wcspedia #credit-hub #pal-snapshot .wcs-data-table th,#wcspedia #credit-hub #pal-snapshot .wcs-data-table td{padding:10px 20px;font-size:12px;vertical-align:middle}
-#wcspedia #credit-hub #pal-snapshot th[scope=row]{font-weight:500;text-align:left;background:transparent}
+#credit-hub .pal-snapshot-section .credit-data-table-scroll{border:0;border-radius:0}
+#credit-ui #credit-hub #pal-snapshot .credit-data-table{width:100%;min-width:0}
+#credit-ui #credit-hub #pal-snapshot .credit-data-table th,#credit-ui #credit-hub #pal-snapshot .credit-data-table td{padding:10px 20px;font-size:12px;vertical-align:middle}
+#credit-ui #credit-hub #pal-snapshot th[scope=row]{font-weight:500;text-align:left;background:transparent}
 #credit-hub .pal-snapshot-label{display:flex;align-items:center;gap:9px;color:var(--navy)}
 #credit-hub .pal-snapshot-label i{width:7px;height:7px;border-radius:50%;flex:none}
 #credit-hub #pal-snapshot th small{display:block;margin:4px 0 0 16px;color:var(--muted);font-size:10px;font-weight:400}
@@ -487,15 +487,15 @@
 #credit-hub .pal-snapshot-note{padding:14px 20px;margin:0;font-size:11px;line-height:1.6;color:var(--muted)}
 #credit-hub #pal-snapshot>.pal-snapshot-note{border-top:1px solid var(--line);background:var(--pale)}
 @media(max-width:900px){#credit-hub .pal-snapshot-grid{grid-template-columns:minmax(0,1fr)}#credit-hub .pal-snapshot-section+div{border-left:0;border-top:1px solid var(--line)}}
-@media(max-width:650px){#credit-hub .cd-analysis-kpis>.cd-analysis-metric{padding:14px;gap:20px}#credit-hub .cd-metric-heading{align-items:flex-start;flex-direction:column;gap:10px}#credit-hub .cd-analysis-metric .cw-metric-icon{flex-basis:38px;width:38px;height:38px}#credit-hub .cd-metric-heading span{font-size:12px}#wcspedia #credit-hub #pal-snapshot .wcs-data-table th,#wcspedia #credit-hub #pal-snapshot .wcs-data-table td{padding:10px 12px}#credit-hub .pal-snapshot-section>h3{margin-left:12px}#credit-hub .pal-snapshot-section>.ch-card-sub{margin-left:12px}}
+@media(max-width:650px){#credit-hub .cd-analysis-kpis>.cd-analysis-metric{padding:14px;gap:20px}#credit-hub .cd-metric-heading{align-items:flex-start;flex-direction:column;gap:10px}#credit-hub .cd-analysis-metric .cw-metric-icon{flex-basis:38px;width:38px;height:38px}#credit-hub .cd-metric-heading span{font-size:12px}#credit-ui #credit-hub #pal-snapshot .credit-data-table th,#credit-ui #credit-hub #pal-snapshot .credit-data-table td{padding:10px 12px}#credit-hub .pal-snapshot-section>h3{margin-left:12px}#credit-hub .pal-snapshot-section>.ch-card-sub{margin-left:12px}}
 
-#wcspedia #credit-hub #pal-snapshot tbody th{border-bottom:1px solid var(--line)}
+#credit-ui #credit-hub #pal-snapshot tbody th{border-bottom:1px solid var(--line)}
 
 /* Compact coverage uses four rows; page composition is defined below. */
 #credit-hub #pal-snapshot{display:flex;flex-direction:column}
-#credit-hub #pal-snapshot>.wcs-data-table-scroll{flex:1;display:flex;border:0;border-radius:0}
-#wcspedia #credit-hub #pal-snapshot .wcs-data-table{align-self:stretch;width:100%}
-#wcspedia #credit-hub #pal-snapshot .wcs-data-table td,#wcspedia #credit-hub #pal-snapshot .wcs-data-table th{padding:18px 20px;font-size:13px}
+#credit-hub #pal-snapshot>.credit-data-table-scroll{flex:1;display:flex;border:0;border-radius:0}
+#credit-ui #credit-hub #pal-snapshot .credit-data-table{align-self:stretch;width:100%}
+#credit-ui #credit-hub #pal-snapshot .credit-data-table td,#credit-ui #credit-hub #pal-snapshot .credit-data-table th{padding:18px 20px;font-size:13px}
 #credit-hub #pal-snapshot .ch-row-link{font-size:16px;font-weight:600;gap:16px}
 /* Shared donut: separated arcs, centered total and a readable side value list. */
 #credit-hub .cw-donut-layout{display:grid;grid-template-columns:minmax(180px,.85fr) minmax(0,1.15fr);gap:22px;align-items:center;padding:12px;border:0;border-radius:0;background:transparent;min-width:0}
@@ -515,7 +515,7 @@
 #credit-hub .cd-insight-card>.cw-donut-layout{border:0;border-radius:0;padding:12px}
 
 @media(max-width:1100px){#credit-hub .cw-donut-layout{grid-template-columns:minmax(0,1fr);gap:0}#credit-hub .cw-donut-list{padding:0 10px}#credit-hub .cw-donut-plot{max-width:300px}}
-@media(max-width:650px){#credit-hub .cw-donut-layout{padding:6px}#credit-hub .cw-donut-row{padding:15px 0;gap:8px}#credit-hub .cw-donut-center strong{font-size:24px}#wcspedia #credit-hub #pal-snapshot .wcs-data-table td,#wcspedia #credit-hub #pal-snapshot .wcs-data-table th{padding:16px 14px}}
+@media(max-width:650px){#credit-hub .cw-donut-layout{padding:6px}#credit-hub .cw-donut-row{padding:15px 0;gap:8px}#credit-hub .cw-donut-center strong{font-size:24px}#credit-ui #credit-hub #pal-snapshot .credit-data-table td,#credit-ui #credit-hub #pal-snapshot .credit-data-table th{padding:16px 14px}}
 #credit-hub .cd-metric-page .cd-chart-slot{display:none}
 #credit-hub .cd-metric-page .cd-detail-heading>div{margin-right:auto}
 
@@ -534,7 +534,7 @@
 #credit-hub .cd-analysis-grid{grid-auto-flow:row dense;align-items:stretch}
 #credit-hub .cd-analysis-grid>.cd-chart-slot{margin:0;min-width:0}
 #credit-hub .cd-analysis-grid .cd-expanded-card{box-sizing:border-box;min-width:0;height:100%}
-#credit-hub .cd-insight-card .wcs-data-table-scroll{max-height:460px;overflow:auto}
+#credit-hub .cd-insight-card .credit-data-table-scroll{max-height:460px;overflow:auto}
 #credit-hub .cd-insight-chart{height:auto;min-height:320px}
 #credit-hub .cd-section-method{width:36px;height:36px;flex:0 0 36px;border:1px solid var(--line);border-radius:9px;background:var(--page);color:var(--muted)}
 #credit-hub .cd-section-method:hover{color:var(--blue);background:var(--pale)}
@@ -578,7 +578,7 @@
  #credit-hub .cd-takeaways dl>div{border:0}
 }
 @media(max-width:600px){#credit-hub .cd-takeaways dl{display:block}#credit-hub .cd-takeaways dl>div{border-bottom:1px solid var(--line)}}
-#wcspedia.credit-ui-host{background:transparent}
+#credit-ui.credit-ui-host{background:transparent}
 
 /* Shared column search, value filters and sorting — all dashboard tables. */
 :is(#credit-hub,.credit-ui-surface) .ct-heading{display:flex;align-items:center;gap:6px;min-width:145px}
@@ -596,7 +596,7 @@
 :is(#credit-hub,.credit-ui-surface) .ct-chips button{font:inherit;color:#255be3;border:1px solid #d9e2ee;border-radius:6px;background:#f4f7fd;padding:4px 8px;cursor:pointer}
 :is(#credit-hub,.credit-ui-surface) .ct-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 :is(#credit-hub,.credit-ui-surface) .ct-heading button:focus-visible,:is(#credit-hub,.credit-ui-surface) .ct-search-row input:focus-visible,:is(#credit-hub,.credit-ui-surface) .ct-chips button:focus-visible{outline:2px solid #255be3;outline-offset:2px}
-.wcs-ui-popover.ct-filter-popover{box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:18px;color:#193b68;font-family:inherit;border-radius:14px}
+.credit-ui-popover.ct-filter-popover{box-sizing:border-box;width:min(340px,calc(100vw - 24px));padding:18px;color:#193b68;font-family:inherit;border-radius:14px}
 .ct-filter-popover .ct-pop-title,.ct-filter-popover .ct-value-actions,.ct-filter-popover .ct-pop-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ct-filter-popover p{font-size:12px;color:#64748b;margin:8px 0 12px}
 .ct-filter-popover button{font:inherit;cursor:pointer}
@@ -614,7 +614,7 @@
 .ct-filter-popover .ct-pop-footer .cw-primary{color:white;background:#255be3;border-color:#255be3}
 :is(#credit-hub,.credit-ui-surface) th[aria-sort="ascending"] .ct-sort svg{transform:none}
 :is(#credit-hub,.credit-ui-surface) th[aria-sort="descending"] .ct-sort svg{transform:rotate(180deg)}
-.wcs-ui-popover.ct-filter-popover{display:flex;flex-direction:column;overflow:auto}
+.credit-ui-popover.ct-filter-popover{display:flex;flex-direction:column;overflow:auto}
 .ct-filter-popover>*{flex-shrink:0}
 .ct-filter-popover .ct-values{flex:1 1 220px;min-height:64px}
 .ct-filter-popover .ct-pop-footer{padding-top:4px}
@@ -629,7 +629,7 @@
 #credit-hub .cd-search-label{margin-left:auto}
 :is(#credit-hub,.credit-ui-surface) .ch-pagination{padding:12px 16px;margin:0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #e4eaf2;font-size:12px}
 :is(#credit-hub,.credit-ui-surface) .ch-page-size{display:flex;align-items:center;flex-direction:row;gap:8px;white-space:nowrap}
-:is(#credit-hub,.credit-ui-surface) .ch-page-size .wcs-ui-select{min-width:70px;width:70px}
+:is(#credit-hub,.credit-ui-surface) .ch-page-size .credit-ui-select{min-width:70px;width:70px}
 :is(#credit-hub,.credit-ui-surface) .ch-pagination .ch-actions{margin-left:auto}
 @media(max-width:600px){
  #credit-hub .ch-register-controls .ch-register-search{width:100%;order:1}
@@ -650,19 +650,19 @@
 #credit-hub .cd-record-toolbar .cd-source-filters button[aria-pressed=true]{background:#fff;color:var(--blue);box-shadow:0 1px 3px #17355f20}
 #credit-hub .cd-record-toolbar .cd-search-label{box-sizing:border-box;width:280px;height:40px;flex:0 1 280px;margin:0 0 0 auto;padding:0 10px;font-size:12px}
 #credit-hub .cd-record-toolbar .cd-search-label input{height:36px;margin:0;padding:6px 0;border:0;border-radius:0;box-shadow:none;background:transparent}
-#credit-hub .ct-table-card .wcs-data-table-scroll,#credit-hub #ch-register.ct-table-card .ch-table-wrap,#credit-hub .cd-records .ch-table-wrap{border:0;border-radius:0;background:white;margin:0;max-height:none}
+#credit-hub .ct-table-card .credit-data-table-scroll,#credit-hub #ch-register.ct-table-card .ch-table-wrap,#credit-hub .cd-records .ch-table-wrap{border:0;border-radius:0;background:white;margin:0;max-height:none}
 #credit-hub .ct-table-card .ch-register-controls{border:0;border-radius:0;padding:0 20px 14px;min-height:0}
 #credit-hub .ct-table-card #ch-register-count{display:none}
 :is(#credit-hub,.credit-ui-surface) .ct-status{border:0;padding:0 20px 12px;gap:8px}
 :is(#credit-hub,.credit-ui-surface) .ct-status[hidden]{display:none}
 :is(#credit-hub,.credit-ui-surface) .ct-status .ct-table-scope:empty,:is(#credit-hub,.credit-ui-surface) .ct-status .ct-chips:empty{display:none}
 :is(#credit-hub,.credit-ui-surface) .ct-table-scope{font-size:11px;color:#64748b}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table,#credit-hub .ct-table-card .wcs-data-table{width:100%;margin:0;border:0;border-collapse:collapse;border-radius:0;table-layout:auto}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table thead th{padding:8px 14px;background:var(--pale);border:0;color:var(--ink);font-size:12px;vertical-align:middle}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table .ct-search-row th{padding:0 14px 10px;border-bottom:1px solid #e4eaf2}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody td,#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody th{padding:12px 16px;height:auto;border:0;border-bottom:1px solid var(--line);background:var(--page);vertical-align:middle;font-size:12px;line-height:1.5;white-space:nowrap}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody tr:last-child td,#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody tr:last-child th{border-bottom:0}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody tr:hover td,#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody tr:hover th{background:var(--pale)}
+#credit-ui #credit-hub .ct-table-card .credit-data-table,#credit-hub .ct-table-card .credit-data-table{width:100%;margin:0;border:0;border-collapse:collapse;border-radius:0;table-layout:auto}
+#credit-ui #credit-hub .ct-table-card .credit-data-table thead th{padding:8px 14px;background:var(--pale);border:0;color:var(--ink);font-size:12px;vertical-align:middle}
+#credit-ui #credit-hub .ct-table-card .credit-data-table .ct-search-row th{padding:0 14px 10px;border-bottom:1px solid #e4eaf2}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody td,#credit-ui #credit-hub .ct-table-card .credit-data-table tbody th{padding:12px 16px;height:auto;border:0;border-bottom:1px solid var(--line);background:var(--page);vertical-align:middle;font-size:12px;line-height:1.5;white-space:nowrap}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:last-child td,#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:last-child th{border-bottom:0}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:hover td,#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:hover th{background:var(--pale)}
 #credit-hub .ct-table-card .ct-heading{min-width:130px}
 #credit-hub .ct-table-card .ct-search-row input{height:30px;min-width:130px;border-color:#e0e6ee;font-size:11px}
 #credit-hub .ct-table-card .ch-pagination,#credit-hub .cd-records .ch-pagination{margin:0;padding:12px 20px;border-top:1px solid #e4eaf2;background:#fff}
@@ -682,7 +682,7 @@
 }
 #credit-hub .cd-record-toolbar .cd-search-label{display:flex;align-items:center;gap:8px}
 #credit-hub .cd-record-toolbar .cd-search-label svg{width:17px;height:17px;flex-shrink:0}
-#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody td,#wcspedia #credit-hub .ct-table-card .wcs-data-table tbody th{font-size:13px}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody td,#credit-ui #credit-hub .ct-table-card .credit-data-table tbody th{font-size:13px}
 :is(#credit-hub,.credit-ui-surface) label.ct-global-search,#credit-hub .cd-record-toolbar .cd-search-label{flex-direction:row}
 
 /* Shared expanded-table views: one visible card, segmented controls before search. */
@@ -706,10 +706,10 @@
 /* Summary tables fill the same grid height as their neighbouring charts. */
 #credit-hub :is(.cd-insight-table,.pal-table-card){display:flex;flex-direction:column}
 #credit-hub :is(.cd-insight-table,.pal-table-card)>.ch-card-head{flex:0 0 auto}
-#credit-hub :is(.cd-insight-table,.pal-table-card)>.wcs-data-table-scroll{display:flex;flex:1 0 auto;max-height:none;border:0;border-radius:0;margin:0}
-#wcspedia #credit-hub :is(.cd-insight-table,.pal-table-card)>.wcs-data-table-scroll>.wcs-data-table{align-self:stretch;width:100%;margin:0}
-#wcspedia #credit-hub :is(.cd-insight-table,.pal-table-card)>.wcs-data-table-scroll>.wcs-data-table thead{height:1px}
-#wcspedia #credit-hub :is(.cd-insight-table,.pal-table-card)>.wcs-data-table-scroll>.wcs-data-table tbody :is(td,th){vertical-align:middle}
+#credit-hub :is(.cd-insight-table,.pal-table-card)>.credit-data-table-scroll{display:flex;flex:1 0 auto;max-height:none;border:0;border-radius:0;margin:0}
+#credit-ui #credit-hub :is(.cd-insight-table,.pal-table-card)>.credit-data-table-scroll>.credit-data-table{align-self:stretch;width:100%;margin:0}
+#credit-ui #credit-hub :is(.cd-insight-table,.pal-table-card)>.credit-data-table-scroll>.credit-data-table thead{height:1px}
+#credit-ui #credit-hub :is(.cd-insight-table,.pal-table-card)>.credit-data-table-scroll>.credit-data-table tbody :is(td,th){vertical-align:middle}
 /* Paginated registers size to their visible rows, including short final pages. */
 #credit-hub .ct-table-card{height:auto;min-height:0;align-self:start}
 #credit-hub .cd-records,#credit-hub #ch-table{margin-bottom:0;padding-bottom:0}
@@ -788,10 +788,10 @@
 #credit-hub .mon-insights dt{font-size:12px;color:var(--muted)}
 #credit-hub .mon-insights dd{margin:8px 0 0;font-size:19px;font-weight:600}
 #credit-hub .cd-analysis-grid>.cov-chart-card{--cd-span:6;display:flex;flex-direction:column;min-width:0}
-#credit-hub .ch-card:has(>.wcs-data-table){padding:0;overflow:hidden}
-#credit-hub .ch-card:has(>.wcs-data-table)>.ch-card-head{padding:20px 22px}
-#credit-hub .ch-card>.wcs-data-table{width:100%;margin:0;border-radius:0}
-#credit-hub .ch-card>.wcs-data-table tbody tr:last-child td{border-bottom:0}
+#credit-hub .ch-card:has(>.credit-data-table){padding:0;overflow:hidden}
+#credit-hub .ch-card:has(>.credit-data-table)>.ch-card-head{padding:20px 22px}
+#credit-hub .ch-card>.credit-data-table{width:100%;margin:0;border-radius:0}
+#credit-hub .ch-card>.credit-data-table tbody tr:last-child td{border-bottom:0}
 @media(max-width:1200px){#credit-hub .ch-kpis.cov-kpis-enriched{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:600px){#credit-hub .ch-kpis.cov-kpis-enriched{grid-template-columns:1fr!important}#credit-hub .mon-insights dl{grid-template-columns:1fr}}
 
@@ -981,11 +981,11 @@
 /* Deep Dive: one searchable relationship selector and compact analytical cards. */
 #credit-hub .pal-relationship-picker{display:block;padding:18px 22px}
 #credit-hub .pal-relationship-picker>.pal-select{display:block;max-width:720px;margin:0}
-#credit-hub .pal-relationship-picker .wcs-ui-select{display:block;width:100%}
-.wcs-searchable-select{padding:10px;overflow:hidden!important;display:flex;flex-direction:column;gap:8px}
-.wcs-searchable-select input{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #d8e2ed;border-radius:8px;font:inherit;color:#17355f;background:#fff}
-.wcs-searchable-select [role=listbox]{overflow:auto;min-height:40px;max-height:250px}
-.wcs-searchable-select [role=status]{margin:0;padding:4px;font-size:11px;color:#61758e}
+#credit-hub .pal-relationship-picker .credit-ui-select{display:block;width:100%}
+.credit-searchable-select{padding:10px;overflow:hidden!important;display:flex;flex-direction:column;gap:8px}
+.credit-searchable-select input{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #d8e2ed;border-radius:8px;font:inherit;color:#17355f;background:#fff}
+.credit-searchable-select [role=listbox]{overflow:auto;min-height:40px;max-height:250px}
+.credit-searchable-select [role=status]{margin:0;padding:4px;font-size:11px;color:#61758e}
 #credit-hub[data-view=deepdive] #pal-deep-presence{min-height:0}
 #credit-hub .pal-region-owners{padding:0 20px 18px;display:grid;gap:0}
 #credit-hub .pal-region-owners>div{display:flex;align-items:center;gap:14px;padding:10px 0;border-top:1px solid var(--line);font-size:12px}
@@ -1230,7 +1230,7 @@
 #credit-hub .pj-profile,#credit-hub .pj-facility-summary,#credit-hub .pj-linked-monitoring{grid-column:1/-1;min-width:0;min-height:0;overflow:hidden}
 #credit-hub :is(.pj-profile,.pj-facility-summary,.pj-linked-monitoring) .ch-card-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;gap:16px}
 #credit-hub .pj-entity-facts{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));padding:0 22px 20px;gap:16px 24px}
-#credit-hub :is(.pj-facility-summary,.pj-linked-monitoring) .wcs-data-table-scroll{border:0;border-radius:0;padding:0;margin:0}
+#credit-hub :is(.pj-facility-summary,.pj-linked-monitoring) .credit-data-table-scroll{border:0;border-radius:0;padding:0;margin:0}
 #credit-hub :is(.pj-facility-summary,.pj-linked-monitoring) table{width:100%;border-collapse:collapse}
 #credit-hub :is(.pj-facility-summary,.pj-linked-monitoring) :is(th,td){padding:14px 22px;height:auto}
 #credit-hub :is(.pj-facility-summary,.pj-linked-monitoring) :is(th,td):not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
@@ -1281,7 +1281,7 @@
 #credit-hub .cc-table-tabs-wrap>.pal-segments{min-width:0;max-width:100%;overflow-x:auto;flex-shrink:1;white-space:nowrap;margin:0;flex-basis:auto;order:0}
 #credit-hub .cc-table-tabs-wrap button{flex-shrink:0}
 #credit-hub .cc-table-actions .ct-global-search{width:240px;flex:0 1 240px;min-width:160px;margin:0;align-items:center;height:40px;box-sizing:border-box;padding:0 10px}
-#wcspedia #credit-hub :is(.cc-table-actions,.pj-drill-actions) .ct-global-search input{width:100%;min-width:0;height:38px;min-height:0;margin:0;padding:6px 0;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important}
+#credit-ui #credit-hub :is(.cc-table-actions,.pj-drill-actions) .ct-global-search input{width:100%;min-width:0;height:38px;min-height:0;margin:0;padding:6px 0;border:0!important;border-radius:0;background:transparent!important;box-shadow:none!important}
 #credit-hub .cc-table-actions>.cw-icon-btn{flex:0 0 40px;margin:0}
 #credit-hub .cc-table-tabs-wrap[hidden]{display:none}
 @media(max-width:800px){
@@ -1296,7 +1296,7 @@
 #credit-hub .cd-drill-actions{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:nowrap}
 #credit-hub .cd-drill-actions .ct-global-search{width:250px;max-width:100%;height:40px;margin:0;box-sizing:border-box;padding:0 10px}
 #credit-hub .cd-drill-actions [hidden]{display:none!important}
-#wcspedia #credit-hub .cd-drill-actions .ct-global-search input{width:100%;height:38px;min-height:0;margin:0;padding:6px 0;border:0!important;background:transparent!important;box-shadow:none!important}
+#credit-ui #credit-hub .cd-drill-actions .ct-global-search input{width:100%;height:38px;min-height:0;margin:0;padding:6px 0;border:0!important;background:transparent!important;box-shadow:none!important}
 #credit-hub .cd-inline-toolbar{flex-wrap:nowrap;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
 #credit-hub .cd-inline-toolbar nav{font-size:12px;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto;min-width:0;flex:1}
 #credit-hub .cd-inline-toolbar nav button{max-width:260px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
@@ -1325,7 +1325,7 @@
  #credit-hub[data-view=portfolio] .cw-widget-grid>[data-widget=creditClassificationChart] .cw-donut-row{gap:8px;padding:16px 0}
 }
 @media(min-width:1200px) and (max-width:1599px){
- #wcspedia #credit-hub #pal-snapshot .wcs-data-table :is(th,td){padding:16px 12px;font-size:12px}
+ #credit-ui #credit-hub #pal-snapshot .credit-data-table :is(th,td){padding:16px 12px;font-size:12px}
  #credit-hub #pal-snapshot .ch-row-link{font-size:14px;gap:6px}
  #credit-hub #pal-snapshot .pal-snapshot-label{gap:6px}
 }
@@ -1364,8 +1364,8 @@
 #credit-hub .pj-leaf-section>h3{padding:0 20px;margin-bottom:14px}
 #credit-hub .pj-leaf .pj-inline-facts{padding:0 20px}
 #credit-hub .pj-leaf-note{padding:0 20px 12px}
-#wcspedia #credit-hub .pj-leaf .wcs-data-table-scroll,#credit-hub .cd-inline-drill .cd-records>.wcs-data-table-scroll{width:100%;max-width:100%;padding:0;margin:0;border:0;border-radius:0}
-#wcspedia #credit-hub .pj-leaf .wcs-data-table{width:100%;margin:0;border:0;border-radius:0}
+#credit-ui #credit-hub .pj-leaf .credit-data-table-scroll,#credit-hub .cd-inline-drill .cd-records>.credit-data-table-scroll{width:100%;max-width:100%;padding:0;margin:0;border:0;border-radius:0}
+#credit-ui #credit-hub .pj-leaf .credit-data-table{width:100%;margin:0;border:0;border-radius:0}
 #credit-hub .pj-leaf table :is(th,td):first-child{padding-left:20px}
 #credit-hub .pj-leaf table :is(th,td):last-child{padding-right:20px}
 #credit-hub .pj-leaf-datasets{padding:0 20px;margin-bottom:16px}
@@ -1396,19 +1396,19 @@
 /* Shared analysis controls: one dark X, circular close target and stable primary download. */
 #credit-hub .ca-overlay-download{background:#2857e8;color:#fff;border-color:#2857e8}
 #credit-hub .ca-overlay-download:hover:not(:disabled),#credit-hub .ca-overlay-download:focus-visible{background:#1944c5;color:#fff;border-color:#1944c5}
-:is(#credit-hub,.credit-ui-surface,.wcs-ui-dialog,.wcs-ui-popover) .wcs-ui-close,
+:is(#credit-hub,.credit-ui-surface,.credit-ui-dialog,.credit-ui-popover) .credit-ui-close,
 #credit-hub .ca-overlay-close{display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;min-width:36px;min-height:36px;padding:8px;border:0;border-radius:50%;background:#eef3f8;color:#243b53;box-shadow:none;cursor:pointer}
-:is(#credit-hub,.credit-ui-surface,.wcs-ui-dialog,.wcs-ui-popover) .wcs-ui-close:hover,
+:is(#credit-hub,.credit-ui-surface,.credit-ui-dialog,.credit-ui-popover) .credit-ui-close:hover,
 #credit-hub .ca-overlay-close:hover{background:#dae5f1;color:#102b49}
-:is(#credit-hub,.credit-ui-surface,.wcs-ui-dialog,.wcs-ui-popover) .wcs-ui-close svg{width:20px;height:20px;flex:none;stroke:currentColor}
-.wcs-ui-search-field{position:relative;display:inline-flex;align-items:center;min-width:0;width:100%;flex:1 1 auto}
-.wcs-ui-search-field>input[type=search]{width:100%;min-width:0;padding-right:34px!important}
-.wcs-ui-search-field>input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
-.wcs-ui-search-field>input[type=search]::-ms-clear{display:none}
-:is(#credit-hub,.credit-ui-surface,.wcs-ui-dialog,.wcs-ui-popover) .wcs-ui-search-clear{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;min-width:26px;padding:5px;border:0;border-radius:50%;background:transparent;color:#243b53;box-shadow:none;cursor:pointer}
-:is(#credit-hub,.credit-ui-surface,.wcs-ui-dialog,.wcs-ui-popover) .wcs-ui-search-clear:hover{background:#e4ecf5;color:#102b49}
-.wcs-ui-search-clear svg{width:16px;height:16px;stroke:currentColor;pointer-events:none}
-.wcs-ui-search-clear[hidden]{display:none!important}
+:is(#credit-hub,.credit-ui-surface,.credit-ui-dialog,.credit-ui-popover) .credit-ui-close svg{width:20px;height:20px;flex:none;stroke:currentColor}
+.credit-ui-search-field{position:relative;display:inline-flex;align-items:center;min-width:0;width:100%;flex:1 1 auto}
+.credit-ui-search-field>input[type=search]{width:100%;min-width:0;padding-right:34px!important}
+.credit-ui-search-field>input[type=search]::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none;display:none}
+.credit-ui-search-field>input[type=search]::-ms-clear{display:none}
+:is(#credit-hub,.credit-ui-surface,.credit-ui-dialog,.credit-ui-popover) .credit-ui-search-clear{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;min-width:26px;padding:5px;border:0;border-radius:50%;background:transparent;color:#243b53;box-shadow:none;cursor:pointer}
+:is(#credit-hub,.credit-ui-surface,.credit-ui-dialog,.credit-ui-popover) .credit-ui-search-clear:hover{background:#e4ecf5;color:#102b49}
+.credit-ui-search-clear svg{width:16px;height:16px;stroke:currentColor;pointer-events:none}
+.credit-ui-search-clear[hidden]{display:none!important}
 #credit-hub .cd-inline-records:not([hidden]),#credit-hub [data-pj-inline-data]:not([hidden]){margin-top:20px}
 #credit-hub .cd-summary-first-row>.ch-card:not(.cd-first-row-card){--cd-span:6}
 #credit-hub .cd-summary-first-row>.mon-insights dl{display:grid;grid-template-columns:1fr;gap:20px}
@@ -1427,9 +1427,9 @@
 #credit-hub .ct-filter-popover .ct-pop-footer .cw-primary{background:#2857e8;border-color:#2857e8;color:#fff}
 #credit-hub .ct-filter-popover .ct-pop-footer .cw-primary:hover{background:#1944c5;border-color:#1944c5;color:#fff}
 /* Search focus belongs to the complete rounded field, including its icon. */
-:is(#wcspedia #credit-hub,#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label):focus-within{outline:2px solid #527de1!important;outline-offset:2px;border-radius:10px}
-:is(#wcspedia #credit-hub,#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label) input:is(:focus,:focus-visible){outline:none!important;box-shadow:none!important;border-color:transparent!important}
-:is(#wcspedia #credit-hub,#credit-hub,.credit-ui-surface) .wcs-ui-search-field>input:is(:focus,:focus-visible){border-radius:8px}
+:is(#credit-ui #credit-hub,#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label):focus-within{outline:2px solid #527de1!important;outline-offset:2px;border-radius:10px}
+:is(#credit-ui #credit-hub,#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label) input:is(:focus,:focus-visible){outline:none!important;box-shadow:none!important;border-color:transparent!important}
+:is(#credit-ui #credit-hub,#credit-hub,.credit-ui-surface) .credit-ui-search-field>input:is(:focus,:focus-visible){border-radius:8px}
 /* Analysis context is plain text above KPI cards; methodology stays with the charts. */
 #credit-hub .cd-expanded-summary{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin:0 0 18px;padding:0;min-height:32px;color:#586c85;font-size:13px;line-height:1.6}
 #credit-hub .cd-expanded-summary dl{display:flex;flex:1 1 auto;align-items:baseline;flex-wrap:wrap;gap:6px 24px;margin:0;min-width:0}
@@ -1442,14 +1442,14 @@
 #credit-hub .cd-expanded-summary dl p{margin:0;color:#687b93;font-size:12px}
 @media(min-width:1100px){#credit-hub .cd-analysis-grid.cd-summary-above>.cd-insight-visual,#credit-hub .cd-analysis-grid.cd-summary-above>.cd-chart-slot{grid-column:span 6!important}}
 
-/* Lending Analytics content breadcrumb: WCSpedia typography and chevron pattern. */
+/* Lending Analytics content breadcrumb: Lending Analytics typography and chevron pattern. */
 #credit-hub .ch-breadcrumbs{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:0 0 20px;font-size:12px;line-height:1.6;color:var(--muted);min-width:0}
 #credit-hub .ch-breadcrumbs a{color:var(--ink);text-decoration:none}
 #credit-hub .ch-breadcrumbs a:hover{color:var(--blue);text-decoration:underline}
 #credit-hub .ch-breadcrumbs a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
 #credit-hub .ch-breadcrumbs svg{width:12px;height:12px;flex:none}
 #credit-hub .ch-breadcrumbs [aria-current]{font-weight:600;overflow-wrap:anywhere}
-/* Editorial landing, inside the native WCSpedia shell. */
+/* Editorial landing, inside the native Lending Analytics shell. */
 #credit-hub .la-landing{max-width:1440px;margin:0 auto;color:var(--ink)}
 #credit-hub .la-intro{padding:28px 0 38px;max-width:1040px}
 #credit-hub .la-eyebrow{font-size:12px!important;line-height:1.5!important;font-weight:700!important;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)!important;margin:0 0 18px}
@@ -1501,12 +1501,12 @@
 
 /* Shared table hierarchy: readable row labels and neutral, theme-aware balances.
    Counts, status badges and comparison deltas keep their semantic colours. */
-#wcspedia #credit-hub table.wcs-data-table :is(tbody,tfoot)>tr>.ct-category-cell{font-size:14px;font-weight:600;color:var(--ink)}
-#wcspedia #credit-hub #pal-snapshot th.ct-category-cell{font-size:14px;font-weight:600}
-#wcspedia #credit-hub table.wcs-data-table .ct-category-cell :is(.ch-row-link,a,.pal-snapshot-label){font-size:inherit;font-weight:inherit;color:inherit}
-#wcspedia #credit-hub table.wcs-data-table .ct-amount-cell,
-#wcspedia #credit-hub table.wcs-data-table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink);font-variant-numeric:tabular-nums}
-#wcspedia #credit-hub table.wcs-data-table :is(.ct-category-cell,.ct-amount-cell) :is(.ch-row-link,a):is(:hover,:focus-visible){text-decoration:underline;text-underline-offset:3px}
+#credit-ui #credit-hub table.credit-data-table :is(tbody,tfoot)>tr>.ct-category-cell{font-size:14px;font-weight:600;color:var(--ink)}
+#credit-ui #credit-hub #pal-snapshot th.ct-category-cell{font-size:14px;font-weight:600}
+#credit-ui #credit-hub table.credit-data-table .ct-category-cell :is(.ch-row-link,a,.pal-snapshot-label){font-size:inherit;font-weight:inherit;color:inherit}
+#credit-ui #credit-hub table.credit-data-table .ct-amount-cell,
+#credit-ui #credit-hub table.credit-data-table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink);font-variant-numeric:tabular-nums}
+#credit-ui #credit-hub table.credit-data-table :is(.ct-category-cell,.ct-amount-cell) :is(.ch-row-link,a):is(:hover,:focus-visible){text-decoration:underline;text-underline-offset:3px}
 
 /* Confluence host protection. Preserve the space's font family and theme, while
    keeping dashboard typography and genuine scroll surfaces readable. No host
@@ -1558,28 +1558,28 @@
 #credit-hub :is(.ca-overlay,.ca-overlay-bar){background:var(--page)!important;color:var(--ink)!important}
 #credit-hub .pj-leaf-section:has(>.pj-inline-facts){background:var(--pale)!important}
 
-/* Shared WCSUI controls also sit outside the macro root. The :has scope keeps
-   this protection off unrelated WCSpedia pages that use the same global CSS. */
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface){font-family:inherit!important;font-size:13px!important;color:var(--ink)!important}
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface) :is(button,input,select,textarea){font-family:inherit!important;font-size:13px!important;line-height:1.5!important}
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .wcs-ui-dialog-heading h2{font-size:21px!important;font-weight:600!important;line-height:1.3!important;color:var(--ink)!important}
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .wcs-ui-dialog-heading p{font-size:12px!important;line-height:1.6!important;color:var(--muted)!important}
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover) input:not([type=checkbox]):not([type=radio]){background:var(--page)!important;color:var(--ink)!important}
+/* Dashboard controls can sit outside the content root; keep their styling in
+   the dashboard UI host and leave native Confluence controls untouched. */
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface){font-family:inherit!important;font-size:13px!important;color:var(--ink)!important}
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface) :is(button,input,select,textarea){font-family:inherit!important;font-size:13px!important;line-height:1.5!important}
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .credit-ui-dialog-heading h2{font-size:21px!important;font-weight:600!important;line-height:1.3!important;color:var(--ink)!important}
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .credit-ui-dialog-heading p{font-size:12px!important;line-height:1.6!important;color:var(--muted)!important}
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover) input:not([type=checkbox]):not([type=radio]){background:var(--page)!important;color:var(--ink)!important}
 
 /* Keep scrollbars present when the host hides them. Only real scroll hosts are
    targeted; the dialog shell stays clipped and the native page keeps scrolling. */
-#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments),
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options){scrollbar-width:auto!important;scrollbar-color:var(--muted) var(--pale)!important}
-#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap){overflow-x:auto!important}
+#credit-hub :is(.credit-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments),
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer .credit-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.credit-searchable-select [role=listbox],.credit-ui-options){scrollbar-width:auto!important;scrollbar-color:var(--muted) var(--pale)!important}
+#credit-hub :is(.credit-data-table-scroll,.ch-table-wrap){overflow-x:auto!important}
 #credit-hub .ca-overlay-body,
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options){overflow-y:auto!important}
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer .credit-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.credit-searchable-select [role=listbox],.credit-ui-options){overflow-y:auto!important}
 #credit-hub :is(.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments){overflow-x:auto!important}
-#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar,
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar{display:block!important;width:10px!important;height:10px!important}
-#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-thumb,
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar-thumb{background:var(--muted)!important;border:2px solid var(--pale)!important;border-radius:8px!important}
-#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-track,
-#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar-track{background:var(--pale)!important}
+#credit-hub :is(.credit-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar,
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer .credit-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.credit-searchable-select [role=listbox],.credit-ui-options)::-webkit-scrollbar{display:block!important;width:10px!important;height:10px!important}
+#credit-hub :is(.credit-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-thumb,
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer .credit-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.credit-searchable-select [role=listbox],.credit-ui-options)::-webkit-scrollbar-thumb{background:var(--muted)!important;border:2px solid var(--pale)!important;border-radius:8px!important}
+#credit-hub :is(.credit-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-track,
+#credit-ui:has(#credit-hub) :is(.cw-dashboard-drawer .credit-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.credit-searchable-select [role=listbox],.credit-ui-options)::-webkit-scrollbar-track{background:var(--pale)!important}
 @media(max-width:650px){
  #credit-hub .ch-kpi-value{font-size:24px!important}
  #credit-hub .cov-kpi .ch-kpi-value{font-size:29px!important}

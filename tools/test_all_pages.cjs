@@ -1,13 +1,13 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSDOM}=require('jsdom');
 const A=path.resolve(__dirname,'../attachments');
-const sharedCSS=fs.readFileSync(path.resolve(__dirname,'../source/wcspedia/credit-dashboard.css'),'utf8');
+const sharedCSS=fs.readFileSync(path.resolve(__dirname,'../source/dashboard/dashboard.css'),'utf8');
 const sharedRules=[...sharedCSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
 const portfolioOrder=['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
 (async()=>{
 for(const page of ['portfolio','trends','deepdive','overview','workload','COVENANTS','CA','FACILITY','CCM','INSURANCE','APPRAISALS','activity']){
  const dom=new JSDOM('<div id="credit-hub"></div>',{url:'http://localhost/pages/'+page.toLowerCase()+'.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,root=d.querySelector('#credit-hub');
  w.localStorage.setItem('wcs-credit-layout-v1:'+w.location.pathname+':',JSON.stringify({[page]:{preset:'focus',hidden:['cov-activity'],wide:['cov-activity'],order:['cov-activity-region','cov-activity']}}));
- w.ResizeObserver=class {observe(){} disconnect(){}};w.HTMLElement.prototype.scrollIntoView=()=>{};w.scrollTo=()=>{};w.CREDIT_CONFIG={mode:'demo',page};w.WCSUI={enhance(){},closePopover(){},dialog(o){const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
+ w.ResizeObserver=class {observe(){} disconnect(){}};w.HTMLElement.prototype.scrollIntoView=()=>{};w.scrollTo=()=>{};w.CREDIT_CONFIG={mode:'demo',page};w.CreditUI={enhance(){},closePopover(){},dialog(o){const el=d.createElement('div');el.innerHTML=o.body;d.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
  for(const f of ['credit-demo-data.js','credit-comparison-demo.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-data-cache.js','credit-dashboard.js'])w.eval(fs.readFileSync(path.join(A,f),'utf8'));
  await w.CreditHub.mount(root);assert.ok(!root.querySelector('.ch-error'),page+': '+root.textContent.slice(-1000));
  if(page==='deepdive'){const sel=root.querySelector('[data-pal-setting=relationship]');sel.value=sel.options[1].value;sel.dispatchEvent(new w.Event('change'));await new Promise(resolve=>setTimeout(resolve,30));}

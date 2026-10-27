@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSD
 const A=path.resolve(__dirname,'../attachments'),pause=()=>new Promise(r=>setTimeout(r,100));
 async function mount(page){
  const dom=new JSDOM('<div id="credit-hub"></div>',{url:'http://localhost/pages/'+page+'.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,root=w.document.querySelector('#credit-hub');
- w.ResizeObserver=class{observe(){}};w.HTMLElement.prototype.scrollIntoView=()=>{};w.scrollTo=()=>{};w.CREDIT_CONFIG={mode:'demo',page};w.WCSUI={enhance(){},closePopover(){},dialog(o){const el=w.document.createElement('div');el.innerHTML=o.body;w.document.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
+ w.ResizeObserver=class{observe(){}};w.HTMLElement.prototype.scrollIntoView=()=>{};w.scrollTo=()=>{};w.CREDIT_CONFIG={mode:'demo',page};w.CreditUI={enhance(){},closePopover(){},dialog(o){const el=w.document.createElement('div');el.innerHTML=o.body;w.document.body.append(el);return{element:el,body:el,close(){el.remove()}};}};
  for(const f of ['credit-demo-data.js','credit-comparison-demo.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-data-cache.js','credit-dashboard.js'])w.eval(fs.readFileSync(path.join(A,f),'utf8'));
  await w.CreditHub.mount(root);return{dom,w,root};
 }

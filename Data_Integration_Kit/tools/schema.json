@@ -124,37 +124,37 @@
       "field": "effective_due_date",
       "type": "date",
       "required": false,
-      "definition": "Access output: approved deferral date or original due date."
+      "definition": "Prepared output: approved deferral date or original due date."
     },
     {
       "field": "days_past_due",
       "type": "integer",
       "required": false,
-      "definition": "Access output: nonnegative days as of source date; null if no date."
+      "definition": "Prepared output: nonnegative days as of source date; null if no date."
     },
     {
       "field": "aging_bucket",
       "type": "text",
       "required": true,
-      "definition": "Access output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN."
+      "definition": "Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN."
     },
     {
       "field": "action_required",
       "type": "boolean",
       "required": true,
-      "definition": "Access output: actionable under the documented category rule."
+      "definition": "Prepared output: actionable under the documented category rule."
     },
     {
       "field": "critical",
       "type": "boolean",
       "required": true,
-      "definition": "Access output: category escalation threshold; rule version attached to release."
+      "definition": "Prepared output: category escalation threshold; rule version attached to release."
     },
     {
       "field": "coming_due",
       "type": "boolean",
       "required": true,
-      "definition": "Access output: COMING_DUE in inclusive next 3 calendar months."
+      "definition": "Prepared output: COMING_DUE in inclusive next 3 calendar months."
     },
     {
       "field": "classification",
@@ -184,13 +184,13 @@
       "field": "description",
       "type": "text",
       "required": false,
-      "definition": "Covenant or monitoring description; internal covenants excluded in Access."
+      "definition": "Covenant or monitoring description; internal covenants excluded during upstream preparation."
     },
     {
       "field": "remarks",
       "type": "text",
       "required": false,
-      "definition": "Source remarks; internal-prefixed covenant remarks excluded in Access."
+      "definition": "Source remarks; internal-prefixed covenant remarks excluded during upstream preparation."
     },
     {
       "field": "origination_unit",
@@ -414,13 +414,13 @@
       "field": "osuc",
       "type": "number",
       "required": true,
-      "definition": "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed in Access."
+      "definition": "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed during upstream preparation."
     },
     {
       "field": "total_os",
       "type": "number",
       "required": true,
-      "definition": "Access output: direct_os + contingent_os + pse_os."
+      "definition": "Prepared output: direct_os + contingent_os + pse_os."
     },
     {
       "field": "unused_commitment",
@@ -432,7 +432,7 @@
       "field": "total_undrawn",
       "type": "number",
       "required": true,
-      "definition": "Access output: tfa minus total_os; negative values retained for review."
+      "definition": "Prepared output: tfa minus total_os; negative values retained for review."
     },
     {
       "field": "rotce",
@@ -474,13 +474,13 @@
       "field": "ytd_new",
       "type": "boolean",
       "required": true,
-      "definition": "Access output: non-PSE business date in reporting year to as_of_date."
+      "definition": "Prepared output: non-PSE business date in reporting year to as_of_date."
     },
     {
       "field": "mtd_new",
       "type": "boolean",
       "required": true,
-      "definition": "Access output: non-PSE business date in reporting month to as_of_date."
+      "definition": "Prepared output: non-PSE business date in reporting month to as_of_date."
     },
     {
       "field": "product_subprogram",
@@ -504,7 +504,7 @@
       "field": "risk_category",
       "type": "text",
       "required": false,
-      "definition": "Original risk category; NAM Clearing/Notation/Settlement excluded upstream in Access."
+      "definition": "Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation."
     },
     {
       "field": "control_unit",
@@ -934,13 +934,13 @@
       "field": "month",
       "type": "text",
       "required": true,
-      "definition": "Access output: event_date formatted YYYY-MM."
+      "definition": "Prepared output: event_date formatted YYYY-MM."
     },
     {
       "field": "event_type",
       "type": "text",
       "required": true,
-      "definition": "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED in Access."
+      "definition": "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation."
     }
   ],
   "Sources": [

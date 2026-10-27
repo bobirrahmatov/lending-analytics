@@ -3,7 +3,7 @@ const fs=require('node:fs'),path=require('node:path'),assert=require('node:asser
 const attachments=path.resolve(__dirname,'../attachments');
 (async()=>{
  const dom=new JSDOM('<div id="credit-hub"></div>',{url:'http://localhost/CA',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,root=w.document.querySelector('#credit-hub');
- w.ResizeObserver=class{observe(){}disconnect(){}};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.CREDIT_CONFIG={mode:'demo',page:'CA'};w.WCSUI={enhance(){},closePopover(){}};
+ w.ResizeObserver=class{observe(){}disconnect(){}};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.CREDIT_CONFIG={mode:'demo',page:'CA'};w.CreditUI={enhance(){},closePopover(){}};
  for(const file of ['credit-demo-data.js','credit-comparison-demo.js','credit-workspace.js','credit-tables.js','credit-chart-details.js','credit-portfolio-journey.js','credit-pal.js','credit-covenant-risk.js','credit-snapshots.js','credit-monitoring.js','credit-covenants.js','credit-data-cache.js','credit-dashboard.js'])w.eval(fs.readFileSync(path.join(attachments,file),'utf8'));
  w.Highcharts={chart(el,o){return{renderTo:el,options:o,chartHeight:320,xAxis:[{categories:o.xAxis?.categories||[]}],series:o.series.map(s=>({...s,options:s,data:s.data.map(p=>({...p,options:p}))})),setSize(){},reflow(){},redraw(){},update(){},destroy(){}};}};
  let renders=0,contextBuilds=0,details;const decorate=w.CreditTables.decorate,factory=w.CreditChartDetails;
