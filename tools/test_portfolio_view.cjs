@@ -9,7 +9,9 @@ const row=(id,flags,tfa)=>({facility_id:id,relationship_id:id,relationship_name:
 const rows=[row('A',{pal_new_ytd:true,pal_new_mtd:true,pal_new_wtd:true,pal_approved_ytd:true,pal_approved_wtd:true,pal_ca_expired:true},100),row('B',{pal_new_ytd:true,pal_new_qtd:true,pal_prior_mtd:true,pal_pending_ytd:true,pal_pipeline_bucket:'31-60',pal_facility_expired:true},300),row('C',{pal_prior_ytd:true,pal_prior_qtd:true,pal_pending_ytd:true,pal_pending_qtd:true,pal_pipeline_bucket:'1-30'},200),row('D',{pal_prior_ytd:true,pal_prior_wtd:true},400),row('E',{management_status:'DM'},800)];
 const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 const pal=w.CreditPAL({root,esc,num:String,money:n=>'$'+n,pct:String,sum:(rs,k)=>rs.reduce((a,r)=>a+(Number(r[k])||0),0),unique:(rs,k)=>new Set(rs.map(r=>r[k])).size,filtered:r=>r.filter(r=>!scope||r.region===scope),register(){throw Error('Portfolio must not render a register');},showRows(){},state:()=>({}),data:()=>({portfolio:rows,history,monitoring}),addChart(){},navigatePage(...args){navigated=args;},openChart(...args){clicked=args;},render(){pal.overview(rows);}});
-const values=()=>Array.from(configs.newDealsChart.series,s=>s.data.reduce((sum,p)=>sum+p.y,0));
+const dealRows=()=>[...d.querySelectorAll('#newDealsChart .pal-deal-row')];
+const dealButton=(period,index=0)=>dealRows()[index].querySelector('[data-deal-period="'+period+'"]');
+const values=()=>['current','prior'].map(period=>dealRows().reduce((sum,r)=>sum+Number(r.querySelector('[data-deal-period="'+period+'"]').dataset.count),0));
 const period=(key,value)=>d.querySelector(`[data-pal-period="${key}"][data-value="${value}"]`).click();
 pal.overview(rows);
 assert.deepEqual(values(),[2,2]);assert.equal(pal.getRows('newDealsChart').length,4);
@@ -23,12 +25,13 @@ for(const [key,expected,count] of [['facilities',rows,5],['relationships',rows,5
 assert.equal(d.querySelectorAll('[data-pal-navigate]').length,0);assert.equal(pal.getRows('pal-pipeline').length,2);
 assert.deepEqual([...d.querySelectorAll('#ch-content section.ch-card')].map(el=>el.querySelector('.ch-chart')?.id||el.id),['pal-snapshot','facilityTrendChart','creditClassificationChart','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends']);
 assert.equal(d.querySelector('#relationshipChart').previousElementSibling.querySelector('strong').textContent,'$500');
-assert.equal(d.querySelector('#rotceChart'),null);assert.equal(configs.relationshipChart.series[1].type,'scatter');assert.equal(configs.relationshipChart.series[1].yAxis,1);assert.equal(configs.relationshipChart.yAxis[1].plotLines[0].value,.12);assert.equal(configs.newDealsChart.chart.type,'bar');
+assert.equal(d.querySelector('#rotceChart'),null);assert.equal(configs.relationshipChart.series[1].type,'scatter');assert.equal(configs.relationshipChart.series[1].yAxis,1);assert.equal(configs.relationshipChart.yAxis[1].plotLines[0].value,.12);assert.ok(d.querySelector('#newDealsChart.ch-chart.pal-deals-list'));assert.equal(configs.newDealsChart,undefined,'The ranked list needs no Highcharts instance');
 period('dealPeriod','mtd');assert.deepEqual(values(),[1,1]);period('dealPeriod','qtd');assert.deepEqual(values(),[1,1]);period('dealPeriod','wtd');assert.deepEqual(values(),[1,1]);
 period('pendingPeriod','qtd');assert.equal(pal.getRows('pipeline').length,1);period('pendingPeriod','wtd');assert.equal(pal.getRows('pipeline').length,0);
 period('approvalPeriod','wtd');assert.equal(pal.getRows('creditClassificationChart').length,1);
 period('dealPeriod','ytd');assert.equal(d.querySelector('[data-pal-setting="dealMeasure"]'),null);assert.deepEqual(values(),[2,2]);assert.equal(configs.creditClassificationChart.chart.type,'pie');assert.equal(d.querySelector('[data-pal-setting="covenants"]'),null);assert.equal(d.querySelectorAll('[data-pal-period="covenants"]').length,2);assert.equal(configs.relationshipChart.series[0].color,'#255BE3');
-const point=configs.newDealsChart.series[0].data[0];configs.newDealsChart.plotOptions.series.point.events.click.call({options:point,index:0,series:{name:'Facilities'}});assert.equal(clicked[0],'newDealsChart');assert.equal(clicked[1].length,2);assert.equal(clicked[2],'Real Estate · Facilities');
+dealButton('current').click();assert.equal(clicked[0],'newDealsChart');assert.deepEqual(clicked[1],rows.filter(r=>r.pal_new_ytd));assert.equal(clicked[2],'Real Estate · Current period');
+dealButton('prior').click();assert.equal(clicked[0],'newDealsChart');assert.deepEqual(clicked[1],rows.filter(r=>r.pal_prior_ytd));assert.equal(clicked[2],'Real Estate · Prior year to date');
 // Monday must use Friday, not the closest available stale date or Sunday.
 history=rows.map(r=>({...r,as_of_date:'2026-08-28',comparison_ready:true,tfa:r.tfa/2}));pal.overview(rows);
 assert.match(d.querySelector('.pal-variance').textContent,/\+100\.0% \(\+\$900\)/);assert.match(d.querySelector('.pal-variance').title,/2026-08-28/);
@@ -51,8 +54,41 @@ const monitorOnly=w.CreditPAL({root,filtered:r=>r,data:()=>({monitoring})});asse
 pal.settings.management='';rows[0].rotce=null;pal.overview(rows);
 assert.equal(configs.relationshipChart.series[1].data[0].y,null);
 configs.relationshipChart.series[0].data.forEach((p,i)=>assert.deepEqual(p.custom.rows,configs.relationshipChart.series[1].data[i].custom.rows));
-rows[0].product='Aircraft Finance';pal.overview(rows);assert.deepEqual(values(),[2,2]);assert.equal(configs.newDealsChart.xAxis.categories.length,2);
-const newPoint=configs.newDealsChart.series[0].data[0];configs.newDealsChart.plotOptions.series.point.events.click.call({options:newPoint,index:0,series:{name:'Current period'}});assert.equal(clicked[1].length,1);
+rows[0].product='Aircraft Finance';pal.overview(rows);assert.deepEqual(values(),[2,2]);assert.equal(dealRows().length,2);
+dealButton('current').click();assert.equal(clicked[1].length,1);
+
+// Eleven products remain available with a common current-period scale and exact comparison cohorts.
+{
+ const saved=rows.slice(),longName='Very long <Product> & "Specialist" Lending — International Portfolio';
+ const specs=[['Zulu',5,1],['Alpha',5,3],['Beta',5,3],[longName,2,1],['Current only',3,0],['Prior only',0,4],['Product A',1,1],['Product B',2,1],['Product C',3,1],['Product D',4,1],['Product E',1,2]];
+ const expanded=specs.flatMap(([product,now,prior],i)=>[...Array.from({length:now},(_,j)=>row('new-'+i+'-'+j,{product,pal_new_ytd:true},100)),...Array.from({length:prior},(_,j)=>row('prior-'+i+'-'+j,{product,pal_prior_ytd:true},100))]);
+ // Duplicate source rows remain drillable but must not inflate the distinct facility count.
+ expanded.push({...expanded[0]});
+ try{
+  rows.splice(0,rows.length,...expanded);pal.overview(rows);
+  const ranked=[...specs].sort((a,b)=>b[1]-a[1]||b[2]-a[2]||a[0].localeCompare(b[0])),rendered=dealRows();
+  assert.equal(rendered.length,11,'All products are shown; no top-N truncation');
+  assert.deepEqual(rendered.map(r=>r.querySelector('.pal-deal-label').textContent),ranked.map(s=>s[0]));
+  assert.equal(d.querySelector('#newDealsChart Product'),null,'Product text is escaped, never markup');
+  assert.ok(d.querySelector('#newDealsChart .pal-deal-scroll'));
+  assert.equal(pal.getRows('newDealsChart').length,expanded.length,'Supporting records retain both full cohorts and duplicate source rows');
+  for(const [index,productRow] of rendered.entries()){
+   const [product,now,prior]=ranked[index];assert.equal(Number(productRow.dataset.dealIndex),index);
+   assert.ok(Math.abs(parseFloat(productRow.querySelector('.pal-deal-track').style.getPropertyValue('--deal-share'))-now/5*100)<.001,'Track length uses the largest current count across every product');
+   for(const [which,flag,count,label] of [['current','pal_new_ytd',now,'Current period'],['prior','pal_prior_ytd',prior,'Prior year to date']]){
+    const button=productRow.querySelector('[data-deal-period="'+which+'"]');assert.equal(Number(button.dataset.count),count);assert.equal(button.disabled,count===0);assert.equal(button.tagName,'BUTTON');
+    const before=clicked;button.click();
+    if(!count){assert.equal(clicked,before,'Zero counts do not start empty drills');continue;}
+    assert.equal(clicked[0],'newDealsChart');assert.deepEqual(clicked[1],expanded.filter(r=>r.product===product&&r[flag]),'Each period opens only its own exact source rows');assert.equal(clicked[2],product+' · '+label);
+   }
+  }
+  pal.overview(expanded.filter(r=>r.pal_prior_ytd));assert.equal(dealRows().length,10,'Prior-only products remain available');
+  assert.ok(dealRows().every(r=>r.querySelector('[data-deal-period=current]').disabled));
+  assert.ok(dealRows().every(r=>parseFloat(r.querySelector('.pal-deal-track').style.getPropertyValue('--deal-share'))===0));
+  assert.doesNotMatch(d.querySelector('#newDealsChart').innerHTML,/NaN|Infinity/,'All-zero current baseline has finite empty tracks');
+ }finally{rows.splice(0,rows.length,...saved);pal.overview(rows);}
+}
+console.log('PASS: eleven ranked products, tie ordering, common current scale, prior-only products, distinct counts, escaped labels, zero states and exact current/prior source drills.');
 
 // Bubble coordinates and area keep separate, exact source quantities.
 monitoring[0].coming_due=true;monitoring[1].coming_due=true;monitoring[2].action_required=true;

@@ -17,11 +17,12 @@ async function mount(page){
  // Two unrelated period controls fire before either asynchronous render commits.
  root.querySelector('[data-pal-period="approvalPeriod"][data-value="ytd"]').click();
  root.querySelector('[data-pal-period="dealPeriod"][data-value="mtd"]').click();
- await ready();assert.ok(chart('creditClassificationChart'),'Approval chart survives a superseding New deals render');assert.ok(chart('newDealsChart'));assert.equal(live().length,baseline,'No unrelated chart is destroyed');
+ await ready();assert.ok(chart('creditClassificationChart'),'Approval chart survives a superseding New deals render');assert.ok(root.querySelector('#newDealsChart .pal-deal-row'),'New deals list survives a superseding render');assert.equal(chart('newDealsChart'),undefined,'Ranked list does not allocate a chart');assert.equal(live().length,baseline,'No unrelated chart is destroyed');
  assert.equal(root.querySelector('[data-pal-period="approvalPeriod"][data-value="ytd"]').getAttribute('aria-pressed'),'true');
  assert.equal(root.querySelector('[data-pal-period="dealPeriod"][data-value="mtd"]').getAttribute('aria-pressed'),'true');
+ assert.equal([...root.querySelectorAll('#newDealsChart [data-deal-period=current]')].reduce((total,b)=>total+Number(b.dataset.count),0),w.CREDIT_DEMO.datasets.portfolio.filter(r=>r.pal_new_mtd).length,'The list reflects the latest selected period');
  // Reset cannot lose its full-page update when a partial request follows it.
- root.querySelector('#ch-reset').click();root.querySelector('[data-pal-period="dealPeriod"][data-value="qtd"]').click();await ready();assert.equal(live().length,baseline,'Reset followed by a partial update leaves every chart live');
+ root.querySelector('#ch-reset').click();root.querySelector('[data-pal-period="dealPeriod"][data-value="qtd"]').click();await ready();assert.equal(live().length,baseline,'Reset followed by a partial update leaves every chart live');assert.ok(root.querySelector('#newDealsChart .pal-deal-row'),'Reset retains the ranked list');
  // A newer full view wins over queued partial charts; switching back fully rebuilds.
  root.querySelector('[data-pal-period="approvalPeriod"][data-value="ytd"]').click();root.querySelector('[data-portfolio-view="data"]').click();await ready();assert.ok(root.querySelector('#ch-table table'));assert.equal(live().length,0);
  root.querySelector('[data-portfolio-view="charts"]').click();await ready();assert.equal(live().length,baseline);e.dom.window.close();

@@ -558,6 +558,33 @@
 #credit-hub .cd-analysis-grid>.cd-wide{grid-column:1/-1}
 #credit-hub .cd-chart-slot .ch-chart{height:320px!important;min-height:0!important}
 #credit-hub .cd-chart-slot #monitoringPriorityChart{height:460px!important}
+#credit-hub #newDealsChart.pal-deals-list{height:auto!important;min-height:0!important;display:grid;grid-template-rows:auto minmax(0,1fr) auto;padding:14px 22px 12px;box-sizing:border-box;overflow:visible}
+#credit-hub .pal-deal-list-head{display:grid;grid-template-columns:minmax(0,1fr) 58px 58px;gap:10px;align-items:center;padding:0 10px 12px;color:var(--muted);font-size:12px!important;font-weight:600}
+#credit-hub .pal-deal-list-head>span:not(:first-child){text-align:right}
+#credit-hub .pal-deal-scroll{max-height:320px;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;overscroll-behavior:contain;padding:2px 4px 2px 2px;border-radius:8px}
+#credit-hub .pal-deal-rows{list-style:none!important;padding:0!important;margin:0!important;display:grid;gap:10px}
+#credit-hub .pal-deal-row{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:10px;align-items:center;margin:0!important;padding:0!important;list-style:none!important}
+#credit-hub .pal-deal-row::before,#credit-hub .pal-deal-row::marker{content:none!important;display:none!important}
+#credit-hub .pal-deal-row button{appearance:none;border:0;background:transparent;font-family:inherit!important;color:var(--ink)!important;cursor:pointer;box-shadow:none;padding:0;min-width:0;line-height:1.4!important;letter-spacing:normal;text-transform:none}
+#credit-hub .pal-deal-row button:disabled{opacity:1;color:var(--muted)!important;cursor:default}
+#credit-hub .pal-deal-current{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:10px;align-items:center;text-align:left;width:100%}
+#credit-hub .pal-deal-track{position:relative;display:flex;align-items:center;min-height:48px;border-radius:24px;background:var(--pale);overflow:hidden;isolation:isolate}
+#credit-hub .pal-deal-fill{position:absolute;inset:0 auto 0 0;width:var(--deal-share);border-radius:inherit;background:color-mix(in srgb,var(--deal-color) 23%,transparent);z-index:-1}
+#credit-hub .pal-deal-label{display:flex;align-items:center;gap:9px;padding:12px 15px;font-size:13px!important;font-weight:600;overflow-wrap:anywhere}
+#credit-hub .pal-deal-dot{width:8px;height:8px;flex:0 0 8px;background:var(--deal-color);border-radius:50%}
+#credit-hub .pal-deal-current strong,#credit-hub .pal-deal-prior{font-size:15px!important;font-variant-numeric:tabular-nums;text-align:right!important;padding-right:10px!important}
+#credit-hub .pal-deal-prior{min-height:44px;font-weight:500;color:var(--muted)!important}
+#credit-hub .pal-deal-row button:focus-visible{outline:2px solid var(--accent,#255be3);outline-offset:2px;border-radius:8px}
+#credit-hub .pal-deal-current:not(:disabled):hover .pal-deal-track{box-shadow:inset 0 0 0 1px var(--deal-color)}
+#credit-hub .pal-deal-prior:not(:disabled):hover{background:var(--pale);border-radius:8px;text-decoration:underline}
+#credit-hub .pal-deal-list-note{margin:12px 0 0!important;color:var(--muted);font-size:11px!important;line-height:1.5!important}
+@container credit-dashboard (max-width:650px){
+ #credit-hub #newDealsChart.pal-deals-list{padding:12px 12px 10px}
+ #credit-hub .pal-deal-list-head{grid-template-columns:minmax(0,1fr) 42px 42px;gap:6px}
+ #credit-hub .pal-deal-row{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
+ #credit-hub .pal-deal-current{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
+ #credit-hub .pal-deal-label{padding:10px 12px;gap:6px;font-size:12px!important}
+}
 #credit-hub .cd-chart-slot .pal-pipeline-table{max-height:320px;overflow:auto}
 #credit-hub .cd-takeaways{display:flex;flex-direction:column}
 #credit-hub .cd-takeaways dl{margin:0;padding:0 22px;flex:1}

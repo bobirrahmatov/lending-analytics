@@ -36,11 +36,12 @@ function compact(r){return Object.fromEntries(Object.entries(r).map(([key,value]
 function visible(element){const r=element.getBoundingClientRect();return !element.hidden&&r.width>0&&r.height>0;}
 async function painted(){await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(()=>frame.contentWindow.requestAnimationFrame(resolve)));}
 async function waitReady(page){
-  const deadline=Date.now()+20000,expected=page==='overview'?4:7;
+  const deadline=Date.now()+20000,expected=page==='overview'?4:6;
   while(Date.now()<deadline){
     const doc=frame.contentDocument,content=doc?.getElementById('ch-content'),error=doc?.querySelector('.ch-error');
     if(error)throw Error(error.textContent.trim());
-    if(content&&!content.hasAttribute('aria-busy')&&doc.querySelectorAll('.cw-widget-grid .highcharts-root').length>=expected){
+    const dealsReady=page!=='portfolio'||doc?.querySelector('#newDealsChart .pal-deal-row');
+    if(content&&!content.hasAttribute('aria-busy')&&dealsReady&&doc.querySelectorAll('.cw-widget-grid .highcharts-root').length>=expected){
       await painted();await delay(250);await painted();return;
     }
     await delay(50);
@@ -94,6 +95,9 @@ function inspect(page,width){
     check('Coverage is the first full-width row below KPIs',full(coverage)&&geometry[0]===coverage&&coverage.y>=kpis.bottom);
     check('All four coverage statistics fit the card',stats.length===4&&stats.every(el=>{const r=rect(el);return visible(el)&&r.x>=coverage.x&&r.right<=coverage.right;}));
     check('Coverage has no separate header above the statistics',win.getComputedStyle(doc.querySelector('#pal-snapshot .ch-card-head')).display==='none');
+    const deals=doc.querySelector('#newDealsChart .pal-deal-scroll'),dealRows=[...doc.querySelectorAll('#newDealsChart .pal-deal-row')];
+    check('New deals keeps products in a bounded scroll area',!!deals&&rect(deals).height<=320&&dealRows.length>0);
+    check('New deals labels and period counts stay within their rows',dealRows.every(row=>[...row.querySelectorAll('.pal-deal-label,.pal-deal-current strong,.pal-deal-prior')].every(el=>{const r=rect(el),bounds=rect(row);return r.x>=bounds.x&&r.right<=bounds.right+1;})));
     if(width>=1280)check('Coverage dividers span the card height',stats.every(el=>near(rect(el).height,coverage.height-2)));
     if(width>=1280)check('Coverage statistics form one horizontal row',stats.every(el=>near(rect(el).y,rect(stats[0]).y)));
     const expirySeries=[...doc.querySelectorAll('#facilityTrendChart .highcharts-series-group>.highcharts-series.highcharts-column-series')].map(series=>[...series.querySelectorAll('.highcharts-point')].map(rect));

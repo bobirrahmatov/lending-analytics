@@ -176,6 +176,13 @@ source cohorts and their drills remain intact. The following row pairs CAs & Fac
 New Facilities Approved at equal widths. Portfolio also pairs New deals with
 Pending Closure, Relationships with Monitoring priorities, and Covenants with
 CCM. Narrow screens wrap and stack without horizontal page overflow.
+New deals uses compact ranked product tracks with separate Current and Prior
+facility counts. All products from either period remain available; the list
+scrolls within a 320px area when needed. Track lengths compare current counts
+against the largest current product, not a portfolio share or completion target.
+Current and prior counts open their exact supporting records independently.
+The information drawer explains ranking, scale, distinct-facility counting and
+period eligibility. Expanded analysis preserves the list and source-data view.
 Monitoring priorities uses one bubble per monitoring category. Actions required
 set the horizontal position, critical actions set the vertical position, and
 circle area represents action and upcoming items without double-counting the

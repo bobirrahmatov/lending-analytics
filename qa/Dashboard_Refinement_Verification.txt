@@ -117,3 +117,24 @@ surfaces. All eight responsive geometry cases passed at 390/900/1280/1920 px.
 These are local previews and host fixtures; live Confluence was not inspected.
 Replace the application attachments and matching generated script pairs. The
 existing page macro fragments, header include and data workbooks are unchanged.
+
+New deals ranked-product follow-up
+The paired bar chart is now a compact ranked list matching the supplied rounded
+track reference. Current and prior distinct-facility counts remain separate,
+clickable and tied to their exact source rows. All products in either period are
+retained, including prior-only products. Track length uses the largest current
+count as its denominator; the methodology explicitly distinguishes relative
+volume from portfolio share or a completion target.
+All 44 local regression commands passed. Tests cover 11 products, long/escaped
+names, sorting and ties, duplicate facility rows, zero/prior-only populations,
+independent period drills, expanded supporting data and render/reset races.
+The browser's synthetic ten-product fixture retained all ten rows in a 320px
+scroll area (574px content), with no horizontal page overflow. The last product's
+prior count opened its one exact source record. Long labels wrapped at 390px.
+The normal sample preview and dark host fixture showed readable labels/counts.
+All eight responsive geometry cases passed at 390/900/1280/1920px, including
+bounded product-list height and label/count containment. The layout harness now
+waits for the HTML list as well as the six remaining Portfolio Highcharts plots.
+These checks use local previews/fixtures; live Confluence was not inspected.
+Update application attachments and matching generated script pairs. Existing
+page macros, header include, data workbooks and manifest are unchanged.

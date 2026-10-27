@@ -21,7 +21,29 @@ cov=current('covenantMonitoringChart');
 // Expand explicitly opens the original rich analysis dialog at full chart scope.
 click(cov,band);root.querySelector('[data-chart-expand=covenantMonitoringChart]').click();let expanded=root.querySelector('#cd-chart-analysis');assert.ok(expanded.closest('dialog[open]'));assert.equal(root.querySelector('.pj-inline'),null);assert.ok(expanded.querySelectorAll('.cd-analysis-kpis>div').length>=3);assert.ok(expanded.querySelector('.cd-records table'));assert.equal(panel(),undefined);click(cov,band);assert.ok(expanded.querySelector('.cd-inline-drill'));assert.equal(expanded.querySelector('.pj-inline'),null);assert.equal(root.querySelectorAll('dialog.ca-overlay').length,1);expanded.closest('dialog').querySelector('.ca-overlay-close').click();assert.equal(root.querySelector('.cd-inline-drill'),null);assert.equal(root.querySelector('dialog.ca-overlay'),null);assert.equal(cov.renderTo.hidden,false);
 // Every Portfolio series drills locally, preserves its units and resets cleanly.
-let count=0;for(const id of ['relationshipChart','creditClassificationChart','newDealsChart','facilityTrendChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart']){const c=current(id);for(const series of c.options.series){const p=series.data.find(p=>p.custom?.rows?.length);if(!p)continue;click(c,p,series);assert.equal(root.querySelector('[data-pal-rows=tfa]').textContent,initialTFA,id);assert.equal(root.querySelector('dialog.ca-overlay'),null,id);const local=root.querySelector('.pj-inline');assert.ok(local,id);local.closest('.ch-card').querySelector('[data-pj-data-toggle]').click();assert.ok(local.querySelector('.cd-records table'));local.querySelector('[data-pj-reset]').click();assert.equal(root.querySelector('.pj-inline'),null);count++;}}
+let count=0;for(const id of ['relationshipChart','creditClassificationChart','facilityTrendChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart']){const c=current(id);for(const series of c.options.series){const p=series.data.find(p=>p.custom?.rows?.length);if(!p)continue;click(c,p,series);assert.equal(root.querySelector('[data-pal-rows=tfa]').textContent,initialTFA,id);assert.equal(root.querySelector('dialog.ca-overlay'),null,id);const local=root.querySelector('.pj-inline');assert.ok(local,id);local.closest('.ch-card').querySelector('[data-pj-data-toggle]').click();assert.ok(local.querySelector('.cd-records table'));local.querySelector('[data-pj-reset]').click();assert.equal(root.querySelector('.pj-inline'),null);count++;}}
+// HTML product tracks retain the same exact cohort and local/expanded drill contract.
+const sourceIds=rs=>Array.from(rs,r=>[r.facility_id,r.product,r.as_of_date].join('|')).sort();
+for(const which of ['current','prior']){
+ const button=root.querySelector('#newDealsChart [data-deal-period="'+which+'"]:not(:disabled)'),product=button.closest('.pal-deal-row').querySelector('.pal-deal-label').textContent;
+ const expected=all.portfolio.filter(r=>r.product===product&&r['pal_'+(which==='current'?'new':'prior')+'_ytd']);
+ assert.equal(Number(button.dataset.count),new Set(expected.map(r=>r.facility_id)).size);
+ button.click();assert.equal(root.querySelector('dialog.ca-overlay'),null);const drill=root.querySelector('#newDealsChart').closest('.ch-card').querySelector('.pj-inline');assert.ok(drill);
+ assert.deepEqual(sourceIds(e.journey.exportRows()),sourceIds(expected));assert.equal(root.querySelector('[data-pal-rows=tfa]').textContent,initialTFA);
+ drill.closest('.ch-card').querySelector('[data-pj-data-toggle]').click();assert.deepEqual(sourceIds(e.journey.exportRows()),sourceIds(expected));assert.equal(drill.querySelectorAll('.cd-records tbody tr').length,Math.min(10,expected.length));
+ drill.querySelector('[data-pj-reset]').click();assert.equal(root.querySelector('.pj-inline'),null);assert.equal(root.querySelector('#newDealsChart').hidden,false);assert.ok(button.isConnected);count++;
+}
+root.querySelector('[data-chart-expand=newDealsChart]').click();
+const dealAnalysis=root.querySelector('#cd-chart-analysis');assert.ok(dealAnalysis.querySelector('#newDealsChart.pal-deals-list'));assert.equal(root.querySelectorAll('dialog.ca-overlay').length,1);
+for(const which of ['current','prior']){
+ const button=dealAnalysis.querySelector('#newDealsChart [data-deal-period="'+which+'"]:not(:disabled)'),product=button.closest('.pal-deal-row').querySelector('.pal-deal-label').textContent;
+ const expected=all.portfolio.filter(r=>r.product===product&&r['pal_'+(which==='current'?'new':'prior')+'_ytd']);
+ button.click();const drill=dealAnalysis.querySelector('.cd-inline-drill');assert.ok(drill);assert.equal(dealAnalysis.querySelector('.pj-inline'),null,'Expanded lists use the shared in-dialog drill');assert.equal(root.querySelectorAll('dialog.ca-overlay').length,1,'No nested overlay is opened');
+ assert.deepEqual(sourceIds(e.details.exportRows()),sourceIds(expected));
+ drill.querySelector('[data-inline-reset]').click();assert.equal(dealAnalysis.querySelector('.cd-inline-drill'),null);assert.equal(dealAnalysis.querySelector('#newDealsChart').hidden,false);
+}
+dealAnalysis.closest('dialog').querySelector('.ca-overlay-close').click();assert.equal(root.querySelector('dialog.ca-overlay'),null);assert.ok(root.querySelector('#ch-content #newDealsChart.pal-deals-list'));
+root.querySelector('#newDealsChart [data-deal-period=current]:not(:disabled)').click();reset.click();await tick();assert.equal(root.querySelector('.pj-inline'),null);assert.ok(root.querySelector('#newDealsChart .pal-deal-row'),'Global Reset restores the ranked product list');
 // Terminal drill retains the selected cohort and offers all same-date related datasets.
 const expiry=current('facilityTrendChart'),expirySeries=expiry.options.series.find(s=>s.name==='Facilities expiring'),expiryPoint=expirySeries.data.find(p=>p.custom?.rows?.some(r=>r.facility_id==='FA100003'));
 assert.ok(expiryPoint);click(expiry,expiryPoint,expirySeries);
