@@ -165,6 +165,9 @@ register. Portfolio coverage is a full-width row immediately below the KPI cards
 with four large, clickable statistics and full-height vertical dividers. Each
 statistic follows the reference layout: title, subtitle, large count, change
 badge and comparison line. There is no separate section heading above the row.
+Each statistic has its own information button opening the methodology drawer:
+counting grain, expiry eligibility, active filters, source dates and comparison
+rules. Information buttons are separate from the supporting-record drill buttons.
 Changes use distinct IDs from a validated previous-weekday Portfolio release
 with the same page and portfolio filters; aggregate history is never substituted.
 Missing comparison data is marked unavailable, and a zero baseline with a new

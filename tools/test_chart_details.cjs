@@ -32,3 +32,26 @@ const main=d.querySelector('#ch-content');main.insertAdjacentHTML('afterbegin','
 controller.apply();assert.equal(d.querySelectorAll('.cd-kpi-shell').length,1);assert.equal(d.querySelector('.pal-metric button'),null);
 d.querySelector('.cd-kpi-method').click();assert.equal(dialogOptions.description,'Total facility amount');assert.match(dialogOptions.body,/Sum the supplied tfa/);assert.match(dialogOptions.body,/Saturdays and Sundays/);
 console.log('PASS: KPI calculation drawer, independent accessible controls and bento summary placement.');
+
+const coverageMetrics=[
+ ['facilities','Facilities',/Repeated rows with the same facility ID count once/],
+ ['relationships','Relationships',/multiple facilities or repeated source rows counts once/],
+ ['caexpired','CAs expired',/affected relationships, not individual CA IDs/],
+ ['expired','Facilities expired',/both CM and DM records are included/]
+];
+main.insertAdjacentHTML('afterbegin','<section class="pal-coverage-card"><div class="pal-coverage-stats">'+coverageMetrics.map(([key,title])=>'<button type="button" class="pal-coverage-stat" data-pal-rows="'+key+'" data-title="'+title+'"><span class="pal-coverage-title">'+title+'</span></button>').join('')+'</div></section>');
+records=[{facility_id:'FA1',relationship_id:'R1',as_of_date:'2026-08-31'}];
+let coverageDrills=0;for(const card of d.querySelectorAll('.pal-coverage-stat'))card.addEventListener('click',()=>coverageDrills++);
+controller.apply();controller.apply();assert.equal(d.querySelectorAll('.cd-coverage-shell').length,4,'Repeated enhancement must not duplicate coverage wrappers');
+for(const [key,title,rule] of coverageMetrics){
+ const card=d.querySelector('.pal-coverage-stat[data-pal-rows="'+key+'"]'),shell=card.parentElement,method=shell.querySelector('.cd-kpi-method');
+ assert.equal(card.querySelector('button'),null,'Methodology must be a sibling, never a nested button');assert.equal(shell.children.length,2);
+ assert.equal(method.getAttribute('aria-label'),'Methodology for '+title);method.click();assert.equal(coverageDrills,0,'Methodology must not trigger a supporting-record drill');
+ assert.equal(dialogOptions.description,title);assert.equal(dialogOptions.placement,'right');assert.match(dialogOptions.body,rule);
+ for(const wording of [/All page filters and Portfolio filters apply to both snapshots/,/must not be added together/,/current count minus previous count/,/change divided by previous count/,/immediately preceding weekday/,/zero previous count/,/Missing or incompatible baselines/,/Region: NAM/,/2026-08-31/])assert.match(dialogOptions.body,wording);
+ if(key==='caexpired'){assert.match(dialogOptions.body,/CM records only/);assert.match(dialogOptions.body,/EMEA also requires CA Review Yes/);}
+ if(key==='caexpired'||key==='expired')assert.match(dialogOptions.body,/Due-today and missing/);
+ d.querySelector('.cd-methodology').parentElement.querySelector('[data-method-done]').click();assert.equal(d.querySelector('.cd-methodology'),null);
+}
+for(const card of d.querySelectorAll('.pal-coverage-stat'))card.click();assert.equal(coverageDrills,4,'Statistic controls retain their independent drill handlers');
+console.log('PASS: all four coverage methodology drawers, exact counting and comparison rules, source/filter context, close/reapply lifecycle and independent drills.');

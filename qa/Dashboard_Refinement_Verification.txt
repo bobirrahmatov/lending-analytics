@@ -76,3 +76,17 @@ Comparison tests cover distinct-ID duplicates, matching page/PAL filters, positi
 negative, zero and new populations, missing/stale/changed-coverage prior sources,
 and mixed current dates. No aggregate-history fallback is used for these counts.
 Unchanged samples correctly display 0.0%; unavailable snapshots are labeled.
+
+Coverage methodology follow-up
+Each of the four statistics has an independent information button. The shared
+right-hand drawer explains the exact distinct-ID grain, CA and facility expiry
+eligibility, matching current/prior filters, percentage and absolute changes,
+zero or unavailable baselines, overlapping populations and current source dates.
+All 44 local regression commands passed. Focused DOM checks cover all four
+rules, repeated enhancement, closing and
+independent drill handlers. Local browser checks confirmed all four drawers,
+24-record expired-CA drill, Reset, focus restoration, light/dark presentation,
+and all eight responsive geometry cases. Native-theme verification uses the
+local fixture, not a live Confluence connection. Replace application attachments
+and matching generated script pairs; the header include and page macros remain
+unchanged for this follow-up.

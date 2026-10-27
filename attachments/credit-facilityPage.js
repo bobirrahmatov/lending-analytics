@@ -1017,13 +1017,22 @@ global.CreditChartDetails=function({root,esc,getCharts,getRows,getContext,getAna
   if(/ events$/i.test(label))return 'Count '+label.replace(/ events$/i,'').toUpperCase()+' event_type records within the latest three available maker months. Events are not distinct covenants.';
   return rules[label]||'Count records flagged action_required in the named monitoring category within the current shared filters. Multiple obligations may belong to one relationship or facility.';
  }
+ const coverageRules={
+  facilities:'Count distinct non-empty facility IDs in the selected portfolio. Repeated rows with the same facility ID count once, including repeats across regions. This is a facility count, not a sum of balances.',
+  relationships:'Count distinct non-empty relationship IDs in the selected portfolio. A relationship with multiple facilities or repeated source rows counts once.',
+  caexpired:'Count distinct relationship IDs with at least one prepared expired-CA flag (pal_ca_expired). The prepared rule includes CM records only; EMEA also requires CA Review Yes. The CA expiration date must be before the source reporting date. Due-today and missing dates are not expired. This counts affected relationships, not individual CA IDs.',
+  expired:'Count distinct facility IDs with the prepared expired-facility flag (pal_facility_expired). Maturity must be before the source reporting date; both CM and DM records are included. Due-today and missing maturity dates are not expired. Repeated facility IDs count once.'
+ };
+ const coverageComparison='All page filters and Portfolio filters apply to both snapshots. The four coverage metrics overlap and must not be added together. Change = current count minus previous count; percentage change = change divided by previous count × 100. The baseline must be a validated Portfolio release with matching source identities and coverage for the immediately preceding weekday. Weekends are skipped; local holidays are not. A zero previous count shows New when the current count is positive, or 0.0% when both are zero. Missing or incompatible baselines and mixed current reporting dates show Unavailable. Aggregate balance history is not used for these counts. Selecting the statistic opens its current supporting records; the information button opens only this methodology.';
  function addKpiMethods(){
-  root.querySelectorAll('#ch-content .pal-metric,#ch-content .ch-kpi').forEach(card=>{
+  root.querySelectorAll('#ch-content .pal-metric,#ch-content .ch-kpi,#ch-content .pal-coverage-stat').forEach(card=>{
    if(card.parentElement.classList.contains('cd-kpi-shell'))return;
    const label=card.dataset.title||card.querySelector('.ch-kpi-label,h2')?.textContent.trim()||'Portfolio metric',key=card.dataset.palRows;
-   const shell=document.createElement('div');shell.className='cd-kpi-shell';card.before(shell);shell.append(card);
+   const coverage=card.classList.contains('pal-coverage-stat')&&Object.hasOwn(coverageRules,key);
+   const shell=document.createElement('div');shell.className='cd-kpi-shell'+(coverage?' cd-coverage-shell':'');card.before(shell);shell.append(card);
    const button=document.createElement('button');button.className='cw-icon-btn cd-section-method cd-kpi-method';button.setAttribute('aria-label','Methodology for '+label);button.innerHTML=infoIcon;shell.append(button);
-   button.onclick=()=>methodology(key?'metric-'+key:'kpi-'+root.dataset.view,{title:label,note:'Summary metric · current dashboard scope',explanation:[metricRule(label),key?'The current and prior snapshots use the same filters. Change = current minus previous weekday balance; percentage change = change divided by the absolute prior balance. Saturdays and Sundays are skipped, not local holidays. A complete comparison-ready snapshot with numeric balances is required. A zero prior balance shows New balance (or 0.0% if both are zero); missing comparable snapshots show unavailable.':'Uses the current page population and shared filters. Counts are obligations unless explicitly described as distinct IDs; missing source values are not imputed.']});
+   if(coverage){button.title='Methodology for '+label;button.onclick=()=>methodology('metric-'+key,{title:label,note:'Portfolio coverage · current selected population',explanation:[coverageRules[key],coverageComparison]});}
+   else button.onclick=()=>methodology(key?'metric-'+key:'kpi-'+root.dataset.view,{title:label,note:'Summary metric · current dashboard scope',explanation:[metricRule(label),key?'The current and prior snapshots use the same filters. Change = current minus previous weekday balance; percentage change = change divided by the absolute prior balance. Saturdays and Sundays are skipped, not local holidays. A complete comparison-ready snapshot with numeric balances is required. A zero prior balance shows New balance (or 0.0% if both are zero); missing comparable snapshots show unavailable.':'Uses the current page population and shared filters. Counts are obligations unless explicitly described as distinct IDs; missing source values are not imputed.']});
   });
   root.querySelectorAll('#ch-content .ch-insight').forEach((card,index)=>{
    if(card.querySelector('.cd-section-method'))return;
@@ -2656,5 +2665,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="4cf38fba4192:FACILITY";
+window.CREDIT_PAGE_BUILD="e86e5f4277b1:FACILITY";
 })();
