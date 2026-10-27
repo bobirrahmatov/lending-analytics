@@ -12,7 +12,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "item_id": "CA:0001",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -48,7 +48,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -61,7 +61,7 @@
       "team_lead": "International team",
       "product": "Real Estate",
       "relationship_id": "R0002",
-      "relationship_name": "Illustrative relationship 002",
+      "relationship_name": "Relationship 002",
       "item_id": "CA:0002",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -97,7 +97,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 2",
+      "banker_name": "Banker 2",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ],

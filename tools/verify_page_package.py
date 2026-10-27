@@ -10,7 +10,9 @@ assert 'sourceView' not in (A/'credit-dashboard.js').read_text()
 for f in fragments:
  s=f.read_text();assert not re.search(r'<(?:html|head|body|header|aside|nav)\b|rel="stylesheet"',s)
  assert "mode:'production'" in s and 'credit-demo-data' not in s
- for filename in re.findall(r'/([^/"?]+\.js)\?',s):assert (A/filename).is_file(),filename
+ assert '?v=' not in s and 'REPLACE_WITH_' not in s
+ assert '/attachments/3845862527/' in s
+ for filename in re.findall(r'/([^/"?]+\.js)(?:\?[^"]*)?"',s):assert (A/filename).is_file(),filename
  for inline in re.findall(r'<script>(.*?)</script>',s,re.S):
   with tempfile.NamedTemporaryFile(suffix='.js',mode='w') as temp:
    temp.write(inline);temp.flush();subprocess.run(['node','--check',temp.name],check=True,capture_output=True)

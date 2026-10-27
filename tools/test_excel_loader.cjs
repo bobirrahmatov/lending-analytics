@@ -1,0 +1,70 @@
+const fs=require('fs'),path=require('path'),vm=require('vm'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'..'),XLSX=require(path.join(root,'attachments/xlsx.full.min.js'));
+const context={window:{XLSX,location:{href:'https://example.test/confluence/pages/viewpage.action?pageId=3977008171',origin:'https://example.test'}},URL,TextDecoder,AbortController,setTimeout,clearTimeout};
+vm.createContext(context);
+for(const name of ['credit-excel.js','credit-data-cache.js','credit-dashboard.js'])vm.runInContext(fs.readFileSync(path.join(root,'attachments',name),'utf8'),context);
+const C=context.window.CreditDataCache,E=context.window.CreditExcel;
+const fields=[['id','text',true],['date','date',true],['amount','number',true],['count','integer',true],['enabled','boolean',true],['optional','text',false]];
+const record={id:'00021',date:'2026-08-31',amount:1250.25,count:2,enabled:false,optional:null,extra_value:'preserved'};
+const plain=value=>JSON.parse(JSON.stringify(value));
+function workbook(rows=[record],options={}){
+ const dataset=options.dataset||'portfolio',schema=options.fields||fields,headers=[...schema.map(([name])=>name),...new Set(rows.flatMap(Object.keys).filter(name=>!schema.some(([key])=>key===name)))];
+ const book=XLSX.utils.book_new(),metadata={schema_version:2,bundle_id:'release-A',dataset,rows:rows.length,is_demo:false,...options.metadata};
+ XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['key','value'],...Object.entries(metadata)]),'Metadata');
+ XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([headers,...rows.map(row=>headers.map(name=>row[name]??null))]),'Data');
+ options.mutate?.(book);
+ return XLSX.write(book,{type:'array',bookType:'xlsx'});
+}
+function loader(buffer,options={}){
+ let reads=0;
+ context.window.fetch=async(url,settings)=>{reads++;assert.equal(settings.credentials,'same-origin');assert.equal(settings.cache,'no-cache');assert(!url.includes('?'),'fixed attachment URL has no query');return{ok:true,arrayBuffer:async()=>buffer};};
+ const manifest={schema_version:2,bundle_id:'release-A',is_demo:false,files:{portfolio:{filename:'Portfolio.xlsx',rows:1}},...options.manifest};
+ return {reads:()=>reads,loader:C.createLoader({manifest,attachment:name=>'/confluence/download/attachments/3845862527/'+name,contracts:{portfolio:fields},validate:(_,rows)=>{const ids=new Set();for(const row of rows){assert(row.id&&!ids.has(row.id),'missing or duplicate key');ids.add(row.id);}return rows;},...options.loader})};
+}
+(async()=>{
+ let buffer=workbook(),built=loader(buffer);
+ const [a,b]=await Promise.all([built.loader.load('portfolio'),built.loader.load('portfolio')]);assert.equal(a,b);assert.equal(built.reads(),1);assert.deepEqual(plain(a),[record]);await built.loader.load('portfolio');assert.equal(built.reads(),1);
+ const parse=(data,options={})=>E.parse(data,{dataset:'portfolio',fields,...options});
+ assert.equal((await parse(workbook([record],{mutate:book=>{book.Sheets.Data.B2={t:'n',v:46265,z:'yyyy-mm-dd'};}}))).rows[0].date,'2026-08-31');
+ assert.equal((await parse(workbook([record],{mutate:book=>{book.Workbook={WBProps:{date1904:true}};book.Sheets.Data.B2={t:'n',v:44803,z:'yyyy-mm-dd'};}}))).rows[0].date,'2026-08-31');
+ for(const [value,format] of [[60,'yyyy-mm-dd'],[46265.5,'yyyy-mm-dd'],[46265,'General']])await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data.B2={t:'n',v:value,z:format};}})),/date/);
+ for(const [field,value,pattern] of [['id',21,/text field/],['amount','1,250.25',/numeric field/],['count',1.5,/numeric field/],['enabled','FALSE',/boolean field/],['date','2026-02-30',/date/]])await assert.rejects(parse(workbook([{...record,[field]:value}])),pattern);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data.C2={t:'n',v:1250.25,f:'SUM(1,2)'};}})),/formulas/);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data.C2={t:'e',v:7};}})),/Excel error/);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data.F1.v='missing_optional';}})),/missing column optional/);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data.F1.v='id';}})),/duplicate column/);
+ await assert.rejects(parse(workbook([record],{metadata:{rows:2}})),/row count/);
+ await assert.rejects(parse(workbook([record],{metadata:{dataset:'activity'}})),/dataset/);
+ await assert.rejects(parse(workbook([record],{metadata:{schema_version:'2'}})),/schema/);
+ await assert.rejects(parse(workbook([record],{metadata:{is_demo:'false'}})),/sample identity/);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Metadata.A7={t:'s',v:'rows'};book.Sheets.Metadata.B7={t:'n',v:1};book.Sheets.Metadata['!ref']='A1:B7';}})),/duplicate metadata/);
+ await assert.rejects(parse(workbook([record],{mutate:book=>{book.Sheets.Data['!merges']=[{s:{r:1,c:0},e:{r:1,c:1}}];}})),/merged/);
+ await assert.rejects(parse(new TextEncoder().encode('<html>Sign in</html>').buffer),/not an XLSX/);
+ await assert.rejects(parse(new Uint8Array(10000000).buffer),/10 MB/);
+ await assert.rejects(loader(workbook([record],{metadata:{bundle_id:'release-B'}})).loader.load('portfolio'),/Mixed release/);
+ await assert.rejects(loader(workbook([record],{metadata:{is_demo:true}})).loader.load('portfolio'),/Illustrative/);
+ await assert.rejects(loader(workbook([record],{metadata:{is_demo:true}}),{loader:{allowDemo:true}}).loader.load('portfolio'),/identity/);
+ assert.equal((await loader(workbook([record],{metadata:{is_demo:true}}),{manifest:{schema_version:2,bundle_id:'release-A',is_demo:true,files:{portfolio:{filename:'Portfolio.xlsx',rows:1}}},loader:{allowDemo:true}}).loader.load('portfolio')).length,1);
+ built=loader(workbook());context.window.fetch=async()=>({ok:false,status:403});await assert.rejects(built.loader.load('portfolio'),/403/);context.window.fetch=async()=>({ok:true,arrayBuffer:async()=>buffer});assert.equal((await built.loader.load('portfolio')).length,1,'failure is evicted and can retry');
+ await assert.rejects(C.readBuffer('https://another.test/Portfolio.xlsx'),/same Confluence origin/);
+ context.window.fetch=async()=>({ok:true,headers:{get:()=>10000000},arrayBuffer:async()=>{throw Error('must reject before body');}});await assert.rejects(C.readBuffer('/Portfolio.xlsx'),/10 MB/);
+ let timer;const realSetTimeout=context.setTimeout;context.setTimeout=(fn)=>{timer=fn;return 1;};context.window.fetch=(_,options)=>new Promise((resolve,reject)=>options.signal.addEventListener('abort',()=>reject(Error('aborted'))));const expired=C.readBuffer('/Portfolio.xlsx');timer();await assert.rejects(expired,/aborted/);context.setTimeout=realSetTimeout;
+ const schemas=JSON.parse(fs.readFileSync(path.join(root,'tools/schema.json'),'utf8')),canonicalFields=schemas.Portfolio.map(field=>[field.field,field.type,field.required]);
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'demo-comparison/credit-manifest.json'),'utf8'));
+ const actual=JSON.parse(fs.readFileSync(path.join(root,'demo-comparison',manifest.files.portfolio.filename),'utf8')).rows[0];
+ const canonical=await parse(workbook([actual],{fields:canonicalFields}),{fields:canonicalFields});assert.equal(context.window.CreditHub.validateRows('portfolio',canonical.rows).length,1);
+ const source={source_id:actual.source_id,as_of_date:actual.as_of_date,domain:'PORTFOLIO',record_count:1};C.verifySources('portfolio',canonical.rows,[source]);assert.throws(()=>C.verifySources('portfolio',canonical.rows,[{...source,as_of_date:'2020-01-01'}]),/source\/date/);
+ const duplicateBook=workbook([actual,actual],{fields:canonicalFields});const duplicate=await parse(duplicateBook,{fields:canonicalFields});assert.throws(()=>context.window.CreditHub.validateRows('portfolio',duplicate.rows),/duplicate key/);
+ const parts={schema_version:2,bundle_id:'release-A',is_demo:false,files:{portfolio:{rows:2,parts:[{filename:'Portfolio-1.xlsx',rows:1},{filename:'Portfolio-2.xlsx',rows:1}]}}};
+ context.window.fetch=async()=>({ok:true,arrayBuffer:async()=>workbook([actual],{fields:canonicalFields})});
+ await assert.rejects(C.createLoader({manifest:parts,attachment:name=>'/'+name,contracts:{portfolio:canonicalFields},validate:context.window.CreditHub.validateRows}).load('portfolio'),/duplicate key/);
+ const runtimeDir=path.join(root,'excel/runtime'),runtimeManifest=JSON.parse(fs.readFileSync(path.join(runtimeDir,'credit-manifest.json'),'utf8'));
+ const runtimeContracts=Object.fromEntries(Object.entries(schemas).map(([name,list])=>[name.toLowerCase(),list.map(field=>[field.field,field.type,field.required])]));
+ context.window.fetch=async url=>({ok:true,arrayBuffer:async()=>{const bytes=fs.readFileSync(path.join(runtimeDir,path.basename(url)));return bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength);}});
+ const runtime=C.createLoader({manifest:runtimeManifest,attachment:name=>'/confluence/download/attachments/3845862527/'+name,contracts:runtimeContracts,validate:context.window.CreditHub.validateRows,allowDemo:true}),datasets={};
+ for(const name of ['sources','monitoring','portfolio','activity','history','documents']){datasets[name]=await runtime.load(name);assert.equal(datasets[name].length,runtimeManifest.files[name].rows);}
+ for(const name of ['monitoring','portfolio','activity'])C.verifySources(name,datasets[name],datasets.sources);
+ assert(datasets.monitoring.some(row=>row.covenant_id),'Covenant associations survive XLSX conversion');
+ assert(datasets.activity.some(row=>row.deferred_date),'Activity extension fields survive XLSX conversion');
+ console.log('PASS: prepared XLSX roundtrip, exact types/IDs/dates, metadata and release identity, sample separation, schema/formula/error rejection, primary/source keys, coalesced caching, retry, native permissions/origin, timeout, size limits and cross-part uniqueness.');
+})().catch(error=>{console.error(error);process.exitCode=1});

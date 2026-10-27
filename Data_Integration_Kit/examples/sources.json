@@ -10,7 +10,7 @@
       "as_of_date": "2026-08-31",
       "coverage": "ALL_OBLIGATIONS",
       "record_count": 200,
-      "source_owner": "Demo source owner",
+      "source_owner": "Data owner",
       "quality_note": "Synthetic comparison scenario derived from local field contracts; not live or historical results."
     },
     {
@@ -21,7 +21,7 @@
       "as_of_date": "2026-08-31",
       "coverage": "ALL_OBLIGATIONS",
       "record_count": 48,
-      "source_owner": "Demo source owner",
+      "source_owner": "Data owner",
       "quality_note": "Synthetic comparison scenario derived from local field contracts; not live or historical results."
     }
   ],

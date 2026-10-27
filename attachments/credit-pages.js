@@ -1,16 +1,16 @@
-/* Set the native Confluence page IDs once; no page URLs are guessed. */
+/* Native page IDs in the wcs space. Trends is a Portfolio compatibility route. */
 window.CREDIT_PAGE_IDS={
-  "lendingAnalytics": "REPLACE_WITH_LENDING_ANALYTICS_PAGE_ID",
-  "portfolio": "REPLACE_WITH_PORTFOLIO_PAGE_ID",
-  "trends": "REPLACE_WITH_TRENDS_PAGE_ID",
-  "deepdive": "REPLACE_WITH_DEEPDIVE_PAGE_ID",
-  "overview": "REPLACE_WITH_OVERVIEW_PAGE_ID",
-  "workload": "REPLACE_WITH_WORKLOAD_PAGE_ID",
-  "COVENANTS": "REPLACE_WITH_COVENANTS_PAGE_ID",
-  "CA": "REPLACE_WITH_CA_PAGE_ID",
-  "FACILITY": "REPLACE_WITH_FACILITY_PAGE_ID",
-  "CCM": "REPLACE_WITH_CCM_PAGE_ID",
-  "INSURANCE": "REPLACE_WITH_INSURANCE_PAGE_ID",
-  "APPRAISALS": "REPLACE_WITH_APPRAISALS_PAGE_ID",
-  "activity": "REPLACE_WITH_ACTIVITY_PAGE_ID"
+  "lendingAnalytics": "3782729579",
+  "portfolio": "3977008171",
+  "trends": "3977008171",
+  "deepdive": "3977008237",
+  "overview": "3977008198",
+  "workload": "3977008221",
+  "COVENANTS": "3977008265",
+  "CA": "3977008325",
+  "FACILITY": "3977008340",
+  "CCM": "3977008303",
+  "INSURANCE": "3977008348",
+  "APPRAISALS": "3977008352",
+  "activity": "3977008280"
 };

@@ -1,7 +1,7 @@
 {
   "is_demo": true,
   "page": "deepdive",
-  "title": "Relationship deep dive",
+  "title": "Relationship Deep Dive",
   "primary_dataset": "portfolio",
   "eligible_sample_rows": 120,
   "note": "Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.",
@@ -16,7 +16,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "facility_key": "PORT:0001",
       "facility_id": "FA100000",
       "parent_facility_id": null,
@@ -81,7 +81,7 @@
       "control_unit": null,
       "product_underwriter": null,
       "total_comm_exposure": null,
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "source_id": "SRC_PORTFOLIO",
@@ -93,7 +93,7 @@
       "team_lead": "International team",
       "product": "Real Estate",
       "relationship_id": "R0002",
-      "relationship_name": "Illustrative relationship 002",
+      "relationship_name": "Relationship 002",
       "facility_key": "PORT:0002",
       "facility_id": "FA100001",
       "parent_facility_id": null,
@@ -158,7 +158,7 @@
       "control_unit": null,
       "product_underwriter": null,
       "total_comm_exposure": null,
-      "banker_name": "Illustrative banker 2"
+      "banker_name": "Banker 2"
     },
     {
       "source_id": "SRC_PORTFOLIO",
@@ -170,7 +170,7 @@
       "team_lead": "Specialty team",
       "product": "Real Estate",
       "relationship_id": "R0003",
-      "relationship_name": "Illustrative relationship 003",
+      "relationship_name": "Relationship 003",
       "facility_key": "PORT:0003",
       "facility_id": "FA100002",
       "parent_facility_id": null,
@@ -235,7 +235,7 @@
       "control_unit": null,
       "product_underwriter": null,
       "total_comm_exposure": null,
-      "banker_name": "Illustrative banker 3"
+      "banker_name": "Banker 3"
     }
   ]
 }

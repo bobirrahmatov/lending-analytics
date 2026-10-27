@@ -1,5 +1,5 @@
 (function(){'use strict';const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDIT_CONFIG?.page!=="workload"){root.textContent='This page needs its matching dashboard settings and scripts.';window.WCSHeaderLoading?.claim(root)?.destroy();return;}
 if(root.dataset.creditStarted)return;
-if(window.CREDIT_PAGE_BUILD!=="c6035e89de98:workload"||!window.CreditHub){root.textContent='Load the matching dashboard logic before this renderer.';window.WCSHeaderLoading?.claim(root)?.destroy();return;}
+if(window.CREDIT_PAGE_BUILD!=="d392362f818a:workload"||!window.CreditHub){root.textContent='Load the matching dashboard logic before this renderer.';window.WCSHeaderLoading?.claim(root)?.destroy();return;}
 root.dataset.creditStarted="workload";window.CreditHub.mount(root);
 })();

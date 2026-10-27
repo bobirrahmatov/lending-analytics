@@ -17,7 +17,7 @@
       "ou_expense_code": "OU002",
       "cu_expense_code": "CU002",
       "relationship_id": "R0005",
-      "relationship_name": "Illustrative relationship 005",
+      "relationship_name": "Relationship 005",
       "borrower_name": "Borrower 1",
       "ca_id": "CA2026/0005",
       "facility_id": "FA100004",
@@ -59,7 +59,7 @@
       "pal_covenant_bucket": "46-90",
       "pal_due30": false,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 5",
+      "banker_name": "Banker 5",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -76,7 +76,7 @@
       "ou_expense_code": "OU003",
       "cu_expense_code": "CU003",
       "relationship_id": "R0006",
-      "relationship_name": "Illustrative relationship 006",
+      "relationship_name": "Relationship 006",
       "borrower_name": "Borrower 2",
       "ca_id": "CA2026/0006",
       "facility_id": "FA100005",
@@ -118,7 +118,7 @@
       "pal_covenant_bucket": null,
       "pal_due30": true,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 6",
+      "banker_name": "Banker 6",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ],
@@ -171,7 +171,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "facility_key": "PORT:0001",
       "facility_id": "FA100000",
       "parent_facility_id": null,
@@ -236,7 +236,7 @@
       "control_unit": null,
       "product_underwriter": null,
       "total_comm_exposure": null,
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "source_id": "SRC_PORTFOLIO",
@@ -248,7 +248,7 @@
       "team_lead": "International team",
       "product": "Real Estate",
       "relationship_id": "R0002",
-      "relationship_name": "Illustrative relationship 002",
+      "relationship_name": "Relationship 002",
       "facility_key": "PORT:0002",
       "facility_id": "FA100001",
       "parent_facility_id": null,
@@ -313,7 +313,7 @@
       "control_unit": null,
       "product_underwriter": null,
       "total_comm_exposure": null,
-      "banker_name": "Illustrative banker 2"
+      "banker_name": "Banker 2"
     }
   ],
   "note": "ILLUSTRATIVE EXCERPT ONLY. Full reconciled history is in release/."

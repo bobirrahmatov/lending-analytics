@@ -11,7 +11,7 @@
     "team_lead": "North team",
     "product": "Real Estate",
     "relationship_id": "R0001",
-    "relationship_name": "Illustrative relationship 001",
+    "relationship_name": "Relationship 001",
     "facility_key": "PORT:0001",
     "facility_id": "FA100000",
     "parent_facility_id": null,
@@ -76,7 +76,7 @@
     "control_unit": null,
     "product_underwriter": null,
     "total_comm_exposure": null,
-    "banker_name": "Illustrative banker 1"
+    "banker_name": "Banker 1"
   },
   "monitoring": [
     {
@@ -89,7 +89,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "item_id": "CA:0001",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -125,7 +125,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -138,7 +138,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "item_id": "INSURANCE:0017",
       "category": "INSURANCE",
       "owner_role": "SPECIALIST",
@@ -174,7 +174,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -187,7 +187,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "item_id": "APPRAISALS:0083",
       "category": "APPRAISALS",
       "owner_role": "SPECIALIST",
@@ -223,7 +223,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -240,7 +240,7 @@
       "ou_expense_code": "OU008",
       "cu_expense_code": "CU008",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": "Borrower 117",
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -282,7 +282,7 @@
       "pal_covenant_bucket": null,
       "pal_due30": false,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ],
@@ -300,7 +300,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": null,
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -326,7 +326,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:1",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "as_of_date": "2026-08-31",
@@ -341,7 +341,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": null,
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -367,7 +367,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:121",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "as_of_date": "2026-08-31",
@@ -382,7 +382,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": null,
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -408,7 +408,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:241",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "as_of_date": "2026-08-31",
@@ -423,7 +423,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": null,
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -449,7 +449,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:361",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "is_demo": true,
   "page": "activity",
-  "title": "Covenant activity",
+  "title": "Covenants Activity",
   "primary_dataset": "activity",
   "eligible_sample_rows": 420,
   "note": "Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.",
@@ -19,7 +19,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "borrower_name": null,
       "ca_id": "CA2026/0001",
       "facility_id": "FA100000",
@@ -45,7 +45,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:1",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 1"
+      "banker_name": "Banker 1"
     },
     {
       "as_of_date": "2026-08-31",
@@ -60,7 +60,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0002",
-      "relationship_name": "Illustrative relationship 002",
+      "relationship_name": "Relationship 002",
       "borrower_name": null,
       "ca_id": "CA2026/0002",
       "facility_id": "FA100001",
@@ -86,7 +86,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:2",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 2"
+      "banker_name": "Banker 2"
     },
     {
       "as_of_date": "2026-08-31",
@@ -101,7 +101,7 @@
       "ou_expense_code": null,
       "cu_expense_code": null,
       "relationship_id": "R0003",
-      "relationship_name": "Illustrative relationship 003",
+      "relationship_name": "Relationship 003",
       "borrower_name": null,
       "ca_id": "CA2026/0003",
       "facility_id": "FA100002",
@@ -127,7 +127,7 @@
       "source_id": "SRC_ACTIVITY",
       "source_record_id": "SRC_ACTIVITY:3",
       "owner_role": "UNDERWRITER",
-      "banker_name": "Illustrative banker 3"
+      "banker_name": "Banker 3"
     }
   ]
 }

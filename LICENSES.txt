@@ -7,3 +7,14 @@ Use subject to the applicable Highcharts license: https://www.highcharts.com/lic
 Citi logo, CitiText fonts, WCSpedia loading helper/styles and shared ui.js/ui.css controls:
 Reused from the user-provided internal wealth workspace for this implementation.
 No broader redistribution rights are asserted.
+
+SheetJS Community Edition 0.20.3 (Apache License 2.0)
+Official distribution: https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
+License retained in attachments/SheetJS-LICENSE.txt. Upstream notice remains in the bundle.
+
+Lending Analytics hero photograph (Citi Wealth / Citigold interior)
+Source page: https://www.citigroup.com/global/businesses/wealth
+Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/63adb4559bf1d21809b0f414.jpg
+Saved unchanged as attachments/lending-analytics-hero.jpg for the requested internal Citi deployment.
+Citi retains rights to the photograph. No broader redistribution rights are asserted.
+Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030

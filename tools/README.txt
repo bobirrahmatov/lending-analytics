@@ -34,9 +34,52 @@ from an approved WCSpedia checkout. It copies the four shared sources into this
 project before calling build_pages.py with the bundled snapshot.
 It is not required when using the bundled source snapshot.
 
-DATA PUBLICATION TOOLS
+DEFAULT EXCEL RUNTIME AND SAMPLE AUTHORING
 
-validate_release.py RELEASE_DIRECTORY validates prepared dataset envelopes,
+The default native macros read six fixed-name workbooks from attachment page
+3845862527 in space wcs: Portfolio.xlsx, Monitoring.xlsx, Activity.xlsx,
+History.xlsx, Sources.xlsx and Documents.xlsx. The prepared files are in
+excel/runtime/. Upload those workbooks and their credit-manifest.json; optional
+credit-previous.json or credit-covenant-history.json are used only when declared.
+Each workbook contains Data and Metadata sheets. Metadata records schema_version,
+bundle_id, dataset, rows and is_demo. Keep exact typed IDs and schema field names.
+
+create_excel_samples.mjs intentionally authors only synthetic samples from the
+prepared comparison release. It requires the authoring environment's bundled
+@oai/artifact-tool, selected with CREDIT_ARTIFACT_DEPENDENCIES. It is not a normal
+npm/build dependency and must not be used to prepare live records. Supplied
+workbooks make runtime/build/package workflows independent of this authoring
+tool. The script exports, inspects and renders workbooks for review.
+
+  CREDIT_ARTIFACT_DEPENDENCIES=/path/to/bundled/node_modules \
+    node tools/create_excel_samples.mjs
+
+The existing browser loader parses XLSX using the bundled vendor attachment,
+then applies the same schema, key, date, source and count validation as JSON.
+The test_excel_loader.cjs regression reads the prepared workbook artifacts and
+covers typed fields, date handling, release identity, unsupported workbook
+content, sample separation and permission/network failure behavior. No Python
+Excel package is required for runtime parsing or this test.
+
+Production rejects sample data by default. The supplied native macros explicitly
+set allowSampleData:true for the requested sample walkthrough. Switch to false
+for an approved live release, whose workbooks and manifest must all have
+is_demo:false. Hiding runtime sample banners does not change file provenance.
+Never upload synthetic sample workbooks over live attachments.
+
+Upload every validated workbook and declared optional file first, and replace
+credit-manifest.json last. With stable filenames, publication is not atomic.
+Mixed bundle identities must produce an error rather than combined data; retry
+after publication. Already-loaded validated data remains at its snapshot until
+reload. Use exact attachment filenames without version/query/hash suffixes.
+
+OPTIONAL JSON / ACCESS PUBLICATION TOOLS
+These tools support the retained JSON path. validate_release.py does not replace
+XLSX runtime validation; do not run it against a directory of workbooks and treat
+that as proof that every workbook is valid.
+
+
+validate_release.py RELEASE_DIRECTORY validates prepared JSON dataset envelopes,
 types, primary keys, dates, source controls and manifest counts. Add --allow-demo
 only when validating the included illustrative release. Real production inputs
 must pass without that option. This validator does not upload any files.
@@ -59,7 +102,10 @@ LOCAL REGRESSION CHECKS
 
 The maintained test_*.cjs files exercise application calculations, shared UI,
 drill paths, controls, table behavior, cache behavior and asynchronous rendering.
-Most use jsdom 26.1.0; the pure model tests use Node's built-in modules. Follow the
+Most use jsdom 26.1.0; the pure model tests use Node's built-in modules.
+test_host_styles.cjs checks the scoped CSS rule/priority contract; jsdom does not
+paint scrollbars or reproduce the complete browser cascade, so real-browser
+layout and hostile-host-style checks remain separate. Follow the
 repository's documented test command for the current supported suite. Do not
 discover and execute every historical .mjs script as part of that suite.
 
@@ -67,7 +113,8 @@ Python unit tests test_pal_rules.py, test_covenant_history.py and
 test_partition_release.py use the standard library and adjacent project tools.
 Current QA reports and browser fixtures are in qa/. Local fixture success does
 not establish live Confluence behavior, Windows Access execution, or a network
-and host-independent 75,000-row performance guarantee.
+and host-independent 75,000-row performance guarantee. The recorded JSON
+processing benchmark does not establish XLSX parsing or five-second Excel loads.
 
 RETAINED GENERATORS AND HISTORICAL HARNESS FILES
 
@@ -117,8 +164,11 @@ project. Retained generated artifacts make those workflows self-contained.
 DEPLOYMENT BOUNDARY
 
 Use Lending_Analytics_Deployment.txt as the current deployment contract. Keep
-the existing WCSpedia navBar and native sidebar, configure actual page and
-attachment IDs, and publish validated live data before its manifest. The
-included demo data is illustrative and must not replace live production data.
+the existing {include:wcs:navBar} and native sidebar. The confirmed landing,
+attachment host and 11 dashboard IDs are in the contract and shared config. Use
+one global CSS and one existing loading helper; scoped dashboard overrides must
+not change the native shell or font family. Publish validated live data before
+its manifest. Samples remain separate from the application deployment ZIP and
+must not replace live production data.
 Keep LICENSES.txt with all distributed artifacts; no broader rights to internal
 Citi/WCSpedia assets or Highcharts are asserted by this package.

@@ -2,34 +2,34 @@
   {
     "page_key": "lendingAnalytics",
     "title": "Lending Analytics",
-    "question": "Choose portfolio, action management or a monitoring area",
+    "question": "Understand the dashboards and choose a view from the native sidebar",
     "primary": "No financial dataset; credit-pages.js contains native Confluence page IDs",
     "related": "Destination dashboards load validated shared release files"
   },
   {
     "page_key": "portfolio",
-    "title": "Portfolio",
+    "title": "Portfolio Overview",
     "question": "Financial position, approvals, pipeline, return and consolidated monitoring",
     "primary": "portfolio + monitoring (COVENANTS, CCM and other action categories) + history",
     "related": "activity; linked documents; previous; covenant_history"
   },
   {
     "page_key": "overview",
-    "title": "Underwriters Summary",
+    "title": "Underwriter Summary",
     "question": "High-level action distribution, accountable-owner workload, regional distribution and critical items",
     "primary": "monitoring (all six categories)",
     "related": "portfolio; activity; history; documents; previous; covenant_history"
   },
   {
     "page_key": "workload",
-    "title": "Underwriter workload",
+    "title": "Underwriter Workload",
     "question": "Accountable-owner action counts, critical work and action aging; includes specialists supplied in source",
     "primary": "monitoring (all six categories)",
     "related": "portfolio; activity; history; documents; previous; covenant_history"
   },
   {
     "page_key": "deepdive",
-    "title": "Relationship deep dive",
+    "title": "Relationship Deep Dive",
     "question": "Relationship facilities, exposure, utilization and supplied return",
     "primary": "portfolio",
     "related": "monitoring; activity; history; documents; previous; covenant_history"
@@ -43,14 +43,14 @@
   },
   {
     "page_key": "CA",
-    "title": "CA expiration",
+    "title": "CA Expiration",
     "question": "CA workflow obligations, authorization status and expiry",
     "primary": "monitoring where category=CA",
     "related": "portfolio; activity; history; documents; previous; covenant_history"
   },
   {
     "page_key": "FACILITY",
-    "title": "Facility maturity",
+    "title": "Facility Maturity",
     "question": "Maturity obligations, due horizon and owner follow-up",
     "primary": "monitoring where category=FACILITY",
     "related": "portfolio; activity; history; documents; previous; covenant_history"
@@ -64,7 +64,7 @@
   },
   {
     "page_key": "INSURANCE",
-    "title": "Insurance",
+    "title": "Insurances",
     "question": "Certificates, review status and insurance exceptions",
     "primary": "monitoring where category=INSURANCE",
     "related": "portfolio; activity; history; documents; previous; covenant_history"
@@ -78,7 +78,7 @@
   },
   {
     "page_key": "activity",
-    "title": "Covenant activity",
+    "title": "Covenants Activity",
     "question": "Deferred, waived and deleted maker events",
     "primary": "activity",
     "related": "monitoring covenant associations; portfolio; previous; documents; history"
@@ -86,7 +86,7 @@
   {
     "page_key": "trends",
     "title": "Portfolio trends (compatibility URL)",
-    "question": "Existing Trends route resolves to Portfolio; no second sidebar page is needed",
+    "question": "Existing Trends route resolves to Portfolio Overview; no second sidebar page is needed",
     "primary": "Same as portfolio; history supports trends",
     "related": "Same as portfolio"
   }

@@ -1,31 +1,115 @@
 LENDING ANALYTICS — PARENT PAGE, STARTUP AND LARGE DATASETS
 27 October 2026
 
-INSTALLATION
-The original Overview is Underwriters Summary (overview.html). Portfolio
-(portfolio.html) remains the financial dashboard; workload.html is detailed owner
-workload. Rename existing native page titles accordingly and retain their IDs.
-Sources & definitions is no longer a page or navigation destination. Remove its
-old HTML macro/page from the native tree when deploying. Retain the required
-sources JSON data: every dashboard uses it to validate source counts and dates.
+CURRENT INSTALLATION — CONFIRMED WCS PAGE MAP
+This contract supersedes earlier placeholder-ID, version-query and JSON-only
+installation instructions in INSTALL.txt and historical QA notes. The existing
+Confluence space key is wcs. 3782729579 is the Lending Analytics landing page ID;
+it is used as a page identifier, not as a substitute for the space key.
 
-1. Create/use the native Lending Analytics parent page. Keep Confluence's title,
-   navbar and sidebar. Put the 11 distinct dashboard pages beneath it. Trends is
-   a compatibility URL for Portfolio, not another navigation destination.
-2. Set lendingAnalytics and child IDs in attachments/credit-pages.js. Set the
-   real attachment host ID in Shared_WCSpedia_Include.html and all page fragments.
-   Missing IDs show unavailable links; no guessed live page URL is used.
-3. Keep the existing {include:wcspedia:navBar}. Update its ONE shared CSS and UI
-   attachment references. Do not inject a second navbar, sidebar or stylesheet.
-4. Put confluence-pages/lendinganalytics.html in the parent HTML macro. Install
-   each child fragment on its matching page. Each macro has small inline settings,
-   shared dependencies, its logic attachment and its matching HTMLPage renderer.
-   Use both scripts from the same build. One macro/page pair per native page.
-5. The landing uses credit-lendinganalyticsPage.js and
-   credit-lendinganalyticsHTMLPage.js. It does not download financial records or
-   Highcharts. Its cards link to the configured native dashboards.
-6. Upload all new assets before replacing macro references. Keep old revision
-   assets available for rollback. Validate native page links with normal viewers.
+  Page / macro filename          Native page ID   Display title
+  lendinganalytics.html          3782729579       Lending Analytics
+  portfolio.html                 3977008171       Portfolio Overview
+  overview.html                  3977008198       Underwriter Summary
+  workload.html                  3977008221       Underwriter Workload
+  deepdive.html                  3977008237       Relationship Deep Dive
+  covenants.html                 3977008265       Covenants
+  activity.html                  3977008280       Covenants Activity
+  ccm.html                       3977008303       CCM
+  ca.html                        3977008325       CA Expiration
+  facility.html                  3977008340       Facility Maturity
+  insurance.html                 3977008348       Insurances
+  appraisals.html                3977008352       Appraisals
+
+The attachment host is page 3845862527. Shared scripts, the single global CSS,
+licensed vendor files, approved images, workbooks and their data manifest are
+uploaded there. These IDs are configured in the supplied artifacts; access and
+native page placement still require validation on the actual Confluence site.
+Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
+
+1. Retain the existing {include:wcs:navBar}, native page title and sidebar.
+   Install the shared Lending Analytics additions in that existing include once.
+   Use the shared space-key guard for wcs; do not create another navbar/sidebar
+   or duplicate its CSS and helper scripts on every page.
+2. Upload the application assets from the deployment bundle to 3845862527. The
+   shared CSS is wcspedia-style.css, built from the retained WCSpedia base plus
+   credit-dashboard.css. It inherits the space font family, protects dashboard
+   text/control/table sizes and neutral colours, and exposes actual scrolling
+   surfaces without altering Confluence's page/sidebar geometry.
+3. Merge all 12 IDs above into the existing WCSpedia early-loading helper's
+   allow-list. Keep one helper. The same overlay is adopted and released by the
+   landing and dashboard code; unrelated space pages are not initialized as
+   dashboards. The shared file-drop guard prevents incidental file drops from
+   becoming native attachments. It does not redirect dropped files or upload
+   anything to the attachment host; use that page's Attachments action explicitly.
+4. Install each confluence-pages/ fragment on its matching native page. Each is
+   a content-only macro: settings, shared dependencies, its Page.js logic and
+   matching HTMLPage.js renderer. Keep the pair from one build. Do not paste a
+   complete preview HTML document into a Confluence HTML macro.
+5. The actual landing is pages/lendinganalytics.html in local preview and the
+   lendinganalytics.html native fragment in Confluence. It explains Lending
+   Analytics with an editorial layout, a supplied Citi wealth image attachment
+   and simple text links. The sidebar owns the full page navigation. It has no
+   dashboard-navigation card grid and downloads no financial records/Highcharts.
+   Start_Here.html remains a developer/operator handoff index, not the landing.
+6. Attachment references use their exact stable filenames. Do not append ?v=,
+   version strings, hash suffixes or release IDs to the default asset/workbook
+   URLs. The authenticated browser session reads attachments from the configured
+   page using same-origin Confluence REST/download requests and revalidation.
+   No API token, privileged service account or new backend is required.
+
+DEFAULT DATA PATH — SIX EXCEL ATTACHMENTS
+The supplied excel/runtime/ files are the direct runtime inputs, with typed
+sample rows. Upload the workbooks and credit-manifest.json to page 3845862527:
+
+  Portfolio.xlsx   portfolio   Facility snapshots, balances and ownership
+  Monitoring.xlsx  monitoring  Covenants, CCM and other monitoring obligations
+  Activity.xlsx    activity    Covenant activity events and maker actions
+  History.xlsx     history     Dated portfolio observations
+  Sources.xlsx     sources     Source dates, counts and coverage controls
+  Documents.xlsx   documents   Related document metadata and exact entity links
+
+Each workbook contains Data and Metadata sheets. Keep Data's field names and
+primary keys from the schema; do not substitute display labels for identifiers.
+Metadata supplies schema_version=2, bundle_id, dataset, rows and is_demo. The
+manifest descriptors use format=xlsx, the exact filename and declared row count.
+All six workbooks must share the manifest's bundle_id and sample/live identity.
+The existing field/type, primary-key, count and exact dated-join rules apply to
+Excel in the same way as JSON. See the integration kit for each page's sources.
+
+Optional credit-previous.json and credit-covenant-history.json attachments supply
+validated comparison/history detail when declared in the manifest. Missing
+optional detail is unavailable; current records are not invented as history.
+These filenames are also stable and have no version suffix or query parameter.
+
+SAMPLE USE AND LIVE DATA
+The included workbooks contain synthetic examples. Their is_demo=true identity
+and provenance remain in Metadata and the manifest, even though the dashboard
+has no demo banners or repeated sample wording. Removing display labels does not
+turn sample data into approved production data.
+
+Production rejects sample releases by default. The supplied native macro settings
+explicitly set allowSampleData:true so the requested sample workbooks can be used
+for the initial walkthrough. Before using approved live records, set
+allowSampleData:false and publish a validated release with is_demo:false in every
+workbook and its manifest. Do not merely relabel synthetic rows or upload samples
+over a live attachment set. Keep sample uploads separate from application assets;
+the Confluence deployment application ZIP does not contain the sample datasets.
+
+FIXED-FILENAME PUBLICATION AND CACHE SAFETY
+Prepare and validate all workbooks as one bundle before uploading. Upload all six
+workbooks and any declared optional files first, then credit-manifest.json last.
+Replacing stable filenames is not an atomic multi-file operation. A visitor who
+loads during replacement can encounter a bundle/count/identity mismatch; the
+application reports a clear error instead of combining releases. Retry/reload
+after publication completes. This workflow cannot promise uninterrupted updates.
+
+A page already displaying fully validated data retains that loaded snapshot until
+reload. It never silently merges a newly replaced workbook into that snapshot.
+Per-page request coalescing and indexes reuse validated arrays for filters and
+Reset. Financial data is not stored in localStorage, sessionStorage or IndexedDB.
+Every new document load revalidates through the current Confluence session.
+No retained financial cache bypasses a permission error or sign-in response.
 
 PUBLISHED DASHBOARD LAYOUT
 Underwriters Summary uses two equal-width chart pairs and a full-width action
@@ -92,11 +176,10 @@ has a 60-second deadline; individual attachment reads have a 15-second deadline.
 Late startup responses cannot replace a timeout error. Background filter changes
 reuse data and do not block the page with the startup overlay.
 
-For the optional early overlay, merge Lending Analytics and dashboard page IDs
-into the existing navBar helper's data-wcs-loading-pages allow-list. The example
-in Shared_WCSpedia_Include.html is commented out deliberately: replace the IDs
-and reuse the existing helper, never install two helpers. This only presents the
-loading layer; it does not initialize settings or change the macro sequence.
+Merge the 12 confirmed page IDs above into the existing navBar helper's
+data-wcs-loading-pages allow-list, following Shared_WCSpedia_Include.html. Reuse
+the existing helper; never install two helpers. This only presents the loading
+layer; it does not initialize settings or change the macro sequence.
 Scripts cannot guarantee a paint before Confluence runs the shared header.
 
 CACHE CONTRACT
@@ -123,7 +206,11 @@ credit-data-cache.js follows that model:
   A full reload obtains the latest manifest. An open page stays on one published
   snapshot; background polling and automatic mixed-release refresh are not used.
 
-LARGE DATASETS / IMMUTABLE ATTACHMENTS
+OPTIONAL LARGE-DATA JSON / ACCESS PATH
+This is an alternative to the default stable-name Excel publication above.
+Immutable JSON names apply only when explicitly choosing this optional path;
+they are not required for the supplied Excel files or application asset URLs.
+
 A 75,000-row full-field facility fixture was 139,360,471 UTF-8 bytes before
 transport compression. It cannot be published as one Confluence attachment.
 The new Access exporter streams core datasets into numbered parts below 8 MB.
@@ -165,7 +252,8 @@ qa/Performance_75000.json records local Chrome runs with 75,000 full facility ro
 74,945 distinct relationships and seven real Highcharts. The timer includes JSON
 parse, field/source validation, calculations, DOM rendering and chart paint.
 It excludes data generation, network transfer, initial script download, Windows
-Access ETL and server work. qa/performance-75000.html can rerun the check locally.
+Access ETL and server work. This JSON benchmark does not establish XLSX parsing
+or a five-second end-to-end Excel loading result. qa/performance-75000.html can rerun the check locally.
 Local runs met the five-second PROCESSING target. No five-second live end-to-end
 SLA is established: 139 MB transfer over Horizon/Confluence must be measured there.
 
@@ -174,3 +262,10 @@ behavior, correct related-data joins, exact cache/reference parity, partitioned
 publication roundtrip, cross-part duplicates, stale releases, permission errors,
 invalid JSON, UTF-8 byte limits, overlay adoption/cleanup and startup timeout.
 No assertion of zero bugs or live Confluence/Windows validation is made.
+
+STATIC ASSET REFRESH
+Confluence controls HTTP caching of script and stylesheet attachments. Replace
+matching logic/renderer pairs together and reload the page after publishing app
+assets; if the host retains older assets, perform a hard reload. The build-pair
+check rejects mismatched logic/renderers. Fixed URLs alone cannot force a host
+cache policy. Financial attachment reads explicitly request HTTP revalidation.

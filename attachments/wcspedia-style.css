@@ -3055,29 +3055,37 @@ body[data-wcs-reader-nav=native] .wcs-reader-navigation[data-wcs-native-compact=
 #credit-hub .ch-breadcrumbs a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
 #credit-hub .ch-breadcrumbs svg{width:12px;height:12px;flex:none}
 #credit-hub .ch-breadcrumbs [aria-current]{font-weight:600;overflow-wrap:anywhere}
-/* Lending Analytics native parent page; uses the existing WCSpedia shell. */
-#credit-hub .la-landing{max-width:1600px;margin:0 auto;color:var(--ch-ink,#243b53)}
-#credit-hub .la-intro{padding:28px 0 32px}
-#credit-hub .la-eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#61738b;margin:0 0 12px}
-#credit-hub .la-intro h1{font-size:32px;line-height:1.2;margin:0 0 16px}
-#credit-hub .la-intro>p:last-child{font-size:18px;line-height:1.6;margin:0;max-width:680px}
-#credit-hub .la-areas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:start}
-#credit-hub .la-area{padding:24px;border:1px solid #dbe5ef;border-radius:20px;box-shadow:0 0 0 6px #f0f5fa;min-width:0}
-#credit-hub .la-area h2{font-size:19px;font-weight:700;margin:0 0 8px}
-#credit-hub .la-area>p{color:#61738b;font-size:14px;line-height:1.5;margin:0 0 20px}
-#credit-hub .la-links{display:grid;gap:8px}
-#credit-hub .la-destination{display:flex;align-items:flex-start;gap:12px;padding:14px 12px;border-radius:12px;color:inherit;text-decoration:none;min-width:0}
-#credit-hub a.la-destination:hover{background:#eef4ff;color:#255be3}
-#credit-hub a.la-destination:focus-visible{outline:2px solid #255be3;outline-offset:2px;background:#eef4ff}
-#credit-hub .la-destination>span{flex:1;min-width:0;display:grid;gap:6px}
-#credit-hub .la-destination strong{font-size:15px;font-weight:700;line-height:1.4}
-#credit-hub .la-destination span span{font-size:13px;line-height:1.6;color:#61738b}
-#credit-hub .la-destination small{color:#755813;font-size:12px}
-#credit-hub .la-page-icon{width:22px;height:22px;flex:0 0 22px;color:#255be3}
-#credit-hub .la-arrow{width:18px;height:18px;flex:0 0 18px;margin-top:2px}
-#credit-hub .la-more{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:32px;padding:8px 0}
-@media(max-width:1000px){#credit-hub .la-areas{grid-template-columns:1fr 1fr}#credit-hub .la-area:last-child{grid-column:1/-1}#credit-hub .la-area:last-child .la-links{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){#credit-hub .la-areas,#credit-hub .la-more,#credit-hub .la-area:last-child .la-links{grid-template-columns:1fr}#credit-hub .la-area{padding:20px}#credit-hub .la-intro{padding-top:20px}#credit-hub .la-intro h1{font-size:26px}}
+/* Editorial landing, inside the native WCSpedia shell. */
+#credit-hub .la-landing{max-width:1440px;margin:0 auto;color:var(--ink)}
+#credit-hub .la-intro{padding:28px 0 38px;max-width:1040px}
+#credit-hub .la-eyebrow{font-size:12px!important;line-height:1.5!important;font-weight:700!important;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)!important;margin:0 0 18px}
+#credit-hub .la-intro h1{font-size:18px!important;font-weight:600!important;line-height:1.4!important;margin:0 0 16px;color:var(--ink)!important}
+#credit-hub .la-intro h2{font-size:clamp(34px,4.5vw,60px)!important;line-height:1.12!important;font-weight:500!important;letter-spacing:-.035em;margin:0 0 24px;color:var(--ink)!important}
+#credit-hub .la-intro>p:last-child{font-size:18px!important;line-height:1.65!important;margin:0;max-width:860px;color:var(--muted)!important}
+#credit-hub .la-hero{margin:0;border-radius:28px;overflow:hidden;background:var(--pale);aspect-ratio:2.8}
+#credit-hub .la-hero[hidden]{display:none!important}
+#credit-hub .la-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 45%;max-width:none}
+#credit-hub .la-purpose,#credit-hub .la-journey{display:grid;grid-template-columns:1fr 1.25fr;gap:64px;padding:64px 0}
+#credit-hub .la-purpose h2,#credit-hub .la-journey h2{font-size:30px!important;line-height:1.3!important;font-weight:500!important;letter-spacing:-.02em;color:var(--ink)!important;margin:0}
+#credit-hub .la-purpose p{font-size:16px!important;line-height:1.75!important;color:var(--ink)!important;margin:0 0 16px}
+#credit-hub .la-areas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px;padding:12px 0 64px;align-items:start}
+#credit-hub .la-area{min-width:0}
+#credit-hub .la-number{display:block;font-size:14px!important;line-height:1.5!important;font-weight:600!important;color:var(--blue)!important;margin:0 0 14px}
+#credit-hub .la-area h2{font-size:23px!important;line-height:1.3!important;font-weight:600!important;color:var(--ink)!important;margin:0 0 14px}
+#credit-hub .la-area>p{font-size:15px!important;line-height:1.7!important;color:var(--muted)!important;margin:0 0 22px}
+#credit-hub .la-links{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+#credit-hub .la-page-link,#credit-hub .la-page-label{font-size:14px!important;line-height:1.5!important;font-weight:600!important;color:var(--ink)!important;display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+#credit-hub .la-page-link span{color:var(--blue);font-size:16px}
+#credit-hub .la-page-link:hover{color:var(--blue)!important;text-decoration:underline;text-underline-offset:4px}
+#credit-hub .la-page-link:focus-visible{outline:2px solid var(--blue);outline-offset:5px;border-radius:2px}
+#credit-hub .la-journey{padding:42px;background:var(--pale);border-radius:24px;margin-bottom:32px}
+#credit-hub .la-journey ol{list-style:none;counter-reset:journey;display:grid;gap:26px;margin:0;padding:0}
+#credit-hub .la-journey li{position:relative;padding-left:38px;counter-increment:journey}
+#credit-hub .la-journey li:before{content:counter(journey);position:absolute;left:0;top:0;font-size:16px;font-weight:600;color:var(--blue)}
+#credit-hub .la-journey li strong{display:block;font-size:16px!important;line-height:1.5!important;font-weight:600!important;margin-bottom:6px;color:var(--ink)!important}
+#credit-hub .la-journey li span{display:block;font-size:14px!important;line-height:1.65!important;color:var(--muted)!important}
+@media(max-width:900px){#credit-hub .la-purpose,#credit-hub .la-journey{gap:30px}#credit-hub .la-areas{gap:24px}#credit-hub .la-area h2{font-size:20px!important}}
+@media(max-width:640px){#credit-hub .la-purpose,#credit-hub .la-journey,#credit-hub .la-areas{grid-template-columns:1fr;gap:30px}#credit-hub .la-purpose{padding:36px 0}#credit-hub .la-areas{padding-bottom:36px}#credit-hub .la-journey{padding:24px}#credit-hub .la-hero{aspect-ratio:1.7;border-radius:18px}#credit-hub .la-intro{padding-top:16px}#credit-hub .la-intro>p:last-child{font-size:16px!important}}
 
 /* Shared in-widget table journeys preserve headers and fill the original card. */
 #credit-hub .ct-drill-row{cursor:pointer}
@@ -3095,3 +3103,81 @@ body[data-wcs-reader-nav=native] .wcs-reader-navigation[data-wcs-native-compact=
 #wcspedia #credit-hub table.wcs-data-table .ct-amount-cell,
 #wcspedia #credit-hub table.wcs-data-table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink);font-variant-numeric:tabular-nums}
 #wcspedia #credit-hub table.wcs-data-table :is(.ct-category-cell,.ct-amount-cell) :is(.ch-row-link,a):is(:hover,:focus-visible){text-decoration:underline;text-underline-offset:3px}
+
+/* Confluence host protection. Preserve the space's font family and theme, while
+   keeping dashboard typography and genuine scroll surfaces readable. No host
+   page/sidebar geometry, universal text colour or chart-series fill overrides. */
+#credit-hub,.credit-ui-surface,.credit-ui-host{
+ --ch-ink:var(--ink);--ch-text:var(--ink);--ch-muted:var(--muted);--ch-border:var(--line);--surface-soft:var(--pale);
+ font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important;
+}
+:is(#credit-hub,.credit-ui-surface) :is(button,input,select,textarea){font-family:inherit!important}
+#credit-hub :is(.ch-card-head,.ch-toolbar) :is(h2,h3),
+#credit-hub :is(.pj-leaf-section,.pj-leaf-datasets)>h3{font-size:16px!important;font-weight:700!important;line-height:1.4!important;color:var(--ink)!important}
+#credit-hub .cd-detail-heading h2{font-size:24px!important;font-weight:600!important;line-height:1.3!important;color:var(--ink)!important}
+#credit-hub .pj-leaf-heading{font-size:19px!important;font-weight:700!important;line-height:1.4!important;color:var(--ink)!important}
+#credit-hub :is(.ch-card-sub,.ch-subtitle,.cd-record-note,.pj-leaf-note,.pj-scope-note){font-size:12px!important;line-height:1.5!important;color:var(--muted)!important}
+#credit-hub :is(.cd-expanded-summary,.cd-expanded-summary dt,.cd-expanded-summary dd,.cd-summary-caption){font-size:13px!important;line-height:1.6!important}
+#credit-hub .cd-expanded-summary{color:var(--muted)!important}
+#credit-hub :is(.cd-expanded-summary dd,.cd-summary-caption){color:var(--ink)!important}
+#credit-hub :is(.pj-inline-facts,.pj-entity-facts) dt{font-size:12px!important;font-weight:600!important;color:var(--muted)!important}
+#credit-hub :is(.pj-inline-facts,.pj-entity-facts) dd{font-size:14px!important;font-weight:600!important;color:var(--ink)!important}
+#credit-hub .ch-kpi-value{font-size:31px!important;line-height:1.2!important;font-weight:600!important;color:var(--ink)!important}
+#credit-hub :is(.pal-metric-value strong,.pj-metric-value,.cd-explorer-kpi>strong){font-size:28px!important;line-height:1.2!important;font-weight:600!important;color:var(--ink)!important}
+#credit-hub .cov-kpi .ch-kpi-value{font-size:30px!important}
+#credit-hub .cov-kpi-line .ch-kpi-value{font-size:29px!important;line-height:1.15!important}
+#credit-hub .ch-breadcrumbs{font-size:12px!important;line-height:1.6!important;color:var(--muted)!important}
+#credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button{font-size:14px!important;font-weight:600!important;line-height:1.5!important}
+#credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button[aria-current]{font-weight:700!important;color:var(--ink)!important}
+
+/* Table sizes apply at the cell, where Confluence's resets otherwise win.
+   Only neutral values inherit this colour; existing badges retain their tones. */
+:is(#credit-hub,.credit-ui-surface) table{font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important;width:100%!important}
+:is(#credit-hub,.credit-ui-surface) table :is(th,td){font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important}
+:is(#credit-hub,.credit-ui-surface) table thead th{font-size:12px!important;font-weight:600!important;background:var(--pale)!important}
+:is(#credit-hub,.credit-ui-surface) table :is(tbody,tfoot)>tr>.ct-category-cell{font-size:14px!important;font-weight:600!important;color:var(--ink)!important}
+:is(#credit-hub,.credit-ui-surface) table .ct-category-cell :is(.ch-row-link,a,.pal-snapshot-label){font-size:inherit!important;font-weight:inherit!important;color:inherit!important}
+:is(#credit-hub,.credit-ui-surface) table .ct-amount-cell,
+:is(#credit-hub,.credit-ui-surface) table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink)!important;font-variant-numeric:tabular-nums!important}
+:is(#credit-hub,.credit-ui-surface) table tfoot :is(th,td){font-weight:600!important}
+:is(#credit-hub,.credit-ui-surface) .ct-heading button{font-size:inherit!important;font-weight:600!important;line-height:inherit!important}
+:is(#credit-hub,.credit-ui-surface) :is(.ct-search-row input,.ct-global-search input,.cd-search-label input){font-size:12px!important;line-height:1.5!important;color:var(--ink)!important}
+:is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label){background:var(--page)!important}
+:is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label) input{background:transparent!important}
+:is(#credit-hub,.credit-ui-surface) .ct-search-row input{background:var(--page)!important}
+:is(#credit-hub,.credit-ui-surface) :is(.ch-pagination,.ch-page-size,.ct-status){font-size:12px!important;line-height:1.5!important;color:var(--muted)!important}
+:is(#credit-hub,.credit-ui-surface) .ch-btn{font-size:13px!important;line-height:1.4!important}
+:is(#credit-hub,.credit-ui-surface) .ct-pagination-nav .ch-btn{font-size:12px!important}
+#credit-hub :is(.pal-segments,.cd-table-tabs) button{font-size:12px!important;line-height:1.5!important}
+#credit-hub :is(#ch-download,.ca-overlay-download,.ch-btn.cw-primary){color:#fff!important;background:var(--blue)!important}
+#credit-hub :is(#ch-download,.ca-overlay-download,.ch-btn.cw-primary):hover:not(:disabled){color:#fff!important;background:#1944c5!important}
+#credit-hub :is(.ca-overlay,.ca-overlay-bar){background:var(--page)!important;color:var(--ink)!important}
+#credit-hub .pj-leaf-section:has(>.pj-inline-facts){background:var(--pale)!important}
+
+/* Shared WCSUI controls also sit outside the macro root. The :has scope keeps
+   this protection off unrelated WCSpedia pages that use the same global CSS. */
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface){font-family:inherit!important;font-size:13px!important;color:var(--ink)!important}
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover,.credit-ui-surface) :is(button,input,select,textarea){font-family:inherit!important;font-size:13px!important;line-height:1.5!important}
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .wcs-ui-dialog-heading h2{font-size:21px!important;font-weight:600!important;line-height:1.3!important;color:var(--ink)!important}
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.credit-ui-surface) .wcs-ui-dialog-heading p{font-size:12px!important;line-height:1.6!important;color:var(--muted)!important}
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer,.ct-filter-popover) input:not([type=checkbox]):not([type=radio]){background:var(--page)!important;color:var(--ink)!important}
+
+/* Keep scrollbars present when the host hides them. Only real scroll hosts are
+   targeted; the dialog shell stays clipped and the native page keeps scrolling. */
+#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments),
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options){scrollbar-width:auto!important;scrollbar-color:var(--muted) var(--pale)!important}
+#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap){overflow-x:auto!important}
+#credit-hub .ca-overlay-body,
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options){overflow-y:auto!important}
+#credit-hub :is(.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments){overflow-x:auto!important}
+#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar,
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar{display:block!important;width:10px!important;height:10px!important}
+#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-thumb,
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar-thumb{background:var(--muted)!important;border:2px solid var(--pale)!important;border-radius:8px!important}
+#credit-hub :is(.wcs-data-table-scroll,.ch-table-wrap,.ca-overlay-body,.cd-table-tabs,.cd-source-filters,.cc-table-tabs-wrap>.pal-segments,.pj-leaf-datasets>.pal-segments)::-webkit-scrollbar-track,
+#wcspedia:has(#credit-hub) :is(.cw-dashboard-drawer .wcs-ui-dialog-body,.ct-filter-popover,.ct-filter-popover .ct-values,.wcs-searchable-select [role=listbox],.wcs-ui-options)::-webkit-scrollbar-track{background:var(--pale)!important}
+@media(max-width:650px){
+ #credit-hub .ch-kpi-value{font-size:24px!important}
+ #credit-hub .cov-kpi .ch-kpi-value{font-size:29px!important}
+ #credit-hub .ct-pagination-nav .ch-btn{font-size:11px!important}
+}

@@ -20,7 +20,7 @@
       "ou_expense_code": "OU002",
       "cu_expense_code": "CU002",
       "relationship_id": "R0005",
-      "relationship_name": "Illustrative relationship 005",
+      "relationship_name": "Relationship 005",
       "borrower_name": "Borrower 1",
       "ca_id": "CA2026/0005",
       "facility_id": "FA100004",
@@ -62,7 +62,7 @@
       "pal_covenant_bucket": "46-90",
       "pal_due30": false,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 5",
+      "banker_name": "Banker 5",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -79,7 +79,7 @@
       "ou_expense_code": "OU003",
       "cu_expense_code": "CU003",
       "relationship_id": "R0006",
-      "relationship_name": "Illustrative relationship 006",
+      "relationship_name": "Relationship 006",
       "borrower_name": "Borrower 2",
       "ca_id": "CA2026/0006",
       "facility_id": "FA100005",
@@ -121,7 +121,7 @@
       "pal_covenant_bucket": null,
       "pal_due30": true,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 6",
+      "banker_name": "Banker 6",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -138,7 +138,7 @@
       "ou_expense_code": "OU004",
       "cu_expense_code": "CU004",
       "relationship_id": "R0007",
-      "relationship_name": "Illustrative relationship 007",
+      "relationship_name": "Relationship 007",
       "borrower_name": "Borrower 3",
       "ca_id": "CA2026/0007",
       "facility_id": "FA100006",
@@ -180,7 +180,7 @@
       "pal_covenant_bucket": null,
       "pal_due30": true,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 7",
+      "banker_name": "Banker 7",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ],
@@ -199,7 +199,7 @@
       "ou_expense_code": "OU002",
       "cu_expense_code": "CU002",
       "relationship_id": "R0005",
-      "relationship_name": "Illustrative relationship 005",
+      "relationship_name": "Relationship 005",
       "borrower_name": "Borrower 1",
       "ca_id": "CA2026/0005",
       "facility_id": "FA100004",
@@ -241,7 +241,7 @@
       "pal_covenant_bucket": "46-90",
       "pal_due30": false,
       "ccm_status": null,
-      "banker_name": "Illustrative banker 5",
+      "banker_name": "Banker 5",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -254,7 +254,7 @@
       "team_lead": "North team",
       "product": "Tailored Lending",
       "relationship_id": "R0026",
-      "relationship_name": "Illustrative relationship 026",
+      "relationship_name": "Relationship 026",
       "item_id": "CCM:0001",
       "category": "CCM",
       "owner_role": "UNDERWRITER",
@@ -290,7 +290,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 3",
+      "banker_name": "Banker 3",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -303,7 +303,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0049",
-      "relationship_name": "Illustrative relationship 049",
+      "relationship_name": "Relationship 049",
       "item_id": "FACILITY:0001",
       "category": "FACILITY",
       "owner_role": "UNDERWRITER",
@@ -339,7 +339,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ]

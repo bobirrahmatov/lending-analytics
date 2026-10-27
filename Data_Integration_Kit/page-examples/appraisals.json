@@ -16,7 +16,7 @@
       "team_lead": "Specialty team",
       "product": "Real Estate",
       "relationship_id": "R0039",
-      "relationship_name": "Illustrative relationship 039",
+      "relationship_name": "Relationship 039",
       "item_id": "APPRAISALS:0001",
       "category": "APPRAISALS",
       "owner_role": "SPECIALIST",
@@ -52,7 +52,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 7",
+      "banker_name": "Banker 7",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -65,7 +65,7 @@
       "team_lead": "North team",
       "product": "Securities Based Lending",
       "relationship_id": "R0040",
-      "relationship_name": "Illustrative relationship 040",
+      "relationship_name": "Relationship 040",
       "item_id": "APPRAISALS:0002",
       "category": "APPRAISALS",
       "owner_role": "SPECIALIST",
@@ -101,7 +101,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 8",
+      "banker_name": "Banker 8",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -114,7 +114,7 @@
       "team_lead": "International team",
       "product": "Securities Based Lending",
       "relationship_id": "R0041",
-      "relationship_name": "Illustrative relationship 041",
+      "relationship_name": "Relationship 041",
       "item_id": "APPRAISALS:0003",
       "category": "APPRAISALS",
       "owner_role": "SPECIALIST",
@@ -150,7 +150,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ]

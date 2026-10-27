@@ -1,7 +1,7 @@
 {
   "is_demo": true,
   "page": "INSURANCE",
-  "title": "Insurance",
+  "title": "Insurances",
   "primary_dataset": "monitoring",
   "eligible_sample_rows": 54,
   "note": "Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.",
@@ -16,7 +16,7 @@
       "team_lead": "Specialty team",
       "product": "Tailored Lending",
       "relationship_id": "R0040",
-      "relationship_name": "Illustrative relationship 040",
+      "relationship_name": "Relationship 040",
       "item_id": "INSURANCE:0001",
       "category": "INSURANCE",
       "owner_role": "SPECIALIST",
@@ -52,7 +52,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -65,7 +65,7 @@
       "team_lead": "North team",
       "product": "Aircraft Finance",
       "relationship_id": "R0041",
-      "relationship_name": "Illustrative relationship 041",
+      "relationship_name": "Relationship 041",
       "item_id": "INSURANCE:0002",
       "category": "INSURANCE",
       "owner_role": "SPECIALIST",
@@ -101,7 +101,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 2",
+      "banker_name": "Banker 2",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -114,7 +114,7 @@
       "team_lead": "International team",
       "product": "Aircraft Finance",
       "relationship_id": "R0042",
-      "relationship_name": "Illustrative relationship 042",
+      "relationship_name": "Relationship 042",
       "item_id": "INSURANCE:0003",
       "category": "INSURANCE",
       "owner_role": "SPECIALIST",
@@ -150,7 +150,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 3",
+      "banker_name": "Banker 3",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ]

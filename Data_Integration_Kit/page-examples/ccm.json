@@ -16,7 +16,7 @@
       "team_lead": "North team",
       "product": "Tailored Lending",
       "relationship_id": "R0026",
-      "relationship_name": "Illustrative relationship 026",
+      "relationship_name": "Relationship 026",
       "item_id": "CCM:0001",
       "category": "CCM",
       "owner_role": "UNDERWRITER",
@@ -52,7 +52,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 3",
+      "banker_name": "Banker 3",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -65,7 +65,7 @@
       "team_lead": "International team",
       "product": "Tailored Lending",
       "relationship_id": "R0027",
-      "relationship_name": "Illustrative relationship 027",
+      "relationship_name": "Relationship 027",
       "item_id": "CCM:0002",
       "category": "CCM",
       "owner_role": "UNDERWRITER",
@@ -101,7 +101,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 4",
+      "banker_name": "Banker 4",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -114,7 +114,7 @@
       "team_lead": "Specialty team",
       "product": "Tailored Lending",
       "relationship_id": "R0028",
-      "relationship_name": "Illustrative relationship 028",
+      "relationship_name": "Relationship 028",
       "item_id": "CCM:0003",
       "category": "CCM",
       "owner_role": "UNDERWRITER",
@@ -150,7 +150,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 5",
+      "banker_name": "Banker 5",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ]

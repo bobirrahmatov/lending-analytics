@@ -11,9 +11,9 @@ const A=path.resolve(__dirname,'../attachments'),read=n=>fs.readFileSync(path.jo
   w.fetch=()=>{throw Error('Landing must not download financial records');};
   w.eval(read('credit-landing.js'));await w.CreditHub.mount(root);
   assert.equal(claimed,1);assert.equal(maximum,1);assert.equal(d.querySelector('.wcs-loading-overlay'),null);assert.equal(root.hasAttribute('inert'),false);assert.equal(d.body.style.overflow,'');
-  if(scenario==='demo')assert.equal(root.querySelectorAll('a.la-destination').length,11);
-  if(scenario==='configured'){assert.equal(root.querySelectorAll('a.la-destination').length,2);assert.equal(root.querySelector('a').getAttribute('href'),'/confluence/pages/viewpage.action?pageId=123');}
-  if(scenario==='unconfigured')assert.equal(root.querySelectorAll('a.la-destination').length,0);
+  if(scenario==='demo')assert.equal(root.querySelectorAll('a.la-page-link').length,11);
+  if(scenario==='configured'){assert.equal(root.querySelectorAll('a.la-page-link').length,2);assert.equal(root.querySelector('a').getAttribute('href'),'/confluence/pages/viewpage.action?pageId=123');}
+  if(scenario==='unconfigured')assert.equal(root.querySelectorAll('a.la-page-link').length,0);
   if(scenario==='failure')assert.ok(root.querySelector('[role=alert]'));
   if(scenario==='configured'){early.show('Loading…');w.eval(read('credit-lendinganalyticsHTMLPage.js'));assert.match(root.textContent,/Load the matching dashboard logic/);assert.equal(d.querySelector('.wcs-loading-overlay'),null);}
   console.log('PASS landing:',scenario);dom.window.close();

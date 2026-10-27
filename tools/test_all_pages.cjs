@@ -24,7 +24,7 @@ for(const page of ['portfolio','trends','deepdive','overview','workload','COVENA
  }
  if(page==='COVENANTS')assert.equal(root.querySelector('[data-widget="cov-activity"]').hidden,false);
  if(page==='overview'){
-  assert.equal(root.querySelector('#ch-title').textContent,'Underwriters Summary');
+  assert.equal(root.querySelector('#ch-title').textContent,'Underwriter Summary');
   const actions=defs.datasets.monitoring.filter(r=>r.action_required);
   assert.equal(root.querySelectorAll('.mon-kpis .cov-kpi').length,6);
   assert.deepEqual([...root.querySelectorAll('.ch-chart')].map(e=>e.closest('section').querySelector('h2').textContent),['Action distribution','Underwriter & specialist workload','Regional distribution','Critical items by category']);
@@ -34,7 +34,7 @@ for(const page of ['portfolio','trends','deepdive','overview','workload','COVENA
   assert.equal(w.CreditHub.validateRows('sources',defs.datasets.sources).length,defs.datasets.sources.length,'Source validation is retained after removing its page');
  }
  if(page==='portfolio'||page==='trends'){
-  assert.equal(root.querySelector('#ch-title').textContent,'Portfolio');
+  assert.equal(root.querySelector('#ch-title').textContent,'Portfolio Overview');
   assert.deepEqual([...root.querySelector('.cw-widget-grid').children].map(card=>card.dataset.widget),portfolioOrder,'Portfolio keeps approvals/coverage, deals/pending, relationships/priorities and Covenants/CCM in their published order');
  }
  assert.equal(root.querySelector('a[href$="sources.html"]'),null);

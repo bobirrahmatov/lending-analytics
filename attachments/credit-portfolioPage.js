@@ -190,6 +190,99 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
 })(window,document);
 
 ;
+/* Prepared workbook adapter. Calculation and joining remain in the canonical
+ * credit modules; this reader only preserves typed, validated source values. */
+(function(w){'use strict';
+ const MAX_ROWS=200000,MAX_COLUMNS=256,REQUIRED_METADATA=['schema_version','bundle_id','dataset','rows','is_demo'];
+ const validName=value=>typeof value==='string'&&/^[a-z][a-z0-9_]*$/.test(value)&&!['constructor','prototype','__proto__'].includes(value);
+ const validColumn=value=>typeof value==='string'&&/^[A-Za-z0-9][A-Za-z0-9_]*$/.test(value)&&!['constructor','prototype','__proto__'].includes(value);
+ const blank=cell=>!cell||cell.t==='z'||cell.v===undefined||cell.v===null||cell.v==='';
+ const error=(message,sheet,address)=>Error('Workbook '+sheet+(address?'!'+address:'')+': '+message);
+ function dimensions(sheet,name,xlsx){
+  if(!sheet||!sheet['!ref'])throw error('sheet is missing or empty',name);
+  const range=xlsx.utils.decode_range(sheet['!fullref']||sheet['!ref']);
+  if(range.s.r!==0||range.s.c!==0||range.e.c>=MAX_COLUMNS||range.e.r>MAX_ROWS)throw error('sheet must start at A1 and stay within '+MAX_ROWS+' data rows / '+MAX_COLUMNS+' columns',name);
+  if(sheet['!merges']?.length)throw error('merged cells are not supported',name);
+  return range;
+ }
+ function scalar(cell,sheet,address){
+  if(cell?.f!==undefined||cell?.F!==undefined)throw error('formulas are not allowed; publish prepared values',sheet,address);
+  if(cell?.t==='e')throw error('Excel error value',sheet,address);
+  if(blank(cell))return null;
+  if(!['s','str','n','b','d'].includes(cell.t))throw error('unsupported cell type',sheet,address);
+  return cell.v;
+ }
+ function calendarDate(cell,value,workbook,xlsx,sheet,address){
+  if(typeof value==='string'){
+   if(/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value))&&new Date(value).toISOString().slice(0,10)===value)return value;
+   throw error('date must be YYYY-MM-DD or an Excel calendar date',sheet,address);
+  }
+  if(typeof value==='number'&&Number.isInteger(value)&&xlsx.SSF.is_date(cell.z||'')){
+   const date1904=workbook.Workbook?.WBProps?.date1904===true||workbook.Workbook?.WBProps?.date1904===1;
+   const d=xlsx.SSF.parse_date_code(value,{date1904});
+   if(d&&d.y>=1900&&d.y<=9999){
+    const iso=String(d.y).padStart(4,'0')+'-'+String(d.m).padStart(2,'0')+'-'+String(d.d).padStart(2,'0');
+    if(!Number.isNaN(Date.parse(iso))&&new Date(iso).toISOString().slice(0,10)===iso)return iso;
+   }
+  }
+  throw error('date has an invalid value or missing date format',sheet,address);
+ }
+ function typedValue(cell,type,workbook,xlsx,address){
+  const value=scalar(cell,'Data',address);if(value===null)return null;
+  if(type==='date')return calendarDate(cell,value,workbook,xlsx,'Data',address);
+  if(type==='text'&&typeof value!=='string')throw error('text field must use an Excel text cell; preserve identifier leading zeros','Data',address);
+  if(type==='boolean'&&typeof value!=='boolean')throw error('boolean field must use TRUE or FALSE','Data',address);
+  if((type==='number'||type==='integer')&&(typeof value!=='number'||!Number.isFinite(value)||(type==='integer'&&!Number.isInteger(value))))throw error('numeric field must contain a finite '+type,'Data',address);
+  // Extension fields are preserved without guessing identifiers from numbers.
+  if(!type&&typeof value==='number'&&xlsx.SSF.is_date(cell.z||''))return calendarDate(cell,value,workbook,xlsx,'Data',address);
+  if(!type&&(!['string','number','boolean'].includes(typeof value)||(typeof value==='number'&&!Number.isFinite(value))))throw error('extension field must contain a scalar value','Data',address);
+  return value;
+ }
+ async function parse(buffer,{dataset,fields}={}){
+  const xlsx=w.XLSX;if(!xlsx?.read||!xlsx?.utils||!xlsx?.SSF)throw Error('The local Excel reader is unavailable');
+  if(!validName(dataset)||!Array.isArray(fields)||!fields.length)throw Error('Workbook schema is unavailable for '+String(dataset));
+  const bytes=new Uint8Array(buffer);
+  if(bytes.byteLength>=10000000)throw Error('Attachment must be smaller than 10 MB');
+  if(bytes.length<4||bytes[0]!==0x50||bytes[1]!==0x4b||bytes[2]!==3||bytes[3]!==4)throw Error('Attachment is not an XLSX workbook. Check sign-in and filename.');
+  const started=Date.now();
+  await new Promise(resolve=>setTimeout(resolve,0));
+  let workbook;try{workbook=xlsx.read(bytes,{type:'array',cellDates:false,cellNF:true,cellText:false,cellStyles:false,cellFormula:true,bookVBA:false,sheetRows:MAX_ROWS+2});}catch{throw Error('Attachment is not a readable XLSX workbook');}
+  if(Date.now()-started>30000)throw Error('Workbook processing timed out');
+  const metaSheet=workbook.Sheets.Metadata,metaRange=dimensions(metaSheet,'Metadata',xlsx),metadata=Object.create(null);
+  if(metaRange.e.c!==1||scalar(metaSheet.A1,'Metadata','A1')!=='key'||scalar(metaSheet.B1,'Metadata','B1')!=='value')throw error('use key and value headers in A1:B1','Metadata');
+  for(let row=1;row<=metaRange.e.r;row++){
+   const a='A'+(row+1),b='B'+(row+1),key=scalar(metaSheet[a],'Metadata',a),value=scalar(metaSheet[b],'Metadata',b);
+   if(key===null&&value===null)continue;
+   if(!validName(key)||Object.hasOwn(metadata,key))throw error('invalid or duplicate metadata key','Metadata',a);
+   metadata[key]=value;
+  }
+  for(const key of REQUIRED_METADATA)if(!Object.hasOwn(metadata,key))throw error('missing '+key,'Metadata');
+  if(metadata.schema_version!==2||typeof metadata.bundle_id!=='string'||!metadata.bundle_id.trim()||metadata.dataset!==dataset||!Number.isSafeInteger(metadata.rows)||metadata.rows<0||metadata.rows>MAX_ROWS||typeof metadata.is_demo!=='boolean')throw error('invalid schema, release, dataset, row count or sample identity','Metadata');
+  const sheet=workbook.Sheets.Data,range=dimensions(sheet,'Data',xlsx),headers=[],known=new Map(fields.map(([name,type])=>[name,type]));
+  for(let col=0;col<=range.e.c;col++){
+   const address=xlsx.utils.encode_cell({r:0,c:col}),header=scalar(sheet[address],'Data',address);
+   if(!validColumn(header)||headers.includes(header))throw error('invalid, empty or duplicate column header','Data',address);
+   headers.push(header);
+  }
+  for(const field of known.keys())if(!headers.includes(field))throw error('missing column '+field,'Data');
+  const rows=[];
+  for(let row=1;row<=range.e.r;row++){
+   const record=Object.create(null);let present=false;
+   for(let col=0;col<headers.length;col++){
+    const address=xlsx.utils.encode_cell({r:row,c:col}),value=typedValue(sheet[address],known.get(headers[col]),workbook,xlsx,address);
+    record[headers[col]]=value;if(value!==null)present=true;
+   }
+   if(present)rows.push(record);
+   if(row%1000===0){await new Promise(resolve=>setTimeout(resolve,0));if(Date.now()-started>30000)throw Error('Workbook processing timed out');}
+  }
+  if(rows.length!==metadata.rows)throw error('row count does not match Metadata','Data');
+  if(Date.now()-started>30000)throw Error('Workbook processing timed out');
+  return {...metadata,rows};
+ }
+ w.CreditExcel={parse};
+})(window);
+
+;
 /* PAL-style, page-lifetime caches. No records in localStorage/IndexedDB.
  * Validated release arrays are immutable inputs; replacing an array invalidates
  * every derived index/result naturally. Weak keys do not retain old releases. */
@@ -207,12 +300,16 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  function verifySources(name,rows,sources){const map=new Map(sources.map(s=>[s.source_id,s])),counts=new Map();for(const r of rows){const s=map.get(r.source_id);if(!s||s.as_of_date!==r.as_of_date||s.domain!==(name==='monitoring'?r.category:name.toUpperCase()))throw Error(name+' source/date/domain mismatch');counts.set(r.source_id,(counts.get(r.source_id)||0)+1);}for(const s of sources)if((name==='monitoring'?['COVENANTS','CA','FACILITY','CCM','INSURANCE','APPRAISALS'].includes(s.domain):s.domain===name.toUpperCase())&&(counts.get(s.source_id)||0)!==s.record_count)throw Error(name+' source count mismatch: '+s.source_id);}
  // Browser HTTP cache is revalidated by Confluence on every new page load.
  // No cache-first fallback can bypass current attachment permissions.
- async function readJSON(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{
+ async function readBuffer(url){
+  if(w.location?.href&&typeof URL!=='undefined'&&new URL(url,w.location.href).origin!==w.location.origin)throw Error('Attachment must be on the same Confluence origin');
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{
   const response=await w.fetch(url,{credentials:'same-origin',cache:'no-cache',signal:controller.signal});if(!response.ok)throw Error('Attachment unavailable ('+response.status+')');
+  if(Number(response.headers?.get('content-length'))>=10000000)throw Error('Attachment must be smaller than 10 MB');
   const buffer=await response.arrayBuffer();if(buffer.byteLength>=10000000)throw Error('Attachment must be smaller than 10 MB');
-  try{return JSON.parse(new TextDecoder().decode(buffer).replace(/^\uFEFF/,''));}catch{throw Error('Attachment is not valid JSON. Check sign-in and filename.');}
+  return buffer;
  }finally{clearTimeout(timer);}}
- function createLoader({manifest,attachment,validate,read=readJSON}){const cache=new Map();
+ async function readJSON(url){const buffer=await readBuffer(url);try{return JSON.parse(new TextDecoder().decode(buffer).replace(/^\uFEFF/,''));}catch{throw Error('Attachment is not valid JSON. Check sign-in and filename.');}}
+ function createLoader({manifest,attachment,validate,read,contracts,allowDemo=false}){const cache=new Map();
   async function fetchRows(name){const entry=manifest.files[name];if(!entry)throw Error('Missing '+name+' attachment in manifest');
    if(entry.parts&&entry.filename)throw Error('Ambiguous file descriptor: '+name);
    const parts=entry.parts||[entry];if(!Array.isArray(parts)||!parts.length||parts.length>512)throw Error('Invalid attachment parts: '+name);
@@ -220,14 +317,21 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
    if(expected!==entry.rows)throw Error('Part counts do not match '+name);
    const results=new Array(parts.length);let cursor=0;
    // Two requests at a time; avoid unbounded memory/network pressure.
-   async function worker(){while(cursor<parts.length){const i=cursor++,part=parts[i],p=await read(attachment(part.filename));if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id)throw Error('Mixed release detected for '+name);if(p.is_demo===true)throw Error('Illustrative data cannot be loaded in production');if(!Array.isArray(p.rows)||p.rows.length!==part.rows)throw Error('Row count mismatch for '+name);results[i]=p.rows;}}
+   async function worker(){while(cursor<parts.length){const i=cursor++,part=parts[i],url=attachment(part.filename),excel=/\.xlsx$/i.test(part.filename);
+    if(!excel&&!/\.json$/i.test(part.filename))throw Error('Unsupported attachment format for '+name);
+    let p;if(read)p=await read(url);else if(excel){if(!w.CreditExcel)throw Error('The local Excel reader is unavailable');p=await w.CreditExcel.parse(await readBuffer(url),{dataset:name,fields:contracts?.[name]});}else p=await readJSON(url);
+    if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id)throw Error('Mixed release detected for '+name);
+    if((manifest.is_demo===true||p.is_demo===true)&&!allowDemo)throw Error('Illustrative data cannot be loaded in production');
+    if(excel&&p.is_demo!==(manifest.is_demo===true))throw Error('Workbook sample identity does not match manifest for '+name);
+    if(!excel&&typeof p.is_demo==='boolean'&&typeof manifest.is_demo==='boolean'&&p.is_demo!==manifest.is_demo)throw Error('Attachment sample identity does not match manifest for '+name);
+    if(!Array.isArray(p.rows)||p.rows.length!==part.rows)throw Error('Row count mismatch for '+name);results[i]=p.rows;}}
    await Promise.all(Array.from({length:Math.min(2,parts.length)},worker));
    // Validate the combined set: duplicate primary keys across parts must fail.
    return validate(name,results.flat());
   }
-  return {load(name){if(cache.has(name))return cache.get(name);const request=fetchRows(name).catch(e=>{cache.delete(name);throw e;});cache.set(name,request);return request;},invalidate(name){cache.delete(name);}};
+  return {load(name){if(cache.has(name))return cache.get(name);const request=fetchRows(name).catch(e=>{if(cache.get(name)===request)cache.delete(name);throw e;});cache.set(name,request);return request;},invalidate(name){cache.delete(name);}};
  }
- w.CreditDataCache={index,select,sum,verifySources,readJSON,createLoader};
+ w.CreditDataCache={index,select,sum,verifySources,readBuffer,readJSON,createLoader};
 })(window);
 
 ;
@@ -2020,7 +2124,7 @@ global.CreditCovenants=function(ctx){
 (function(global){'use strict';
 const contracts={"monitoring":[["item_id","text",true],["category","text",true],["source_id","text",true],["source_record_id","text",true],["as_of_date","date",true],["region","text",true],["owner_id","text",true],["owner_name","text",true],["team_lead","text",true],["product","text",true],["relationship_id","text",true],["relationship_name","text",true],["owner_role","text",true],["ca_id","text",false],["facility_id","text",false],["covenant_id","text",false],["status","text",true],["due_date","date",false],["deferred_date","date",false],["deferral_approved","boolean",true],["effective_due_date","date",false],["days_past_due","integer",false],["aging_bucket","text",true],["action_required","boolean",true],["critical","boolean",true],["coming_due","boolean",true],["classification","text",false],["next_month_end","date",false],["expired_bucket","text",false],["deficiency_bucket","text",false],["description","text",false],["remarks","text",false],["origination_unit","text",false],["control_unit","text",false],["ou_expense_code","text",false],["cu_expense_code","text",false],["borrowers_name","text",false],["product_underwriter","text",false],["facility_type","text",false],["frequency","text",false],["source_aging_bucket","text",false],["day45_date","date",false],["pal_covenant_bucket","text",false],["pal_due30","boolean",true],["ccm_status","text",false]],"portfolio":[["facility_key","text",true],["source_id","text",true],["source_record_id","text",true],["as_of_date","date",true],["region","text",true],["owner_id","text",true],["owner_name","text",true],["team_lead","text",true],["product","text",true],["relationship_id","text",true],["relationship_name","text",true],["facility_id","text",true],["parent_facility_id","text",false],["ca_id","text",false],["commitment","text",true],["pse","boolean",true],["sft","boolean",true],["classification","text",true],["tfa","number",true],["direct_os","number",true],["contingent_os","number",true],["pse_os","number",true],["osuc","number",true],["total_os","number",true],["unused_commitment","number",true],["total_undrawn","number",true],["rotce","number",false],["maturity_date","date",false],["maturity_basis","text",true],["ca_expiration_date","date",false],["origination_date","date",false],["renewal_date","date",false],["ytd_new","boolean",true],["mtd_new","boolean",true],["product_subprogram","text",false],["management_status","text",false],["facility_type","text",false],["risk_category","text",false],["control_unit","text",false],["product_underwriter","text",false],["facility_first_approval_date","date",false],["ca_review","text",false],["loan_spread","number",false],["pricing_exception","text",false],["total_comm_exposure","number",false],["reporting_currency","text",true],["unused_uncommitted","number",true],["pal_ca_expired","boolean",true],["pal_ca_month","text",false],["pal_facility_expired","boolean",true],["pal_facility_month","text",false],["pal_approval_period","text",false],["pal_pipeline_bucket","text",false],["pal_spread_bucket","text",false],["pal_spread_weight","number",false],["pal_spread_os","number",true],["pal_pricing_exception","boolean",true],["pal_prior_ytd","boolean",true],["pal_prior_mtd","boolean",true],["pal_new_ytd","boolean",true],["pal_approved_ytd","boolean",true],["pal_pending_ytd","boolean",true],["pal_new_qtd","boolean",true],["pal_approved_qtd","boolean",true],["pal_pending_qtd","boolean",true],["pal_new_mtd","boolean",true],["pal_approved_mtd","boolean",true],["pal_pending_mtd","boolean",true],["pal_new_wtd","boolean",true],["pal_approved_wtd","boolean",true],["pal_pending_wtd","boolean",true],["pal_prior_qtd","boolean",true],["pal_prior_wtd","boolean",true],["rotce_period","text",false]],"history":[["history_id","text",true],["as_of_date","date",true],["region","text",true],["product","text",true],["commitment","text",true],["pse","boolean",true],["tfa","number",true],["total_os","number",true],["osuc","number",true],["facility_count","integer",true],["facility_key","text",false],["owner_id","text",false],["owner_name","text",false],["team_lead","text",false],["management_status","text",false],["product_subprogram","text",false],["facility_type","text",false],["unused_commitment","number",false],["unused_uncommitted","number",false],["comparison_ready","boolean",false]],"activity":[["event_id","text",true],["source_id","text",true],["source_record_id","text",true],["as_of_date","date",true],["region","text",true],["owner_id","text",true],["owner_name","text",true],["team_lead","text",true],["product","text",true],["relationship_id","text",true],["relationship_name","text",true],["covenant_id","text",true],["event_date","date",true],["month","text",true],["event_type","text",true]],"sources":[["source_id","text",true],["domain","text",true],["source_name","text",true],["source_file","text",true],["as_of_date","date",true],["coverage","text",true],["record_count","integer",true],["source_owner","text",true],["quality_note","text",false]],"documents":[["document_id","text",true],["category","text",true],["title","text",true],["url","text",true],["as_of_date","date",false]]};
 const categories={COVENANTS:{label:'Covenants',color:'#005BFF',metric:'Past due covenants'},CA:{label:'CA expiration',color:'#F5A524',metric:'CA actions'},FACILITY:{label:'Facility maturity',color:'#4487F7',metric:'Past due facilities'},CCM:{label:'CCM',color:'#87B7FF',metric:'Open CCMs'},INSURANCE:{label:'Insurance',color:'#6488BF',metric:'Insurance issues'},APPRAISALS:{label:'Appraisals',color:'#173E88',metric:'Past due appraisals'}};
-const nav=[['portfolio','Portfolio','Portfolio'],['deepdive','Relationship deep dive','Deep dive'],['overview','Underwriters Summary','Summary'],['workload','Underwriter workload','Workload'],...Object.entries(categories).map(([k,v])=>[k,v.label,v.label]),['activity','Covenant activity','Activity']];
+const nav=[['portfolio','Portfolio Overview','Portfolio'],['deepdive','Relationship Deep Dive','Deep dive'],['overview','Underwriter Summary','Summary'],['workload','Underwriter Workload','Workload'],...Object.entries(categories).map(([k,v])=>[k,({CA:'CA Expiration',FACILITY:'Facility Maturity',INSURANCE:'Insurances'})[k]||v.label,v.label]),['activity','Covenants Activity','Activity']];
 const palette=['#005BFF','#F5A524','#173E88','#87B7FF','#6488BF','#A7B6CC'];
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=x=>Number.isFinite(x)?x.toLocaleString('en-US',{maximumFractionDigits:0}):'—';
@@ -2064,14 +2168,14 @@ async function load(name){if(data[name])return data[name];if(loadCache[name])ret
 })();try{return await loadCache[name];}catch(e){delete loadCache[name];delete data[name];releaseLoader?.invalidate(name);throw e;}}
 async function loadPrevious(){
  if(data.previous!==undefined)return;
- try{let p;if(config.mode==='demo')p=global.CREDIT_DEMO?.previous;else {const f=manifest.files.previous;if(f){p=await readJSON(attachment(f.filename));if(p.is_demo===true)throw Error('Illustrative previous data cannot be loaded in production');if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id||p.rows?.length!==f.rows)throw Error('Previous release identity/count mismatch');}}
+ try{let p;if(config.mode==='demo')p=global.CREDIT_DEMO?.previous;else {const f=manifest.files.previous;if(f){p=await readJSON(attachment(f.filename));if(p.is_demo===true&&config.allowSampleData!==true)throw Error('Illustrative previous data cannot be loaded in production');if(typeof p.is_demo==='boolean'&&typeof manifest.is_demo==='boolean'&&p.is_demo!==manifest.is_demo)throw Error('Previous sample identity differs from the release');if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id||p.rows?.length!==f.rows)throw Error('Previous release identity/count mismatch');}}
   data.previous=p?global.CreditSnapshots.validate(p,validateRows):null;
  }catch(e){data.previous=null;data.previousError=e.message;}
 }
 async function loadCovenantHistory(){
  if(data.covenantHistory!==undefined)return;
  try{let p;if(config.mode==='demo')p=global.CREDIT_DEMO?.covenant_history;
- else {const f=manifest.files.covenant_history;if(f){p=await readJSON(attachment(f.filename));if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id||p.rows?.length!==f.rows)throw Error('Covenant history release mismatch');}}
+ else {const f=manifest.files.covenant_history;if(f){p=await readJSON(attachment(f.filename));if(p.is_demo===true&&config.allowSampleData!==true)throw Error('Sample history requires explicit sample configuration');if(typeof p.is_demo==='boolean'&&typeof manifest.is_demo==='boolean'&&p.is_demo!==manifest.is_demo)throw Error('Covenant history sample identity differs from the release');if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id||p.rows?.length!==f.rows)throw Error('Covenant history release mismatch');}}
  p=p||global.CreditSnapshots.covenantHistory(data);
  if(p){global.CreditCovenantRisk.validateHistory(p);for(const snapshot of p.snapshots){validateRows('monitoring',p.rows.filter(r=>r.as_of_date===snapshot.as_of_date));if(snapshot.portfolio_sources)validateRows('portfolio',(p.portfolio_rows||[]).filter(r=>r.as_of_date===snapshot.as_of_date));}}
  data.covenantHistory=p||null;
@@ -2204,7 +2308,7 @@ async function render(targets){
   const sourceRows=['portfolio','deepdive'].includes(tab)?data.portfolio:tab==='trends'?data.history:tab==='activity'?data.activity:categories[tab]?data.monitoring.filter(r=>r.category===tab):data.monitoring;
   const latest=[...new Set((sourceRows||[]).map(r=>r.as_of_date).filter(Boolean))].sort().at(-1);
   $('#ch-last-updated').textContent=latest?new Date(latest+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}):'Not supplied';
-  $('#ch-subtitle').textContent=scopeDates(categories[tab]?rows.filter(r=>r.category===tab):rows)+' · '+(manifest.is_demo?'Illustrative data':'Published snapshot');
+  $('#ch-subtitle').textContent=scopeDates(categories[tab]?rows.filter(r=>r.category===tab):rows);
   $('#ch-filter-status').textContent=rows.length+' records in selected scope';
   $('#ch-drill').innerHTML=drill?'<button class="ch-chip" data-clear-drill>'+esc(label(drill.key))+': '+esc(drill.value)+' ×</button>':'';
   if(tab==='overview'||tab==='workload')monitoringViews.main(tab,rows);
@@ -2230,8 +2334,8 @@ try{
 if(config.mode!=='demo'&&new URL(config.baseUrl,location.href).origin!==location.origin)throw Error('Production attachment base must be on the same Confluence origin');
 root.replaceChildren();overlay=global.WCSHeaderLoading?.claim(root)||global.WCSLoadingOverlay?.create({target:root});overlay?.show('Loading Lending Analytics…');await overlay?.paint?.();
 async function initialize(){
-manifest=config.mode==='demo'?global.CREDIT_DEMO?.manifest:await readJSON(attachment('credit-manifest.json'));if(!manifest||manifest.schema_version!==2||!manifest.bundle_id||!manifest.files)throw Error('Unsupported or missing release manifest');if(config.mode!=='demo'&&manifest.is_demo)throw Error('Illustrative data cannot be loaded in production mode. Publish an approved Access export.');releaseLoader=global.CreditDataCache.createLoader({manifest,attachment,validate:validateRows});await Promise.all([load('monitoring'),load('sources')]);global.CreditDataCache.verifySources('monitoring',data.monitoring,data.sources);if(startupCancelled)return;
-root.innerHTML='<a class="ch-skip" href="#ch-content">Skip to dashboard</a><div class="ch-layout"><main class="ch-main">'+pageBreadcrumb()+'<div class="ch-top"><div><h1 id="ch-title"'+(config.mode!=='demo'?' class="ch-native-title"':'')+'></h1><p class="ch-subtitle" id="ch-subtitle"></p></div><div class="ch-actions"><span class="ch-badge">'+(manifest.is_demo?'DEMO SNAPSHOT':'PUBLISHED SNAPSHOT')+'</span><button class="ch-btn" id="ch-customize">▦ Customize layout</button><button class="ch-btn cw-primary" id="ch-download"><svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download data</button><div class="ch-updated"><span>Last updated</span><strong id="ch-last-updated">—</strong></div></div></div>'+(manifest.is_demo?'<div class="ch-demo"><strong>Illustrative preview</strong><span>Sample records demonstrate the integrated dashboard. Figures are not live portfolio results.</span></div>':'')+'<section class="ch-filters" aria-label="Global filters"><div class="ch-filter-grid">'+[['region','Region'],['owner_id','Underwriter / specialist'],['team_lead','Team lead'],['product','Product']].map(([k,t])=>'<label>'+t+'<select id="ch-'+k+'"><option value="">All '+(k==='owner_id'?'owners':t.toLowerCase()+'s')+'</option>'+[...new Map(data.monitoring.map(r=>[r[k],k==='owner_id'?r.owner_name:r[k]])).entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([v,l])=>'<option value="'+esc(v)+'">'+esc(l)+'</option>').join('')+'</select></label>').join('')+'<button class="ch-btn ch-reset" id="ch-reset">Reset filters</button></div><div class="ch-filter-foot"><span id="ch-filter-status"></span><span id="ch-drill"></span><span>Select chart points to inspect supporting records</span></div></section><div id="ch-content" tabindex="-1"></div><footer class="ch-footer"><span>Wealth Credit Services · '+esc(manifest.is_demo?'Illustrative preview':'Internal use')+'</span><span>Source dates retained for every record</span></footer></main></div>';
+manifest=config.mode==='demo'?global.CREDIT_DEMO?.manifest:await readJSON(attachment('credit-manifest.json'));if(!manifest||manifest.schema_version!==2||!manifest.bundle_id||!manifest.files)throw Error('Unsupported or missing release manifest');if(config.mode!=='demo'&&manifest.is_demo&&config.allowSampleData!==true)throw Error('Illustrative data cannot be loaded in production mode. Publish an approved Access export.');releaseLoader=global.CreditDataCache.createLoader({manifest,attachment,validate:validateRows,contracts,allowDemo:config.allowSampleData===true});await Promise.all([load('monitoring'),load('sources')]);global.CreditDataCache.verifySources('monitoring',data.monitoring,data.sources);if(startupCancelled)return;
+root.innerHTML='<a class="ch-skip" href="#ch-content">Skip to dashboard</a><div class="ch-layout"><main class="ch-main">'+pageBreadcrumb()+'<div class="ch-top"><div><h1 id="ch-title"'+(config.mode!=='demo'?' class="ch-native-title"':'')+'></h1><p class="ch-subtitle" id="ch-subtitle"></p></div><div class="ch-actions"><button class="ch-btn" id="ch-customize">▦ Customize layout</button><button class="ch-btn cw-primary" id="ch-download"><svg class="cw-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download data</button><div class="ch-updated"><span>Last updated</span><strong id="ch-last-updated">—</strong></div></div></div><section class="ch-filters" aria-label="Global filters"><div class="ch-filter-grid">'+[['region','Region'],['owner_id','Underwriter / specialist'],['team_lead','Team lead'],['product','Product']].map(([k,t])=>'<label>'+t+'<select id="ch-'+k+'"><option value="">All '+(k==='owner_id'?'owners':t.toLowerCase()+'s')+'</option>'+[...new Map(data.monitoring.map(r=>[r[k],k==='owner_id'?r.owner_name:r[k]])).entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([v,l])=>'<option value="'+esc(v)+'">'+esc(l)+'</option>').join('')+'</select></label>').join('')+'<button class="ch-btn ch-reset" id="ch-reset">Reset filters</button></div><div class="ch-filter-foot"><span id="ch-filter-status"></span><span id="ch-drill"></span><span>Select chart points to inspect supporting records</span></div></section><div id="ch-content" tabindex="-1"></div><footer class="ch-footer"><span>Wealth Credit Services · Internal use</span><span>Source dates retained for every record</span></footer></main></div>';
 for(const k of ['region','owner_id','team_lead','product'])$('#ch-'+k).onchange=e=>{state[k]=e.target.value;drill=null;page=0;render();};$('#ch-reset').onclick=()=>{for(const k of ['region','owner_id','team_lead','product'])state[k]='';pal.reset();covenants.reset();resetPortfolioTable();pageSize=10;syncFilters();render();};const viewSwitch=document.createElement('div');viewSwitch.id='ch-portfolio-view';viewSwitch.className='pal-segments';viewSwitch.setAttribute('role','tablist');viewSwitch.setAttribute('aria-label','Portfolio view');viewSwitch.innerHTML='<button type="button" role="tab" data-portfolio-view="charts">Charts</button><button type="button" role="tab" data-portfolio-view="data">Data</button>';$('#ch-download').before(viewSwitch);viewSwitch.querySelectorAll('button').forEach(b=>b.onclick=()=>{portfolioView=b.dataset.portfolioView;chartDetails.close();resetPortfolioTable();render();});wirePortfolioTabs(viewSwitch);$('#ch-download').onclick=exportCSV;chartDetails=global.CreditChartDetails({root,esc,getCharts:()=>charts,getRows:id=>covenants.getRows(id)??monitoringViews.getRows(id)??pal.getRows(id),getCustomDefinition:id=>covenants.getDefinition(id)??monitoringViews.getDefinition(id),getCustomMethod:id=>covenants.getMethod(id)??monitoringViews.getMethod(id)??pal.getMethod(id),renderCustomAnalysis:a=>covenants.expanded(a)||monitoringViews.expanded(a),getAnalysis:()=>pal.getAnalysis(),renderRelated:opts=>portfolioJourney?.relatedDetail(opts),onChartDrill:portfolioSelect,onExpand:()=>{portfolioJourney?.clearInline();return false;},getContext:()=>({portfolioScope:state.tab==='portfolio',demo:manifest.is_demo,date:$('#ch-last-updated').textContent,filters:filterModel.fields().filter(f=>f.value&&!f.disabled).map(f=>f.label+': '+(f.options.find(([v])=>v===f.value)?.[1]||f.value)).join(' · ')})});workspace=global.CreditWorkspace({root,nav,esc,filters:filterModel,reflow:()=>charts.forEach(c=>c.reflow())});portfolioJourney=global.CreditPortfolioJourney?.({root,esc,getRows:id=>pal.getRows(id),getData:()=>data,getSettings:()=>pal.settings,getCharts:()=>charts,methodology:(...args)=>chartDetails.methodology(...args),getScope:()=>({...pal.getAnalysis(),activity:filtered(data.activity||[]),documents:filtered(data.documents||[]),previous:Object.fromEntries(['portfolio','monitoring','activity','sources'].map(k=>[k,k==='sources'?(data.previous?.datasets[k]||[]):filtered(data.previous?.datasets[k]||[])])),covenantHistory:filtered(data.covenantHistory?.rows||[]),filters:filterModel.fields().filter(f=>f.value&&!f.disabled).map(f=>f.label+': '+(f.options.find(([v])=>v===f.value)?.[1]||f.value)).join(' · ')})});root.addEventListener('credit:table-reset',event=>chartDetails.clearTableDrills(event.detail?.panel));root.addEventListener('credit:table-drill',event=>{const {rows,label,table,trigger}=event.detail||{};if(!Array.isArray(rows)||!table||!root.contains(table))return;event.stopPropagation();chartDetails.drillTable(rows,label,table,trigger);});await render();
 }
 if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initialize();
@@ -2239,5 +2343,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="c6035e89de98:portfolio";
+window.CREDIT_PAGE_BUILD="d392362f818a:portfolio";
 })();

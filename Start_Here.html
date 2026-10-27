@@ -22,19 +22,19 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 <main>
 <header>
 <div class="eyebrow">WEALTH CREDIT SERVICES · 27 OCTOBER 2026</div>
-<h1>Lending Analytics</h1>
+<h1>Lending Analytics · Installation guide</h1>
 <p>The complete application, Confluence page fragments, shared components, data contracts, illustrative examples, Access modules and local verification records.</p>
-<div class="actions"><a class="button" href="pages/lendinganalytics.html">Open Lending Analytics</a><a class="button" href="pages/portfolio.html">Open Portfolio</a><a class="button" href="pages/overview.html">Open Underwriters Summary</a></div>
-<p class="note"><strong>Illustrative preview.</strong> The included records are synthetic examples, not live lending results. Actual Confluence IDs and validated source inputs must be configured. Live Confluence installation and Windows Access execution remain to be verified.</p>
+<div class="actions"><a class="button" href="pages/lendinganalytics.html">Open Lending Analytics</a><a class="button" href="pages/portfolio.html">Open Portfolio</a><a class="button" href="pages/overview.html">Open Underwriter Summary</a></div>
+<p class="note"><strong>Illustrative preview.</strong> The included records are synthetic examples, not live lending results. The wcs page IDs and attachment page 3845862527 are configured. The supplied native macros explicitly allow these sample files; set allowSampleData to false before publishing approved live inputs. Live Confluence installation and Windows Access execution remain to be verified.</p>
 </header>
 
 <section>
 <h2>Start with these files</h2>
 <ul>
 <li><a href="Lending_Analytics_Deployment.txt">Current deployment contract</a>: page structure, native navigation, macros, cache behavior, large-file publication and validation limits.</li>
-<li><a href="Confluence_Deployment.zip">Confluence deployment ZIP</a>: shared assets and matching page fragments. It contains no demo records.</li>
+<li><a href="confluence-pages/lendinganalytics.html">Lending Analytics page macro</a>, <a href="Shared_WCSpedia_Include.html">shared navBar includes</a> and <a href="attachments/">application attachments</a>. The separate Confluence_Deployment.zip contains these assets and all matching page fragments.</li>
 <li><a href="Data_Integration_Kit/index.html">Data integration guide</a>: each page's sources, primary keys, joins, field dictionaries, examples and remaining ETL gaps.</li>
-<li><a href="Data_Integration_Kit.zip">Data integration ZIP</a>: a separate handoff for the data and Access preparation team.</li>
+<li><a href="excel/runtime/README.txt">Excel attachment samples</a>: six fixed-name workbooks, a manifest and previous snapshot, ready for an explicitly configured sample walkthrough. Each file retains its sample marker.</li>
 <li><a href="tools/README.txt">Build and tooling guide</a>: maintained build commands, release validation and clearly identified historical generators.</li>
 <li><a href="LICENSES.txt">Licensing and supplied asset notices</a>.</li>
 </ul>
@@ -42,12 +42,12 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 
 <section>
 <h2>One parent and 11 dashboards</h2>
-<p><strong>Portfolio</strong> is the financial view: exposure, approvals, pipeline, returns and consolidated monitoring. The former Overview is <strong>Underwriters Summary</strong>, a high-level view of actions, owners, regions and critical items. Underwriter workload provides the detailed owner queue.</p>
+<p><strong>Portfolio</strong> is the financial view: exposure, approvals, pipeline, returns and consolidated monitoring. The former Overview is <strong>Underwriter Summary</strong>, a high-level view of actions, owners, regions and critical items. Underwriter workload provides the detailed owner queue.</p>
 <div class="table-wrap"><table>
 <thead><tr><th scope="col">Preview page</th><th scope="col">Purpose</th><th scope="col">Confluence fragment</th></tr></thead>
 <tbody>
 <tr><td><a href="pages/portfolio.html">Portfolio</a></td><td>Facility financials and consolidated monitoring</td><td><a href="confluence-pages/portfolio.html">portfolio.html</a></td></tr>
-<tr><td><a href="pages/overview.html">Underwriters Summary</a></td><td>High-level action distribution and workload</td><td><a href="confluence-pages/overview.html">overview.html</a></td></tr>
+<tr><td><a href="pages/overview.html">Underwriter Summary</a></td><td>High-level action distribution and workload</td><td><a href="confluence-pages/overview.html">overview.html</a></td></tr>
 <tr><td><a href="pages/workload.html">Underwriter workload</a></td><td>Owner accountability, action aging and priorities</td><td><a href="confluence-pages/workload.html">workload.html</a></td></tr>
 <tr><td><a href="pages/deepdive.html">Relationship deep dive</a></td><td>Selected relationship facilities and linked monitoring</td><td><a href="confluence-pages/deepdive.html">deepdive.html</a></td></tr>
 <tr><td><a href="pages/covenants.html">Covenants</a></td><td>Past-due and coming-due obligations, exposure and activity</td><td><a href="confluence-pages/covenants.html">covenants.html</a></td></tr>
@@ -58,20 +58,20 @@ table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;b
 <tr><td><a href="pages/appraisals.html">Appraisals</a></td><td>Valuation requirements, due dates and ownership</td><td><a href="confluence-pages/appraisals.html">appraisals.html</a></td></tr>
 <tr><td><a href="pages/activity.html">Covenant activity</a></td><td>Deferred, waived and deleted maker events</td><td><a href="confluence-pages/activity.html">activity.html</a></td></tr>
 </tbody></table></div>
-<p>The <a href="confluence-pages/lendinganalytics.html">Lending Analytics parent fragment</a> provides navigation. The <a href="pages/trends.html">Trends route</a> is a compatibility alias for Portfolio, not a second sidebar destination. Sources &amp; definitions is removed as a page; the sources dataset remains required for validation and provenance.</p>
+<p>The <a href="confluence-pages/lendinganalytics.html">Lending Analytics parent fragment</a> introduces the dashboard and user journey. The <a href="pages/trends.html">Trends route</a> is a compatibility alias for Portfolio, not a second sidebar destination. Sources &amp; definitions is removed as a page; the sources dataset remains required for validation and provenance.</p>
 </section>
 
 <section>
 <h2>Build, preview and deploy</h2>
-<p>Serve the extracted project over local HTTP, then open <code>/Start_Here.html</code>. For example, from the project folder:</p>
+<p>Serve the extracted project over local HTTP, then open <code>/pages/lendinganalytics.html</code> (this file is the separate installation guide). For example, from the project folder:</p>
 <pre>python3 -m http.server 8770 --bind 127.0.0.1</pre>
 <p>The default build uses the bundled WCSpedia source snapshot. No unrelated wealth workspace or application backend is required:</p>
 <pre>python3 tools/build_pages.py
 python3 tools/verify_page_package.py
 python3 tools/build_integration_kit.py
 python3 tools/package_release.py</pre>
-<p>For Confluence, configure <a href="attachments/credit-pages.js">the native page IDs</a> and attachment host ID. Keep the existing <code>{include:wcspedia:navBar}</code>, one global stylesheet and native sidebar. Use <a href="Shared_WCSpedia_Include.html">the shared inclusion instructions</a> and one matching settings → logic → HTMLPage sequence per page. The fragments are intended for approved HTML macros, not standalone browser pages.</p>
-<p>Publish validated live payloads first and their manifest last. Never replace production datasets with the included illustrative files. See <a href="tools/schema.json">the output schema</a>, <a href="tools/input-schema.json">the staging schema</a> and the integration guide before preparing live data.</p>
+<p>For Confluence, <a href="attachments/credit-pages.js">the native page IDs</a> and attachment host 3845862527 are already configured in the wcs space. Keep the existing <code>{include:wcs:navBar}</code>, one global stylesheet and native sidebar. Use <a href="Shared_WCSpedia_Include.html">the shared inclusion instructions</a> and one matching settings → logic → HTMLPage sequence per page. The fragments are intended for approved HTML macros, not standalone browser pages.</p>
+<p>For the requested sample walkthrough, upload the contents of excel/runtime/ to attachment page 3845862527; the provided macros use allowSampleData:true. For live use, set it to false and publish approved files marked is_demo:false. Upload all matching workbooks first and credit-manifest.json last. Every workbook Metadata sheet must match the manifest bundle ID; mixed releases are rejected. Never replace existing live datasets with starter samples. See <a href="tools/schema.json">the output schema</a>, <a href="tools/input-schema.json">the staging schema</a> and the integration guide before preparing live data.</p>
 </section>
 
 <section>
@@ -84,7 +84,7 @@ python3 tools/package_release.py</pre>
 <section>
 <h2>Verification evidence</h2>
 <ul>
-<li><a href="qa/Final_Release_Verification.txt">Final release checks and remaining deployment configuration</a>.</li>
+<li><a href="qa/Landing_Excel_Verification.txt">Current landing, Excel loading and Confluence configuration checks</a>.</li>
 <li><a href="qa/Table_Typography_Verification.txt">Shared table typography</a> and <a href="qa/Table-Typography-Portfolio.png">current Portfolio table screenshot</a>.</li>
 <li><a href="qa/Portfolio_Three_Card_Row_Verification.txt">Portfolio three-card row and responsive layout</a>.</li>
 <li><a href="qa/Reset_Tab_Performance_Verification.txt">Reset, tab scheduling and chart lifecycle regression checks</a>.</li>

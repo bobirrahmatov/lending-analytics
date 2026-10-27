@@ -15,12 +15,16 @@
  function verifySources(name,rows,sources){const map=new Map(sources.map(s=>[s.source_id,s])),counts=new Map();for(const r of rows){const s=map.get(r.source_id);if(!s||s.as_of_date!==r.as_of_date||s.domain!==(name==='monitoring'?r.category:name.toUpperCase()))throw Error(name+' source/date/domain mismatch');counts.set(r.source_id,(counts.get(r.source_id)||0)+1);}for(const s of sources)if((name==='monitoring'?['COVENANTS','CA','FACILITY','CCM','INSURANCE','APPRAISALS'].includes(s.domain):s.domain===name.toUpperCase())&&(counts.get(s.source_id)||0)!==s.record_count)throw Error(name+' source count mismatch: '+s.source_id);}
  // Browser HTTP cache is revalidated by Confluence on every new page load.
  // No cache-first fallback can bypass current attachment permissions.
- async function readJSON(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{
+ async function readBuffer(url){
+  if(w.location?.href&&typeof URL!=='undefined'&&new URL(url,w.location.href).origin!==w.location.origin)throw Error('Attachment must be on the same Confluence origin');
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{
   const response=await w.fetch(url,{credentials:'same-origin',cache:'no-cache',signal:controller.signal});if(!response.ok)throw Error('Attachment unavailable ('+response.status+')');
+  if(Number(response.headers?.get('content-length'))>=10000000)throw Error('Attachment must be smaller than 10 MB');
   const buffer=await response.arrayBuffer();if(buffer.byteLength>=10000000)throw Error('Attachment must be smaller than 10 MB');
-  try{return JSON.parse(new TextDecoder().decode(buffer).replace(/^\uFEFF/,''));}catch{throw Error('Attachment is not valid JSON. Check sign-in and filename.');}
+  return buffer;
  }finally{clearTimeout(timer);}}
- function createLoader({manifest,attachment,validate,read=readJSON}){const cache=new Map();
+ async function readJSON(url){const buffer=await readBuffer(url);try{return JSON.parse(new TextDecoder().decode(buffer).replace(/^\uFEFF/,''));}catch{throw Error('Attachment is not valid JSON. Check sign-in and filename.');}}
+ function createLoader({manifest,attachment,validate,read,contracts,allowDemo=false}){const cache=new Map();
   async function fetchRows(name){const entry=manifest.files[name];if(!entry)throw Error('Missing '+name+' attachment in manifest');
    if(entry.parts&&entry.filename)throw Error('Ambiguous file descriptor: '+name);
    const parts=entry.parts||[entry];if(!Array.isArray(parts)||!parts.length||parts.length>512)throw Error('Invalid attachment parts: '+name);
@@ -28,12 +32,19 @@
    if(expected!==entry.rows)throw Error('Part counts do not match '+name);
    const results=new Array(parts.length);let cursor=0;
    // Two requests at a time; avoid unbounded memory/network pressure.
-   async function worker(){while(cursor<parts.length){const i=cursor++,part=parts[i],p=await read(attachment(part.filename));if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id)throw Error('Mixed release detected for '+name);if(p.is_demo===true)throw Error('Illustrative data cannot be loaded in production');if(!Array.isArray(p.rows)||p.rows.length!==part.rows)throw Error('Row count mismatch for '+name);results[i]=p.rows;}}
+   async function worker(){while(cursor<parts.length){const i=cursor++,part=parts[i],url=attachment(part.filename),excel=/\.xlsx$/i.test(part.filename);
+    if(!excel&&!/\.json$/i.test(part.filename))throw Error('Unsupported attachment format for '+name);
+    let p;if(read)p=await read(url);else if(excel){if(!w.CreditExcel)throw Error('The local Excel reader is unavailable');p=await w.CreditExcel.parse(await readBuffer(url),{dataset:name,fields:contracts?.[name]});}else p=await readJSON(url);
+    if(p.schema_version!==2||p.bundle_id!==manifest.bundle_id)throw Error('Mixed release detected for '+name);
+    if((manifest.is_demo===true||p.is_demo===true)&&!allowDemo)throw Error('Illustrative data cannot be loaded in production');
+    if(excel&&p.is_demo!==(manifest.is_demo===true))throw Error('Workbook sample identity does not match manifest for '+name);
+    if(!excel&&typeof p.is_demo==='boolean'&&typeof manifest.is_demo==='boolean'&&p.is_demo!==manifest.is_demo)throw Error('Attachment sample identity does not match manifest for '+name);
+    if(!Array.isArray(p.rows)||p.rows.length!==part.rows)throw Error('Row count mismatch for '+name);results[i]=p.rows;}}
    await Promise.all(Array.from({length:Math.min(2,parts.length)},worker));
    // Validate the combined set: duplicate primary keys across parts must fail.
    return validate(name,results.flat());
   }
-  return {load(name){if(cache.has(name))return cache.get(name);const request=fetchRows(name).catch(e=>{cache.delete(name);throw e;});cache.set(name,request);return request;},invalidate(name){cache.delete(name);}};
+  return {load(name){if(cache.has(name))return cache.get(name);const request=fetchRows(name).catch(e=>{if(cache.get(name)===request)cache.delete(name);throw e;});cache.set(name,request);return request;},invalidate(name){cache.delete(name);}};
  }
- w.CreditDataCache={index,select,sum,verifySources,readJSON,createLoader};
+ w.CreditDataCache={index,select,sum,verifySources,readBuffer,readJSON,createLoader};
 })(window);

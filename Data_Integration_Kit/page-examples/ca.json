@@ -1,7 +1,7 @@
 {
   "is_demo": true,
   "page": "CA",
-  "title": "CA expiration",
+  "title": "CA Expiration",
   "primary_dataset": "monitoring",
   "eligible_sample_rows": 48,
   "note": "Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.",
@@ -16,7 +16,7 @@
       "team_lead": "North team",
       "product": "Real Estate",
       "relationship_id": "R0001",
-      "relationship_name": "Illustrative relationship 001",
+      "relationship_name": "Relationship 001",
       "item_id": "CA:0001",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -52,7 +52,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 1",
+      "banker_name": "Banker 1",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -65,7 +65,7 @@
       "team_lead": "International team",
       "product": "Real Estate",
       "relationship_id": "R0002",
-      "relationship_name": "Illustrative relationship 002",
+      "relationship_name": "Relationship 002",
       "item_id": "CA:0002",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -101,7 +101,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 2",
+      "banker_name": "Banker 2",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     },
     {
@@ -114,7 +114,7 @@
       "team_lead": "Specialty team",
       "product": "Real Estate",
       "relationship_id": "R0003",
-      "relationship_name": "Illustrative relationship 003",
+      "relationship_name": "Relationship 003",
       "item_id": "CA:0003",
       "category": "CA",
       "owner_role": "UNDERWRITER",
@@ -150,7 +150,7 @@
       "frequency": null,
       "source_aging_bucket": null,
       "day45_date": null,
-      "banker_name": "Illustrative banker 3",
+      "banker_name": "Banker 3",
       "demo_scenario": "Aligned illustrative comparison; not a historical source export"
     }
   ]
