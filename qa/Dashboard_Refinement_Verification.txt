@@ -37,3 +37,12 @@ Deployment
 See Lending_Analytics_Deployment.txt. Upload complete application attachments
 and matching Page.js/HTMLPage.js pairs to page 3845862527. Replace the landing
 macro for the preload; retain other page macros and the existing space include.
+
+Curved-line follow-up
+CCM and Appraisal date plots now use areaspline/spline rendering in dashboard
+and expanded views. Portfolio expanded date trends also use spline rendering.
+The existing Portfolio trend areaspline remains unchanged. Native spline
+interpolation changes the connecting stroke, not point values or source cohorts.
+Local browser inspection confirmed cubic curve paths for CCM and Appraisals,
+including expanded Appraisal analysis. Gradient fill and point markers remain.
+Focused monitoring presentation, PortfolioJourney and bento checks passed.
