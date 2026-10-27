@@ -176,11 +176,21 @@ source cohorts and their drills remain intact. The following row pairs CAs & Fac
 New Facilities Approved at equal widths. Portfolio also pairs New deals with
 Pending Closure, Relationships with Monitoring priorities, and Covenants with
 CCM. Narrow screens wrap and stack without horizontal page overflow.
-Monitoring priorities uses a ranked dot chart: critical actions, other actions
-and upcoming items have separate shapes, colors and counts. Selecting a marker
-retains its exact source population. Period dropdowns (New deals, Approvals and
+Monitoring priorities uses one bubble per monitoring category. Actions required
+set the horizontal position, critical actions set the vertical position, and
+circle area represents action and upcoming items without double-counting the
+critical subset. Category labels, legend counts and tooltips retain the exact
+quantities; selecting a bubble or legend category opens its source population.
+Coincident categories share one label and remain independently available through
+the legend. Expanded analysis retains a 460px plot with visible axes and legend.
+Zero categories have no visible bubble. Period dropdowns (New deals, Approvals and
 Pending Closure) show their four choices directly without a search field;
 searchable filters and larger view menus retain search.
+Portfolio Data uses a full-width title/scope row and aligned dataset/search
+controls. Column searches retain full accessible labels with compact placeholders.
+The relationship column stays visible during horizontal table scrolling; amounts
+are right-aligned in the primary theme colour. Sorting, filtering, paging,
+record drills and complete exports retain their original source scope.
 Inline drilling temporarily fills a row; Reset restores the normal arrangement.
 Expanded charts retain their modal dialogs.
 

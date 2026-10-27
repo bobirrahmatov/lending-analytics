@@ -54,23 +54,68 @@ configs.relationshipChart.series[0].data.forEach((p,i)=>assert.deepEqual(p.custo
 rows[0].product='Aircraft Finance';pal.overview(rows);assert.deepEqual(values(),[2,2]);assert.equal(configs.newDealsChart.xAxis.categories.length,2);
 const newPoint=configs.newDealsChart.series[0].data[0];configs.newDealsChart.plotOptions.series.point.events.click.call({options:newPoint,index:0,series:{name:'Current period'}});assert.equal(clicked[1].length,1);
 
-// Cross-domain priority segments cannot double-count critical/upcoming action flags.
+// Bubble coordinates and area keep separate, exact source quantities.
 monitoring[0].coming_due=true;monitoring[1].coming_due=true;monitoring[2].action_required=true;
 pal.overview(rows);
 const summary=configs.monitoringPriorityChart;
-assert.equal(summary.chart.type,'scatter');assert.equal(summary.chart.inverted,true);assert.equal(summary.plotOptions.series.stacking,undefined);assert.equal(summary.plotOptions.scatter.dataLabels.enabled,true);assert.equal(summary.plotOptions.scatter.dataLabels.formatter.call({y:3}),'3');assert.equal(configs.relationshipChart.plotOptions.bar.dataLabels.enabled,false,'Mixed financial relationship chart does not inherit count labels');assert.equal(summary.xAxis.categories.length,6);
-assert.deepEqual(Array.from(summary.series,s=>s.marker.symbol),['diamond','circle','square'],'Priority shapes distinguish the three cohorts without relying only on color');
-summary.series.forEach((series,i)=>series.data.forEach((p,index)=>{assert.equal(p.x,index+(i-1)*.3);assert.equal(p.name,summary.xAxis.categories[index],'Accessible point names use the monitoring area, not its visual offset');assert.equal(p.marker.enabled,true);assert.equal(p.y,p.custom.rows.length);}));
-assert.equal(summary.yAxis.min,0,'All three populations use the same zero-based count axis');
-assert.ok(summary.chart.height>=460,'Priority markers have enough vertical room for every series label');
-assert.equal(summary.plotOptions.scatter.dataLabels.padding,0);assert.equal(summary.plotOptions.scatter.dataLabels.style.fontSize,'11px');
-assert.equal(summary.plotOptions.scatter.dataLabels.formatter.call({y:0}),'0','Zero cohorts remain visible and labeled');
-assert.equal(configs.newDealsChart.plotOptions.bar.dataLabels.formatter.call({y:0}),null,'Other bar charts retain their zero-label behavior');
-assert.deepEqual(Array.from(summary.series,s=>s.data.reduce((n,p)=>n+p.y,0)),[1,1,1]);
+assert.equal(summary.chart.type,'scatter');assert.equal(summary.chart.inverted,undefined);
+assert.equal(summary.xAxis.title.text,'Actions required');assert.equal(summary.yAxis.title.text,'Critical actions');
+assert.equal(summary.series.length,6);assert.ok(summary.chart.height>=460);
+assert.equal(configs.relationshipChart.plotOptions.bar.dataLabels.enabled,false);
+const priorityPoints=summary.series.flatMap(series=>series.data),largest=Math.max(...priorityPoints.map(p=>p.z));
+for(const series of summary.series){const p=series.data[0],rs=monitoring.filter(r=>r.category===p.custom.category&&(r.action_required||r.coming_due));
+ assert.equal(p.marker.symbol,'circle');assert.equal(p.name,series.name);assert.deepEqual(p.custom.rows,rs);
+ assert.equal(p.x,rs.filter(r=>r.action_required).length);assert.equal(p.y,rs.filter(r=>r.action_required&&r.critical).length);assert.equal(p.z,rs.length);
+ assert.equal(p.custom.upcoming,rs.filter(r=>!r.action_required&&r.coming_due).length);assert.equal(p.z,p.x+p.custom.upcoming,'Critical subset must not inflate bubble size');
+ assert.ok(Math.abs(p.marker.radius**2/(42**2)-p.z/largest)<1e-12,'Circle area is proportional to count');
+ assert.equal(p.marker.enabled,p.z>0);assert.equal(p.dataLabels.enabled,p.z>0,'Zero categories have no visible bubble or label');
+ assert.equal(summary.legend.labelFormatter.call({name:series.name,options:series}),series.name+' · '+p.z);
+}
+assert.deepEqual(priorityPoints.reduce((n,p)=>[n[0]+p.x,n[1]+p.y,n[2]+p.custom.upcoming,n[3]+p.z],[0,0,0,0]),[2,1,1,3]);
 assert.equal(pal.getRows('monitoringPriorityChart').length,3);
-const item=summary.series[0].data.find(p=>p.y);summary.plotOptions.series.point.events.click.call({options:item,index:summary.series[0].data.indexOf(item),series:{name:'Critical actions'}});assert.equal(clicked[0],'monitoringPriorityChart');assert.equal(clicked[1].length,1);
+const item=priorityPoints.find(p=>p.z===2);summary.plotOptions.series.point.events.click.call({name:item.name,options:item});assert.equal(clicked[0],'monitoringPriorityChart');assert.deepEqual(clicked[1],item.custom.rows);
+assert.match(summary.tooltip.formatter.call({point:item}),/Actions required: 1/);assert.match(summary.tooltip.formatter.call({point:item}),/Total items \/ bubble size: 2/);
+assert.match(summary.accessibility.point.descriptionFormatter(item),/1 critical, 1 upcoming; 2 total items/);
+assert.equal(summary.plotOptions.scatter.dataLabels.formatter.call({point:item}),'INS');
 scope='NAM';pal.overview(rows);assert.equal(pal.getRows('monitoringPriorityChart').length,2);scope='';
-console.log('PASS: labeled six-domain priority dot plot, distinct markers, exclusive cohorts, shared filters and exact point records.');
+console.log('PASS: category bubbles use exact action/critical coordinates, proportional count area, zero/empty scopes, readable labels, filtered populations and exact point records.');
+
+// Coincident bubbles remain independently reachable through their category legends.
+{
+ const savedLength=monitoring.length,savedScope=scope,savedClicked=clicked;
+ const ca={category:'CA',region:'NAM',as_of_date:'2026-09-01',action_required:true,critical:false},facility={...ca,category:'FACILITY'};
+ try{
+  monitoring.push(ca,facility);
+  for(const [selectedScope,label,groupCount] of [['NAM','CA / FAC',2],['','3 groups',3]]){
+   scope=selectedScope;pal.overview(rows);
+   const collision=configs.monitoringPriorityChart,seriesFor=category=>collision.series.find(s=>s.data[0].custom.category===category);
+   const caSeries=seriesFor('CA'),facilitySeries=seriesFor('FACILITY');
+   assert.deepEqual([caSeries.data[0].x,caSeries.data[0].y,caSeries.data[0].marker.radius],[facilitySeries.data[0].x,facilitySeries.data[0].y,facilitySeries.data[0].marker.radius],'The fixture must produce completely coincident bubbles');
+   const samePosition=collision.series.flatMap(s=>s.data).filter(p=>p.z>0&&p.x===caSeries.data[0].x&&p.y===caSeries.data[0].y);
+   assert.equal(samePosition.length,groupCount);
+   assert.equal(samePosition.filter(p=>p.dataLabels.enabled).length,1,'A shared coordinate has one readable combined label');
+   assert.equal(samePosition.at(-1).dataLabels.enabled,true,'Only the topmost point labels a shared coordinate');
+   assert.equal(collision.plotOptions.scatter.dataLabels.formatter.call({point:samePosition.at(-1)}),label);
+   for(const p of samePosition){
+    assert.deepEqual(Array.from(p.custom.overlap).sort(),Array.from(samePosition,other=>other.name).sort());
+    const tooltip=collision.tooltip.formatter.call({point:p});
+    assert.ok(tooltip.includes('Same position: '+p.custom.overlap.join(', ')),'Every coincident point discloses all categories sharing its position');
+    assert.ok(tooltip.includes('Select a legend category for its records.'));
+   }
+   assert.equal(collision.legend.enabled,true,'Categories remain available independently of their overlapping circles');
+   const legendClick=collision.plotOptions.series.events.legendItemClick;
+   for(const [series,expected] of [[caSeries,[ca]],[facilitySeries,[facility]],[seriesFor('COVENANTS'),[]]]){
+    const legendSeries={name:series.name,options:series,visible:true,setVisible(){assert.fail('Category drill must not toggle series visibility');}};
+    const result=legendClick.call(legendSeries);
+    assert.equal(result,false,'Returning false cancels the native legend visibility toggle');
+    assert.equal(legendSeries.visible,true);assert.equal(clicked[0],'monitoringPriorityChart');
+    assert.deepEqual(clicked[1],expected,'Each legend opens only its exact category source records, including empty categories');
+    assert.ok(clicked[2].includes(series.name),'The selected category identifies the drill');
+   }
+  }
+ }finally{monitoring.length=savedLength;scope=savedScope;pal.overview(rows);clicked=savedClicked;}
+}
+console.log('PASS: two- and three-category collisions use one combined label and explanatory tooltip; coincident and zero-category legends retain exact independent drills without hiding series.');
 
 // Five exact aging bands, authoritative file categories and safe legacy fallbacks.
 const aging=w.CreditCovenantAging;

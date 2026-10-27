@@ -820,6 +820,7 @@
 #credit-hub .cd-analysis-grid>.cd-chart-slot,#credit-hub .cd-analysis-grid>.cd-insight-card{grid-column:span var(--cd-span,6);min-width:0}
 #credit-hub .cd-analysis-grid>.cd-wide{grid-column:1/-1}
 #credit-hub .cd-chart-slot .ch-chart{height:320px!important;min-height:0!important}
+#credit-hub .cd-chart-slot #monitoringPriorityChart{height:460px!important}
 #credit-hub .cd-chart-slot .pal-pipeline-table{max-height:320px;overflow:auto}
 #credit-hub .cd-takeaways{display:flex;flex-direction:column}
 #credit-hub .cd-takeaways dl{margin:0;padding:0 22px;flex:1}
@@ -2043,4 +2044,44 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
  #credit-hub .la-landing{padding-inline:12px}
  #credit-hub .la-intro{padding:24px 0}
  #credit-ui #credit-hub .pal-coverage-stat{min-height:208px;padding:26px 24px}
+}
+
+/* Data registers: a clear title/scope row, then dataset and search controls.
+   Column sizes follow their content; the leading identity stays in view while
+   the record columns scroll inside the table, never at page level. */
+#credit-hub[data-view=portfolio] #ch-register.ct-table-card>.cc-unified-table-head{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:20px 22px 18px}
+#credit-hub[data-view=portfolio] #ch-register .cc-unified-table-head>div:first-child:not(.cc-table-actions){min-width:0;max-width:none}
+#credit-hub[data-view=portfolio] #ch-register .cc-unified-table-head .ch-card-sub{max-width:none;margin-top:6px;line-height:1.6!important}
+#credit-hub[data-view=portfolio] #ch-register .cc-unified-table-head>.cc-table-actions{display:flex;flex-wrap:wrap;gap:12px;min-width:0;width:100%;margin:0}
+#credit-hub[data-view=portfolio] #ch-register .cc-table-tabs-wrap{flex:1 1 auto;justify-content:flex-start;min-width:0}
+#credit-hub[data-view=portfolio] #ch-register .cc-table-actions :is(.ch-register-search,.ct-global-search){flex:0 1 320px;width:320px;min-width:180px;margin:0}
+#credit-hub[data-view=portfolio] #ch-register :is(.ch-table-wrap,.credit-data-table-scroll){background:var(--page);border-top:1px solid var(--line);isolation:isolate}
+#credit-ui #credit-hub .ct-table-card .credit-data-table thead th{padding:10px 14px 6px;border-color:var(--line)!important}
+#credit-hub .ct-table-card .ct-heading{min-width:112px;gap:4px}
+#credit-hub .ct-table-card .ct-heading .ct-sort{gap:8px;padding-inline:0;line-height:1.4;white-space:normal}
+#credit-hub .ct-table-card .ct-heading svg{width:14px;height:14px;color:var(--muted)}
+#credit-hub .ct-table-card .ct-heading .ct-filter{width:26px;min-height:28px;padding:4px}
+#credit-ui #credit-hub .ct-table-card .credit-data-table .ct-search-row th{padding:0 14px 12px;border-bottom:1px solid var(--line)}
+#credit-hub .ct-table-card .ct-search-row input{min-width:112px;height:32px;padding:6px 9px;border-color:var(--line);border-radius:6px;background:var(--page);color:var(--ink);font-size:12px!important;line-height:1.4!important}
+#credit-hub .ct-table-card .ct-search-row input::placeholder{color:var(--muted);opacity:.85}
+#credit-hub .ct-table-card :is(.ct-column-id,.ct-column-date) :is(.ct-heading,input){min-width:114px}
+#credit-hub .ct-table-card .ct-column-short :is(.ct-heading,input){min-width:80px}
+#credit-hub .ct-table-card .ct-column-amount :is(.ct-heading,input){min-width:120px}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody :is(td,th){padding:13px 14px;border-color:var(--line)!important;background:var(--page)}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:nth-child(even)>:is(td,th){background:color-mix(in srgb,var(--pale) 30%,var(--page))}
+#credit-ui #credit-hub .ct-table-card .credit-data-table tbody tr:is(:hover,:focus-within)>:is(td,th){background:var(--pale)}
+#credit-ui #credit-hub .ct-table-card .credit-data-table :is(tbody,tfoot)>tr>.ct-amount-cell{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+#credit-ui #credit-hub .ct-table-card .credit-data-table .ct-amount-cell :is(button,a){color:var(--ink)!important;font-weight:inherit}
+#credit-hub .ct-table-card .ct-column-amount .ct-sort{text-align:right}
+#credit-hub .ct-table-card .ch-pagination{border-color:var(--line);color:var(--muted);padding:14px 20px}
+#credit-hub .ct-table-card .ch-pagination [role=status]{font-variant-numeric:tabular-nums;color:var(--ink)}
+#credit-ui #credit-hub[data-view=portfolio] #ch-register #ch-table .credit-data-table :is(thead,tbody)>tr>:first-child{position:sticky;left:0;z-index:2;min-width:170px;border-right:1px solid var(--line);box-shadow:2px 0 4px color-mix(in srgb,var(--ink) 4%,transparent)}
+#credit-ui #credit-hub[data-view=portfolio] #ch-register #ch-table .credit-data-table thead>tr>:first-child{z-index:3}
+#credit-hub[data-view=portfolio] #ch-register #ch-table .ct-category-cell{max-width:260px;white-space:normal!important;overflow-wrap:anywhere}
+#credit-hub[data-view=portfolio] #ch-register #ch-table .ct-category-cell .ch-row-link{font-weight:600!important;line-height:1.5!important;text-align:left}
+@container credit-dashboard (max-width:650px){
+ #credit-hub[data-view=portfolio] #ch-register.ct-table-card>.cc-unified-table-head{padding:18px 14px 14px;gap:14px}
+ #credit-hub[data-view=portfolio] #ch-register .cc-table-tabs-wrap{flex-basis:100%}
+ #credit-hub[data-view=portfolio] #ch-register .cc-table-actions :is(.ch-register-search,.ct-global-search){flex:1 1 180px;width:auto;min-width:0}
+ #credit-ui #credit-hub[data-view=portfolio] #ch-register #ch-table .credit-data-table :is(thead,tbody)>tr>:first-child{min-width:148px;max-width:170px}
 }

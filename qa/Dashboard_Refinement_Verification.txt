@@ -90,3 +90,30 @@ and all eight responsive geometry cases. Native-theme verification uses the
 local fixture, not a live Confluence connection. Replace application attachments
 and matching generated script pairs; the header include and page macros remain
 unchanged for this follow-up.
+
+
+Monitoring bubble and data-table follow-up
+Monitoring priorities now uses a larger bubble plot: horizontal position is the
+action-required count, vertical position is the critical-action subset, and circle
+area is proportional to action-required OR coming-due records. Critical records
+are not counted twice. Category legend entries include totals and drill to exact
+records, including zero categories and categories hidden beneath coincident
+bubbles. Two coincident categories share their codes; larger groups use one
+combined label. Tooltips identify the overlapping categories. Methodology explains
+coordinates, area, populations and the independent legend drill.
+Portfolio Data has a full-width heading, separate aligned control row, compact
+column searches, clearer row/category text, neutral right-aligned amounts and a
+sticky relationship column. All fields and complete exports remain available.
+44 local regression commands passed. After the final overlap/height corrections,
+Portfolio view, chart details, PortfolioJourney, table controls and table drill
+checks passed again. Coincident-circle tests cover two- and three-category
+collisions, combined labels, tooltip disclosure, exact legend cohorts, no series
+hiding, zeros and filtered populations.
+Browser checks confirmed the 460px expanded plot with unclipped axes and legend,
+a 200-record Covenants legend drill, table search to two Relationship 010 records,
+exact facility drill and search restoration, dataset switching and Reset.
+Light and dark host-fixture screenshots show readable bubble labels and table
+surfaces. All eight responsive geometry cases passed at 390/900/1280/1920 px.
+These are local previews and host fixtures; live Confluence was not inspected.
+Replace the application attachments and matching generated script pairs. The
+existing page macro fragments, header include and data workbooks are unchanged.

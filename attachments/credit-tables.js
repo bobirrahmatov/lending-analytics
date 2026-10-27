@@ -15,6 +15,14 @@ const filterIcon=svg('<path d="M3 4h14l-5.5 6v5l-3 1v-6z"/>'),sortIcon=svg('<pat
 function filterSummary(c,f,rows){const parts=[];if(f.query)parts.push(f.query);if(Array.isArray(f.values)){if(f.values.length===1){const row=rows.find(r=>token(value(r,c))===f.values[0]);parts.push(row?display(row,c)||'(Blank)':f.values[0]||'(Blank)');}else parts.push(f.values.length+' values');}if(f.min)parts.push('≥ '+f.min);if(f.max)parts.push('≤ '+f.max);return parts.join(' · ');}
 // Presentation only: raw records, sorting, filtering and exports keep their original values.
 const normalized=v=>String(v||'').replace(/[_–-]/g,' ').toLowerCase();
+function columnClass(column){
+ const name=normalized((column.key||'')+' '+(column.label||''));
+ if(/\b(?:ids?|identifiers?|codes?|numbers?)\b/.test(name))return 'ct-column-id';
+ if(/\b(?:date|maturity|expiration|deadline)\b/.test(name))return 'ct-column-date';
+ if(column.rangeUnit==='USD millions'||/\b(?:amount|balance|tfa|osuc|outstanding|exposure|revenue|income|cost|unused|limit)\b/.test(name))return 'ct-column-amount';
+ if(/\b(?:region|pse|sft)\b/.test(name))return 'ct-column-short';
+ return '';
+}
 function statusTone(value){
  const s=normalized(value);if(/\bnot (past due|overdue|expired)\b/.test(s))return null;const past=/\b(past due|overdue|expired|critical|breach|breached)\b/.test(s),coming=/\b(coming due|upcoming|expiring)\b/.test(s);
  if(past&&coming)return null;
@@ -53,7 +61,7 @@ function styleNumbers(table,columns){
 function enhanceNumbers(root){root.querySelectorAll('table.credit-data-table').forEach(table=>styleNumbers(table));}
 function decorate({table,rows,columns,state,onChange,matched,local=false,onSearch}){
  styleNumbers(table,columns);table.dataset.creditTable='managed';table.closest('section.ch-card')?.classList.add('ct-table-card');
- const head=table.tHead||table.createTHead();head.innerHTML='<tr>'+columns.map((c,i)=>'<th scope="col" aria-sort="'+(state.sortKey===c.key?(state.sortDir===1?'ascending':'descending'):'none')+'"><div class="ct-heading"><button type="button" class="ct-sort" data-ct-sort="'+i+'" aria-label="Sort by '+esc(c.label)+'">'+esc(c.label)+(state.sortKey===c.key?svg('<path d="M10 16V4m-4 4 4-4 4 4"/>'):sortIcon)+'</button><button type="button" class="ct-filter '+(isActive(state.filters[c.key])?'is-active':'')+'" data-ct-filter="'+i+'" aria-label="Filter '+esc(c.label)+'" aria-haspopup="dialog" aria-expanded="false">'+filterIcon+'</button></div></th>').join('')+'</tr><tr class="ct-search-row">'+columns.map((c,i)=>'<th><input type="search" data-ct-search="'+i+'" aria-label="Search '+esc(c.label)+' column" placeholder="Search '+esc(c.label)+'…" value="'+esc(state.filters[c.key]?.query||'')+'"></th>').join('')+'</tr>';
+ const head=table.tHead||table.createTHead();head.innerHTML='<tr>'+columns.map((c,i)=>'<th scope="col" class="'+columnClass(c)+'" aria-sort="'+(state.sortKey===c.key?(state.sortDir===1?'ascending':'descending'):'none')+'"><div class="ct-heading"><button type="button" class="ct-sort" data-ct-sort="'+i+'" aria-label="Sort by '+esc(c.label)+'">'+esc(c.label)+(state.sortKey===c.key?svg('<path d="M10 16V4m-4 4 4-4 4 4"/>'):sortIcon)+'</button><button type="button" class="ct-filter '+(isActive(state.filters[c.key])?'is-active':'')+'" data-ct-filter="'+i+'" aria-label="Filter '+esc(c.label)+'" aria-haspopup="dialog" aria-expanded="false">'+filterIcon+'</button></div></th>').join('')+'</tr><tr class="ct-search-row">'+columns.map((c,i)=>'<th class="'+columnClass(c)+'"><input type="search" data-ct-search="'+i+'" aria-label="Search '+esc(c.label)+' column" placeholder="Search…" title="Search '+esc(c.label)+' column" value="'+esc(state.filters[c.key]?.query||'')+'"></th>').join('')+'</tr>';
  const wrap=table.closest('.credit-data-table-scroll')||table.parentElement;
  let bar=wrap.previousElementSibling;if(!bar?.classList.contains('ct-status')){bar=document.createElement('div');bar.className='ct-status';wrap.before(bar);}
  if(onSearch)table.closest('section.ch-card')?.querySelector('.cc-table-actions [data-ct-global]')?.closest('label').remove();
