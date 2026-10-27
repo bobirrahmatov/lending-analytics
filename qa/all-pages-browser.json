@@ -1,0 +1,439 @@
+[
+  {
+    "slug": "portfolio",
+    "charts": 7,
+    "error": "",
+    "expand": [
+      "Expand CAs & Facilities Expiring",
+      "Expand New Facilities Approved",
+      "Expand New deals",
+      "Expand Deals Pending Closure",
+      "Expand Top Relationships & ROTCE",
+      "Expand Monitoring priorities",
+      "Expand Past Due Covenants",
+      "Expand Criticized/Classified Memos & Reviews"
+    ],
+    "overflow": false,
+    "title": "Portfolio overview",
+    "expanded": {
+      "cards": [
+        {
+          "title": "In this selection",
+          "width": 592
+        },
+        {
+          "title": "Expired Facilities by Aging",
+          "width": 592
+        },
+        {
+          "title": "Expired Facilities by Product Program",
+          "width": 592
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "trends",
+    "charts": 1,
+    "error": "",
+    "expand": [
+      "Expand Historical OSUC"
+    ],
+    "overflow": false,
+    "title": "Portfolio trends",
+    "expanded": {
+      "cards": [
+        {
+          "title": "In this selection",
+          "width": 592
+        },
+        {
+          "title": "Latest snapshot by region",
+          "width": 592
+        },
+        {
+          "title": "Latest snapshot by product",
+          "width": 592
+        },
+        {
+          "title": "Snapshot reconciliation",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "deepdive",
+    "charts": 0,
+    "error": "",
+    "expand": [],
+    "overflow": false,
+    "title": "Relationship deep dive"
+  },
+  {
+    "slug": "overview",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Monitoring priorities",
+      "Expand Regional action distribution",
+      "Expand Workload by team lead",
+      "Expand Action aging"
+    ],
+    "overflow": false,
+    "title": "Monitoring overview",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "workload",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Workload by owner",
+      "Expand Regional action distribution",
+      "Expand Workload by team lead",
+      "Expand Action aging"
+    ],
+    "overflow": false,
+    "title": "Underwriter workload",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "covenants",
+    "charts": 5,
+    "error": "",
+    "expand": [
+      "Expand Past Due Covenants",
+      "Expand Past Due Covenants by Region",
+      "Expand Deferred Covenants",
+      "Expand Activity by Region",
+      "Expand Aging Severity by Region",
+      "Expand Covenants by Product Program",
+      "Expand Facility Covenant Risk"
+    ],
+    "overflow": false,
+    "title": "Covenants",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Aging Severity by Region",
+          "width": 387
+        },
+        {
+          "title": "Past Due Aging Mix",
+          "width": 797
+        },
+        {
+          "title": "Covenants by Product Program",
+          "width": 592
+        },
+        {
+          "title": "Covenants by Underwriter · Top 5",
+          "width": 592
+        },
+        {
+          "title": "What needs attention",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "ca",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Status distribution",
+      "Expand Accountable owner workload",
+      "Expand Product program distribution",
+      "Expand Upcoming due timeline"
+    ],
+    "overflow": false,
+    "title": "CA expiration",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "facility",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Past due aging",
+      "Expand Accountable owner workload",
+      "Expand Product program distribution",
+      "Expand Upcoming due timeline"
+    ],
+    "overflow": false,
+    "title": "Facility maturity",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "ccm",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Credit classification",
+      "Expand Accountable owner workload",
+      "Expand Product program distribution",
+      "Expand Action severity by region"
+    ],
+    "overflow": false,
+    "title": "CCM",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "insurance",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Status distribution",
+      "Expand Accountable owner workload",
+      "Expand Product program distribution",
+      "Expand Action severity by region"
+    ],
+    "overflow": false,
+    "title": "Insurance",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "appraisals",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Past due aging",
+      "Expand Accountable owner workload",
+      "Expand Product program distribution",
+      "Expand Upcoming due timeline"
+    ],
+    "overflow": false,
+    "title": "Appraisals",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Status mix",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "activity",
+    "charts": 4,
+    "error": "",
+    "expand": [
+      "Expand Activity by maker month",
+      "Expand Activity by region",
+      "Expand Activity by owner",
+      "Expand Activity types"
+    ],
+    "overflow": false,
+    "title": "Covenant activity",
+    "expanded": {
+      "cards": [
+        {
+          "title": "Region distribution",
+          "width": 592
+        },
+        {
+          "title": "Product concentration",
+          "width": 592
+        },
+        {
+          "title": "Accountable owners",
+          "width": 592
+        },
+        {
+          "title": "Maker month trend",
+          "width": 592
+        },
+        {
+          "title": "In this selection",
+          "width": 1206
+        }
+      ],
+      "overflow": false,
+      "table": true
+    }
+  },
+  {
+    "slug": "sources",
+    "charts": 0,
+    "error": "",
+    "expand": [],
+    "overflow": false,
+    "title": "Sources & definitions"
+  }
+]

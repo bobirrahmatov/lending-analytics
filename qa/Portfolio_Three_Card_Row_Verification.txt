@@ -1,0 +1,27 @@
+PORTFOLIO FIRST ROW — 27 OCTOBER 2026
+Build: 29e1f9fddb44
+
+Desktop row from 1200 px: CAs & Facilities Expiring (5 columns), New Facilities
+Approved (4), Portfolio coverage (3). Existing DOM and keyboard order retained.
+The previous 1600 px threshold left expiry on a separate row at 1280 px.
+Approval legend and coverage cells fit their narrower cards without horizontal
+scrolling. Medium and mobile layouts retain responsive wrapping/stacking.
+
+Expiry column point padding is 0.04 and group padding 0.28. Its fixed width cap
+was removed so paired bars scale together without large gaps. This applies only
+to facilityTrendChart; counting, source cohorts, periods and data are unchanged.
+
+LOCAL BROWSER CHECKS
+Eight existing responsive geometry cases pass: Summary and Portfolio at 390,
+900, 1280 and 1920 px. Includes card order, requested row pairs, narrower coverage,
+row edges, card overlap, page overflow, coverage table fit and expiry bar gaps.
+Observed intra-month gaps: 1–2 px at 390; 4 px at 900; 1–2 px at 1280;
+3–4 px at 1920. Month groups remain separated.
+At 1280 px, first-row widths are 488.5 / 386 / 283.5 px with matching top edges.
+Clicking an expiry bar expands its widget to the full 1206 px grid. Reset
+restores the three-card row. Screenshot: Portfolio-Three-Card-Row.png.
+See Layout_Regression_Browser.json for measured geometry and assertions.
+
+Generated-package verification passes 13 content-only Confluence fragments,
+26 matching scripts, one shared stylesheet and attachment size constraints.
+This validates the local preview, not the live Confluence host layout.

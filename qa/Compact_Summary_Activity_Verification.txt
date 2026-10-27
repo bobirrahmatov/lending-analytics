@@ -1,0 +1,28 @@
+COMPACT EXPANDED SUMMARY AND COVENANT ACTIVITY — 2026-10-27
+Build: d5bfcf537d66
+
+Changes
+- Shared expanded summary is ordinary compact text above KPIs, with the original methodology action retained at the far right (30px button, 16px icon). The former full-height summary card is removed; charts use paired responsive columns.
+- Search focus uses one rounded outline around the complete search field. The nested input has no separate square outline. Repeated table toolbar enhancement no longer reparents an already-positioned search field and therefore retains typing focus.
+- Covenant activity by month uses stacked event-count columns, replacing maker-month lines in the main Activity page and its expansions.
+- Cumulative deferred days shows only DEFERRED events, grouped by supplied durations. Zero remains zero, unknown/invalid durations stay separate, and no duration is inferred from event/deadline dates.
+- Activity supporting tables include supplied covenant deferred date, cumulative deferred days, original due date, remarks and all covenant fields through the common covenant column resolver.
+
+Source contract reviewed
+Covenants_Field_Parity.txt and CreditCovenantsData.normalize map Covenant Compliance to event_type, Maker Date to event_date/month, Covenant Deferred Date to deferred_date and Cumulative Deferred Days to cumulative_deferred_days. DEFERRED is a deferral event, not completion, clearance or proof of approved due-date extension. Counts remain events, not distinct covenants. No source data or production mappings were overwritten.
+
+Validation
+- test_activity_semantics.cjs: original field aliases; distinct Maker Date and deferred deadline; stacked totals; deferred-only cohort; null/zero duration handling; exact per-bar drill records.
+- test_all_pages.cjs: all 13 entrypoints and 58 expansions; summary before KPIs, preserved methodology, detailed table visibility, overlay controls and restoration. Trends is a Portfolio alias.
+- test_drill_down.cjs: 67 chart series, source/export scope, related dataset switching, search, empty/missing values and restoration.
+- test_shared_analysis_controls.cjs: repeated table toolbar enhancement retains focused input; common SVG/clear events, focus, disabled states, cleanup and overlay controls.
+- test_table_controls.cjs: combined filters, pagination, focus, row actions, semantic formatting and full matching exports.
+- Browser: Activity summary appears above KPIs with a 30px far-right method button. Monthly chart is stacked columns. Deferred-duration chart retains 115 illustrative deferred events across supplied durations.
+- Browser: typing R0001 retains input focus after table refresh. Computed inner outline is none; outer rounded field outline is solid. Activity table retains deferred-date and cumulative-duration columns. Clearing restores the full population.
+
+Evidence
+qa/Compact-Expanded-Summary.png
+qa/Rounded-Search-Focus.png
+
+Limits
+Local illustrative verification only. Live Confluence and Windows Access have not been executed. Missing activity fields remain unavailable; related-data linkage and source-date rules are unchanged.

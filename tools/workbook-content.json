@@ -1,0 +1,2878 @@
+{
+  "Source Catalogue": {
+    "headers": [
+      "Source",
+      "Worksheet / columns",
+      "Evidence",
+      "Grain",
+      "Dashboard use",
+      "Handling / limitation"
+    ],
+    "rows": [
+      [
+        "Portfolio regional extracts",
+        "NAM Report 1; EMEA/APAC first sheet",
+        "LPTM-Hub/PAL-ETL.html:7717",
+        "Facility \u00d7 source snapshot",
+        "TFA, OS, OSUC, classification, owners, maturity, new business",
+        "Exact regional field maps in Legacy Mappings; currency basis must be confirmed"
+      ],
+      [
+        "Portfolio_current.xlsx / .xlsb",
+        "Dashboard first sheet; ETL consolidated output",
+        "LPTM-Hub/PAL-dashboard.html:3356; PAL-ETL.html:5399",
+        "Facility snapshot",
+        "Portfolio / deep dive; facility maturity candidates",
+        "Legacy reader .xlsx and writer .xlsb mismatch. Replace with prepared JSON."
+      ],
+      [
+        "Covenants_current.xlsx / .xlsb",
+        "First worksheet",
+        "PAL-ETL.html:6827; covenants.js:1179",
+        "Covenant \u00d7 facility \u00d7 cycle \u00d7 source snapshot",
+        "Covenants, aging, due dates, accountable owner",
+        "Source covenant ID alone may repeat across facilities/cycles; preserve full native key."
+      ],
+      [
+        "Covenants_Activity_Report.xlsx",
+        "Covenant Compliance; Maker Date",
+        "covenants.js:1204; 1418",
+        "One maker event",
+        "Deferred / waived / deleted monthly events",
+        "Activity counts are events, not unique covenants. Add stable event IDs."
+      ],
+      [
+        "CCM_current.xlsx / .xlsb",
+        "First worksheet; regional variants",
+        "PAL-ETL.html:8367",
+        "Relationship \u00d7 CCM approval cycle",
+        "Classification, next month end, next approval, status",
+        "APAC Specialist maps to Underwriter; EMEA CA ID is not a client name."
+      ],
+      [
+        "CCM_previous.xlsx",
+        "Previous month snapshot",
+        "PAL-dashboard.html:3359",
+        "Relationship \u00d7 previous approval cycle",
+        "Legacy monthly comparison",
+        "Do not invent prior deltas without aligned historical cycles; previous CCM comparison not populated here."
+      ],
+      [
+        "ROTCE_current.xlsx",
+        "clientRelationshipId; variableRoTCE",
+        "PAL-ETL.html:6564",
+        "Relationship \u00d7 return reporting period",
+        "Relationship return, decimal fraction",
+        "Missing values remain null. Check uniqueness before a many-to-one join."
+      ],
+      [
+        "Product_Mapping.xlsx",
+        "PSE map and category map",
+        "PAL-ETL.html:7019-7130",
+        "Region \u00d7 raw program/type",
+        "Product, subprogram, PSE",
+        "EMEA uses Facility Type; NAM/APAC use Product Program Name for category lookup."
+      ],
+      [
+        "Regions_Mapping.xlsx",
+        "Control Unit mapping",
+        "PAL-ETL.html:6906-7014",
+        "Unique control unit",
+        "NAM / LATAM / IPB / SARG region mapping",
+        "Never silently infer NAM. Current pipeline imports all regions."
+      ],
+      [
+        "Portfolio_Aggregated_History.xlsx",
+        "Historical aggregates",
+        "PAL-ETL.html:7190; PAL-dashboard.html:3368",
+        "Date \u00d7 region \u00d7 product \u00d7 subproduct \u00d7 commitment \u00d7 PSE",
+        "Stock trends",
+        "Legacy history has no staff grain. Owner/team filters unavailable in trends."
+      ],
+      [
+        "CA workflow extract",
+        "Not supplied; proposed input",
+        "Screenshots 7/8; portfolio has expiry only",
+        "CA \u00d7 approval cycle",
+        "Pending authorization versus upcoming expiry",
+        "Expiry alone cannot establish pending auth. CA extract must be deduplicated across facilities."
+      ],
+      [
+        "Insurance extract",
+        "Not supplied; proposed input",
+        "Screenshots 12/13",
+        "Policy/requirement \u00d7 facility \u00d7 renewal cycle",
+        "Awaiting certificate; pending review; two aging buckets",
+        "Facility ID alone is not a policy key. Named source file/owner required before production."
+      ],
+      [
+        "Appraisal extract",
+        "Not supplied; proposed input",
+        "Screenshots 14/28",
+        "Collateral \u00d7 valuation requirement \u00d7 cycle",
+        "Appraisal due date, specialist and delinquency",
+        "Collateral/requirement key is needed; not every facility row is one appraisal."
+      ],
+      [
+        "Owner and team mapping",
+        "Approved local mapping table",
+        "Proposed canonical owner map",
+        "One source alias \u2192 stable staff identity",
+        "Cross-domain workload",
+        "Do not join names by fuzzy text; one accountable owner per obligation."
+      ]
+    ],
+    "widths": [
+      34,
+      48,
+      53,
+      47,
+      65,
+      90
+    ]
+  },
+  "Field Dictionary": {
+    "headers": [
+      "Entity",
+      "Field",
+      "Type",
+      "Required",
+      "Producer",
+      "Definition"
+    ],
+    "rows": [
+      [
+        "Monitoring",
+        "item_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Unique category + source + native obligation/cycle key; one row per monitoring obligation."
+      ],
+      [
+        "Monitoring",
+        "category",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS."
+      ],
+      [
+        "Monitoring",
+        "source_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Approved source identifier; foreign key to Sources.source_id."
+      ],
+      [
+        "Monitoring",
+        "source_record_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable source key; never a worksheet row number."
+      ],
+      [
+        "Monitoring",
+        "as_of_date",
+        "date",
+        "Yes",
+        "Source / mapping",
+        "Business reporting date from this source, not publication date."
+      ],
+      [
+        "Monitoring",
+        "region",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+      ],
+      [
+        "Monitoring",
+        "owner_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+      ],
+      [
+        "Monitoring",
+        "owner_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Display name from controlled owner mapping."
+      ],
+      [
+        "Monitoring",
+        "team_lead",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled team lead display name; UNASSIGNED if unresolved."
+      ],
+      [
+        "Monitoring",
+        "product",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled product program; UNMAPPED if unresolved."
+      ],
+      [
+        "Monitoring",
+        "relationship_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "CARE or approved relationship identifier, stored as text."
+      ],
+      [
+        "Monitoring",
+        "relationship_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Relationship display name; never substitute a CA ID."
+      ],
+      [
+        "Monitoring",
+        "owner_role",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "UNDERWRITER or SPECIALIST; one accountable owner per item."
+      ],
+      [
+        "Monitoring",
+        "ca_id",
+        "text",
+        "No",
+        "Source / mapping",
+        "CA identifier, deduplicated by approval cycle for CA monitoring."
+      ],
+      [
+        "Monitoring",
+        "facility_id",
+        "text",
+        "No",
+        "Source / mapping",
+        "Facility identifier; not itself a unique insurance/appraisal key."
+      ],
+      [
+        "Monitoring",
+        "covenant_id",
+        "text",
+        "No",
+        "Source / mapping",
+        "Native covenant identifier; required for COVENANTS."
+      ],
+      [
+        "Monitoring",
+        "status",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN."
+      ],
+      [
+        "Monitoring",
+        "due_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Original contractual due/expiry date; required for date-based categories."
+      ],
+      [
+        "Monitoring",
+        "deferred_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Approved deferred due date; used only when deferral_approved is true."
+      ],
+      [
+        "Monitoring",
+        "deferral_approved",
+        "boolean",
+        "Yes",
+        "Source / mapping",
+        "Explicit source approval; a date alone does not authorize a deferral."
+      ],
+      [
+        "Monitoring",
+        "effective_due_date",
+        "date",
+        "No",
+        "Access output",
+        "Access output: approved deferral date or original due date."
+      ],
+      [
+        "Monitoring",
+        "days_past_due",
+        "integer",
+        "No",
+        "Access output",
+        "Access output: nonnegative days as of source date; null if no date."
+      ],
+      [
+        "Monitoring",
+        "aging_bucket",
+        "text",
+        "Yes",
+        "Access output",
+        "Access output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN."
+      ],
+      [
+        "Monitoring",
+        "action_required",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Access output: actionable under the documented category rule."
+      ],
+      [
+        "Monitoring",
+        "critical",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Access output: category escalation threshold; rule version attached to release."
+      ],
+      [
+        "Monitoring",
+        "coming_due",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Access output: COMING_DUE in inclusive next 3 calendar months."
+      ],
+      [
+        "Monitoring",
+        "classification",
+        "text",
+        "No",
+        "Source / mapping",
+        "PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN."
+      ],
+      [
+        "Monitoring",
+        "next_month_end",
+        "date",
+        "No",
+        "Source / mapping",
+        "CCM data month end, separate from approval due date."
+      ],
+      [
+        "Monitoring",
+        "expired_bucket",
+        "text",
+        "No",
+        "Source / mapping",
+        "Insurance source expiration bucket, kept separately from deficiency aging."
+      ],
+      [
+        "Monitoring",
+        "deficiency_bucket",
+        "text",
+        "No",
+        "Source / mapping",
+        "Insurance source deficiency bucket; never overwrite expiration bucket."
+      ],
+      [
+        "Monitoring",
+        "description",
+        "text",
+        "No",
+        "Source / mapping",
+        "Covenant or monitoring description; internal covenants excluded in Access."
+      ],
+      [
+        "Monitoring",
+        "remarks",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source remarks; internal-prefixed covenant remarks excluded in Access."
+      ],
+      [
+        "Monitoring",
+        "origination_unit",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source originating unit, distinct from Control Unit."
+      ],
+      [
+        "Monitoring",
+        "control_unit",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source Control Unit used for region mapping."
+      ],
+      [
+        "Monitoring",
+        "ou_expense_code",
+        "text",
+        "No",
+        "Source / mapping",
+        "Origination Unit expense code; text preserves leading zeros."
+      ],
+      [
+        "Monitoring",
+        "cu_expense_code",
+        "text",
+        "No",
+        "Source / mapping",
+        "Control Unit expense code; text preserves leading zeros."
+      ],
+      [
+        "Monitoring",
+        "borrowers_name",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source borrower display name, distinct from relationship."
+      ],
+      [
+        "Monitoring",
+        "product_underwriter",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source product underwriter; not counted as a second owner."
+      ],
+      [
+        "Monitoring",
+        "facility_type",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source facility type."
+      ],
+      [
+        "Monitoring",
+        "frequency",
+        "text",
+        "No",
+        "Source / mapping",
+        "Covenant periodicity or CCM frequency."
+      ],
+      [
+        "Monitoring",
+        "source_aging_bucket",
+        "text",
+        "No",
+        "Source / mapping",
+        "Original source past due category for reconciliation against calculated aging."
+      ],
+      [
+        "Monitoring",
+        "day45_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Source 45 Days Past Due Date; retained separately from computed day count."
+      ],
+      [
+        "Monitoring",
+        "pal_covenant_bucket",
+        "text",
+        "No",
+        "Access output",
+        "PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date."
+      ],
+      [
+        "Monitoring",
+        "pal_due30",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window."
+      ],
+      [
+        "Monitoring",
+        "ccm_status",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle."
+      ],
+      [
+        "Portfolio",
+        "facility_key",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Unique source + facility identifier at the selected snapshot."
+      ],
+      [
+        "Portfolio",
+        "source_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Approved source identifier; foreign key to Sources.source_id."
+      ],
+      [
+        "Portfolio",
+        "source_record_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable source key; never a worksheet row number."
+      ],
+      [
+        "Portfolio",
+        "as_of_date",
+        "date",
+        "Yes",
+        "Source / mapping",
+        "Business reporting date from this source, not publication date."
+      ],
+      [
+        "Portfolio",
+        "region",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+      ],
+      [
+        "Portfolio",
+        "owner_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+      ],
+      [
+        "Portfolio",
+        "owner_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Display name from controlled owner mapping."
+      ],
+      [
+        "Portfolio",
+        "team_lead",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled team lead display name; UNASSIGNED if unresolved."
+      ],
+      [
+        "Portfolio",
+        "product",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled product program; UNMAPPED if unresolved."
+      ],
+      [
+        "Portfolio",
+        "relationship_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "CARE or approved relationship identifier, stored as text."
+      ],
+      [
+        "Portfolio",
+        "relationship_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Relationship display name; never substitute a CA ID."
+      ],
+      [
+        "Portfolio",
+        "facility_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Native facility identifier as text."
+      ],
+      [
+        "Portfolio",
+        "parent_facility_id",
+        "text",
+        "No",
+        "Source / mapping",
+        "Parent identifier for reconciliation; do not add parent and child balances twice."
+      ],
+      [
+        "Portfolio",
+        "ca_id",
+        "text",
+        "No",
+        "Source / mapping",
+        "Credit approval ID."
+      ],
+      [
+        "Portfolio",
+        "commitment",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "COMMITTED or UNCOMMITTED; unknown values block publication."
+      ],
+      [
+        "Portfolio",
+        "pse",
+        "boolean",
+        "Yes",
+        "Source / mapping",
+        "Controlled PSE classification from Product_Mapping."
+      ],
+      [
+        "Portfolio",
+        "sft",
+        "boolean",
+        "Yes",
+        "Source / mapping",
+        "Controlled SFT classification; do not infer from blank fields."
+      ],
+      [
+        "Portfolio",
+        "classification",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Canonical credit classification code."
+      ],
+      [
+        "Portfolio",
+        "tfa",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "Total facility amount in USD units; reporting basis must be confirmed."
+      ],
+      [
+        "Portfolio",
+        "direct_os",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "Direct outstanding in USD units."
+      ],
+      [
+        "Portfolio",
+        "contingent_os",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "Contingent outstanding in USD units."
+      ],
+      [
+        "Portfolio",
+        "pse_os",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "Pre-settlement exposure outstanding in USD units."
+      ],
+      [
+        "Portfolio",
+        "osuc",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed in Access."
+      ],
+      [
+        "Portfolio",
+        "total_os",
+        "number",
+        "Yes",
+        "Access output",
+        "Access output: direct_os + contingent_os + pse_os."
+      ],
+      [
+        "Portfolio",
+        "unused_commitment",
+        "number",
+        "Yes",
+        "Source / mapping",
+        "Source supplied for Americas; computed for EMEA/APAC."
+      ],
+      [
+        "Portfolio",
+        "total_undrawn",
+        "number",
+        "Yes",
+        "Access output",
+        "Access output: tfa minus total_os; negative values retained for review."
+      ],
+      [
+        "Portfolio",
+        "rotce",
+        "number",
+        "No",
+        "Source / mapping",
+        "Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null."
+      ],
+      [
+        "Portfolio",
+        "maturity_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Facility maturity; null for demand with maturity_basis DEMAND."
+      ],
+      [
+        "Portfolio",
+        "maturity_basis",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "DATED, DEMAND or UNKNOWN."
+      ],
+      [
+        "Portfolio",
+        "ca_expiration_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "CA expiration date; does not establish authorization workflow status."
+      ],
+      [
+        "Portfolio",
+        "origination_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Primary new-business date."
+      ],
+      [
+        "Portfolio",
+        "renewal_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Fallback new-business date when origination absent."
+      ],
+      [
+        "Portfolio",
+        "ytd_new",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Access output: non-PSE business date in reporting year to as_of_date."
+      ],
+      [
+        "Portfolio",
+        "mtd_new",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Access output: non-PSE business date in reporting month to as_of_date."
+      ],
+      [
+        "Portfolio",
+        "product_subprogram",
+        "text",
+        "No",
+        "Source / mapping",
+        "Approved product subprogram from Product_Mapping category mapping."
+      ],
+      [
+        "Portfolio",
+        "management_status",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source DM/CM management status."
+      ],
+      [
+        "Portfolio",
+        "facility_type",
+        "text",
+        "No",
+        "Source / mapping",
+        "Original facility type for product lineage."
+      ],
+      [
+        "Portfolio",
+        "risk_category",
+        "text",
+        "No",
+        "Source / mapping",
+        "Original risk category; NAM Clearing/Notation/Settlement excluded upstream in Access."
+      ],
+      [
+        "Portfolio",
+        "control_unit",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source Control Unit used for region mapping."
+      ],
+      [
+        "Portfolio",
+        "product_underwriter",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source product underwriter; not an additional accountable workload owner."
+      ],
+      [
+        "Portfolio",
+        "facility_first_approval_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Original facility approval date, kept separately from origination."
+      ],
+      [
+        "Portfolio",
+        "ca_review",
+        "text",
+        "No",
+        "Source / mapping",
+        "Canonical Yes or No from EMEA CA Review; required for EMEA CA eligibility."
+      ],
+      [
+        "Portfolio",
+        "loan_spread",
+        "number",
+        "No",
+        "Source / mapping",
+        "Loan spread in basis points, matching original PAL thresholds 70 / 125; 100 bps = 1 percentage point."
+      ],
+      [
+        "Portfolio",
+        "pricing_exception",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source pricing exception indicator."
+      ],
+      [
+        "Portfolio",
+        "total_comm_exposure",
+        "number",
+        "No",
+        "Source / mapping",
+        "Source committed exposure in USD; retained for OSUC reconciliation."
+      ],
+      [
+        "Portfolio",
+        "reporting_currency",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "USD; amounts must be translated upstream using an approved FX basis."
+      ],
+      [
+        "Portfolio",
+        "unused_uncommitted",
+        "number",
+        "Yes",
+        "Access output",
+        "Total undrawn minus unused commitment; PAL overview card."
+      ],
+      [
+        "Portfolio",
+        "pal_ca_expired",
+        "boolean",
+        "Yes",
+        "Access output",
+        "CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships."
+      ],
+      [
+        "Portfolio",
+        "pal_ca_month",
+        "text",
+        "No",
+        "Access output",
+        "Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null."
+      ],
+      [
+        "Portfolio",
+        "pal_facility_expired",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Facility maturity before report date; CM and DM both included."
+      ],
+      [
+        "Portfolio",
+        "pal_facility_month",
+        "text",
+        "No",
+        "Access output",
+        "Facility expiry month in reporting month and next two months, date >= report date; otherwise null."
+      ],
+      [
+        "Portfolio",
+        "pal_approval_period",
+        "text",
+        "No",
+        "Access output",
+        "CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null."
+      ],
+      [
+        "Portfolio",
+        "pal_pipeline_bucket",
+        "text",
+        "No",
+        "Access output",
+        "1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null."
+      ],
+      [
+        "Portfolio",
+        "pal_spread_bucket",
+        "text",
+        "No",
+        "Access output",
+        "SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null."
+      ],
+      [
+        "Portfolio",
+        "pal_spread_weight",
+        "number",
+        "No",
+        "Access output",
+        "Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread."
+      ],
+      [
+        "Portfolio",
+        "pal_spread_os",
+        "number",
+        "Yes",
+        "Access output",
+        "Direct OS denominator for valid-spread SBL; zero otherwise."
+      ],
+      [
+        "Portfolio",
+        "pal_pricing_exception",
+        "boolean",
+        "Yes",
+        "Access output",
+        "SBL Direct OS >0 and pricing exception Yes."
+      ],
+      [
+        "Portfolio",
+        "pal_prior_ytd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback in prior year through same month/day."
+      ],
+      [
+        "Portfolio",
+        "pal_prior_mtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback in prior month through same day; clamped to month end."
+      ],
+      [
+        "Portfolio",
+        "pal_new_ytd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_approved_ytd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_pending_ytd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Eligible pending closure first approval within YTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_new_qtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_approved_qtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_pending_qtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Eligible pending closure first approval within QTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_new_mtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_approved_mtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_pending_mtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Eligible pending closure first approval within MTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_new_wtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_approved_wtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_pending_wtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Eligible pending closure first approval within WTD through report date. Weeks start Monday."
+      ],
+      [
+        "Portfolio",
+        "pal_prior_qtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end."
+      ],
+      [
+        "Portfolio",
+        "pal_prior_wtd",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end."
+      ],
+      [
+        "Portfolio",
+        "rotce_period",
+        "text",
+        "No",
+        "Source / mapping",
+        "Source ROTCE reporting period, displayed independently of portfolio report date."
+      ],
+      [
+        "History",
+        "history_id",
+        "text",
+        "Yes",
+        "Access output",
+        "Unique report date + facility key for daily snapshots; legacy aggregate IDs are retained."
+      ],
+      [
+        "History",
+        "as_of_date",
+        "date",
+        "Yes",
+        "Access output",
+        "Historical snapshot date; stocks must not be summed across dates."
+      ],
+      [
+        "History",
+        "region",
+        "text",
+        "Yes",
+        "Access output",
+        "Canonical region."
+      ],
+      [
+        "History",
+        "product",
+        "text",
+        "Yes",
+        "Access output",
+        "Canonical product."
+      ],
+      [
+        "History",
+        "commitment",
+        "text",
+        "Yes",
+        "Access output",
+        "COMMITTED or UNCOMMITTED."
+      ],
+      [
+        "History",
+        "pse",
+        "boolean",
+        "Yes",
+        "Access output",
+        "Canonical PSE flag."
+      ],
+      [
+        "History",
+        "tfa",
+        "number",
+        "Yes",
+        "Access output",
+        "Sum of prepared facility amounts, USD units."
+      ],
+      [
+        "History",
+        "total_os",
+        "number",
+        "Yes",
+        "Access output",
+        "Sum of prepared total outstanding, USD units."
+      ],
+      [
+        "History",
+        "osuc",
+        "number",
+        "Yes",
+        "Access output",
+        "Sum of prepared OSUC, USD units."
+      ],
+      [
+        "History",
+        "facility_count",
+        "integer",
+        "Yes",
+        "Access output",
+        "Distinct facilities at this exact grain; nonadditive if grain overlaps."
+      ],
+      [
+        "History",
+        "facility_key",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: facility_key. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "owner_id",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: owner_id. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "owner_name",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: owner_name. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "team_lead",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: team_lead. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "management_status",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: management_status. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "product_subprogram",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: product_subprogram. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "facility_type",
+        "text",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: facility_type. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "unused_commitment",
+        "number",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: unused_commitment. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "unused_uncommitted",
+        "number",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: unused_uncommitted. Legacy aggregated history may leave this null."
+      ],
+      [
+        "History",
+        "comparison_ready",
+        "boolean",
+        "No",
+        "Access output",
+        "Daily comparison snapshot: comparison_ready. Legacy aggregated history may leave this null."
+      ],
+      [
+        "Activity",
+        "event_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Unique source event ID; one row per event, not one per covenant."
+      ],
+      [
+        "Activity",
+        "source_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Approved source identifier; foreign key to Sources.source_id."
+      ],
+      [
+        "Activity",
+        "source_record_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable source key; never a worksheet row number."
+      ],
+      [
+        "Activity",
+        "as_of_date",
+        "date",
+        "Yes",
+        "Source / mapping",
+        "Business reporting date from this source, not publication date."
+      ],
+      [
+        "Activity",
+        "region",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+      ],
+      [
+        "Activity",
+        "owner_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+      ],
+      [
+        "Activity",
+        "owner_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Display name from controlled owner mapping."
+      ],
+      [
+        "Activity",
+        "team_lead",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled team lead display name; UNASSIGNED if unresolved."
+      ],
+      [
+        "Activity",
+        "product",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Controlled product program; UNMAPPED if unresolved."
+      ],
+      [
+        "Activity",
+        "relationship_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "CARE or approved relationship identifier, stored as text."
+      ],
+      [
+        "Activity",
+        "relationship_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Relationship display name; never substitute a CA ID."
+      ],
+      [
+        "Activity",
+        "covenant_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Covenant key associated with event."
+      ],
+      [
+        "Activity",
+        "event_date",
+        "date",
+        "Yes",
+        "Source / mapping",
+        "Maker date from activity source."
+      ],
+      [
+        "Activity",
+        "month",
+        "text",
+        "Yes",
+        "Access output",
+        "Access output: event_date formatted YYYY-MM."
+      ],
+      [
+        "Activity",
+        "event_type",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED in Access."
+      ],
+      [
+        "Sources",
+        "source_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Unique source/feed identifier."
+      ],
+      [
+        "Sources",
+        "domain",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Monitoring category, PORTFOLIO, HISTORY or ACTIVITY."
+      ],
+      [
+        "Sources",
+        "source_name",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Human-readable extract name."
+      ],
+      [
+        "Sources",
+        "source_file",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Actual original filename or approved report reference."
+      ],
+      [
+        "Sources",
+        "as_of_date",
+        "date",
+        "Yes",
+        "Source / mapping",
+        "Source business date; one per selected source snapshot."
+      ],
+      [
+        "Sources",
+        "coverage",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "ALL_OBLIGATIONS or EXCEPTIONS_ONLY; an exceptions-only feed cannot support clearance rate."
+      ],
+      [
+        "Sources",
+        "record_count",
+        "integer",
+        "Yes",
+        "Access output",
+        "Reconciled published row count for this source, after exclusions."
+      ],
+      [
+        "Sources",
+        "source_owner",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Accountable source provider."
+      ],
+      [
+        "Sources",
+        "quality_note",
+        "text",
+        "No",
+        "Source / mapping",
+        "Specific limitation, stale date or mapping issue; not a generic quality score."
+      ],
+      [
+        "Documents",
+        "document_id",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Stable document ID."
+      ],
+      [
+        "Documents",
+        "category",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Monitoring category or ALL."
+      ],
+      [
+        "Documents",
+        "title",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Document title."
+      ],
+      [
+        "Documents",
+        "url",
+        "text",
+        "Yes",
+        "Source / mapping",
+        "Approved https or same-origin relative URL; javascript/file/data URLs rejected."
+      ],
+      [
+        "Documents",
+        "as_of_date",
+        "date",
+        "No",
+        "Source / mapping",
+        "Document reporting date."
+      ],
+      [
+        "Monitoring",
+        "banker_name",
+        "text",
+        "No",
+        "Source / mapping",
+        "Explicit source banker name; do not substitute underwriter. Match facilities by region, relationship ID, facility ID and report date."
+      ],
+      [
+        "Portfolio",
+        "banker_name",
+        "text",
+        "No",
+        "Source / mapping",
+        "Explicit source banker name; do not substitute underwriter. Match facilities by region, relationship ID, facility ID and report date."
+      ]
+    ],
+    "widths": [
+      19,
+      27,
+      14,
+      12,
+      22,
+      115
+    ]
+  },
+  "Legacy Mappings": {
+    "headers": [
+      "Regional mapper",
+      "Legacy output field",
+      "Existing source expression",
+      "Evidence"
+    ],
+    "rows": [
+      [
+        "mapPortfolioRowEMEA",
+        "Report_Date",
+        "this.formatDateSafe(reportDate),",
+        "LPTM-Hub/PAL-ETL.html:8030"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Region",
+        "'EMEA',",
+        "LPTM-Hub/PAL-ETL.html:8031"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Facility_ID",
+        "row['Fac ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8032"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Parent_Facility_ID",
+        "row['Parent Facility ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8033"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Product_Program",
+        "categoryLookup.productProgram,",
+        "LPTM-Hub/PAL-ETL.html:8034"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Product_Sub_Program",
+        "categoryLookup.productSubProgram,",
+        "LPTM-Hub/PAL-ETL.html:8035"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Management_Status",
+        "row['DM/CM Flag'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8036"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Facility_Type",
+        "facilityType,",
+        "LPTM-Hub/PAL-ETL.html:8037"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Committed_Uncommitted",
+        "committedFacility === 'YES' ? 'Committed' : 'Uncommitted',",
+        "LPTM-Hub/PAL-ETL.html:8038"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Risk_Category",
+        "'',",
+        "LPTM-Hub/PAL-ETL.html:8039"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Relationship_ID",
+        "row['Relationship ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8040"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Relationship_Name",
+        "row['EG Title'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8041"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "CAID",
+        "row['CA ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8042"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Lead_Underwriter",
+        "leadUnderwriter,",
+        "LPTM-Hub/PAL-ETL.html:8043"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Underwriting_Team_Lead",
+        "this.getEMEAUnderwritingTeamLead(leadUnderwriter),",
+        "LPTM-Hub/PAL-ETL.html:8044"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Control_Unit",
+        "row['Control Unit'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8045"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Fac_Amount",
+        "this.parseNumeric(row['Approved Line Amount']),",
+        "LPTM-Hub/PAL-ETL.html:8046"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Direct_OS",
+        "this.parseNumeric(row['Total Direct OS']),",
+        "LPTM-Hub/PAL-ETL.html:8047"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Contingent_OS",
+        "this.parseNumeric(row['Total Cont OS']),",
+        "LPTM-Hub/PAL-ETL.html:8048"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "PSE_OS",
+        "this.parseNumeric(row['Total FX / Derivatives OS']),",
+        "LPTM-Hub/PAL-ETL.html:8049"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Total_Comm_Exposure",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8050"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Maturity_Date",
+        "this.formatDateSafe(row['Facility Maturity Date']),",
+        "LPTM-Hub/PAL-ETL.html:8051"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Product_Underwriter",
+        "leadUnderwriter,",
+        "LPTM-Hub/PAL-ETL.html:8052"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "CA_Expiration_Date",
+        "this.formatDateSafe(row['CA Maturity Date']),",
+        "LPTM-Hub/PAL-ETL.html:8053"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Credit_Classification",
+        "this.normalizeCreditClassification(row['Credit Classification']),",
+        "LPTM-Hub/PAL-ETL.html:8054"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "PSE_non_PSE",
+        "this.determinePSE(facilityType, '', 'emea', pseMappingData),",
+        "LPTM-Hub/PAL-ETL.html:8055"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "SFT_Facility",
+        "this.determineSFT('', facilityType, 'emea'),",
+        "LPTM-Hub/PAL-ETL.html:8056"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Facility_First_Approval_Date",
+        "this.formatDateSafe(row['Facility First Approval Date']),",
+        "LPTM-Hub/PAL-ETL.html:8057"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Origination_Date",
+        "this.formatDateSafe(row['Origination Date']),",
+        "LPTM-Hub/PAL-ETL.html:8058"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Renewal_Date",
+        "this.formatDateSafe(row['Renewal Date']),",
+        "LPTM-Hub/PAL-ETL.html:8059"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "CA_Review",
+        "caReview,",
+        "LPTM-Hub/PAL-ETL.html:8060"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Loan_Spread",
+        "row['Fac Int Spread Percent'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8061"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Pricing_Exception",
+        "row['Pricing Exception'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8062"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "OSUC",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8063"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Total_OS",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8064"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Total_Unused_Commitment",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8065"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "Total_Undrawn",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8066"
+      ],
+      [
+        "mapPortfolioRowEMEA",
+        "ROTCE",
+        "''",
+        "LPTM-Hub/PAL-ETL.html:8067"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Report_Date",
+        "this.formatDateSafe(reportDate),",
+        "LPTM-Hub/PAL-ETL.html:8086"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Region",
+        "'APAC',",
+        "LPTM-Hub/PAL-ETL.html:8087"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Facility_ID",
+        "row['Facility Id'] || row['Facility ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8088"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Parent_Facility_ID",
+        "row['Facility Id'] || row['Facility ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8089"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Product_Program",
+        "categoryLookup.productProgram,",
+        "LPTM-Hub/PAL-ETL.html:8090"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Product_Sub_Program",
+        "categoryLookup.productSubProgram,",
+        "LPTM-Hub/PAL-ETL.html:8091"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Management_Status",
+        "row['Management status'] || row['Management Status'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8092"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Facility_Type",
+        "facilityType,",
+        "LPTM-Hub/PAL-ETL.html:8093"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Committed_Uncommitted",
+        "legalStatus === 'C' ? 'Committed' : 'Uncommitted',",
+        "LPTM-Hub/PAL-ETL.html:8094"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Risk_Category",
+        "row['Risk Category'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8095"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Relationship_ID",
+        "row['Relationship Id'] || row['Relationship ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8096"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Relationship_Name",
+        "'',",
+        "LPTM-Hub/PAL-ETL.html:8097"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "CAID",
+        "row['CA No.'] || row['CA No'] || row['CANo'] || row['CANo.'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8098"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Lead_Underwriter",
+        "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter Name']),",
+        "LPTM-Hub/PAL-ETL.html:8099"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Underwriting_Team_Lead",
+        "this.normalizeUnderwriterName(row['Team Lead']),",
+        "LPTM-Hub/PAL-ETL.html:8100"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Control_Unit",
+        "row['Control unit'] || row['Control Unit'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8101"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Fac_Amount",
+        "this.parseNumeric(row['TFA (USD)'] || row['TFA(USD)'] || row['TFA']),",
+        "LPTM-Hub/PAL-ETL.html:8102"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Direct_OS",
+        "this.parseNumeric(row['Direct (USD)'] || row['Direct(USD)'] || row['Direct']),",
+        "LPTM-Hub/PAL-ETL.html:8103"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Contingent_OS",
+        "this.parseNumeric(row['Contingent (USD)'] || row['Contingent(USD)'] || row['Contingent']),",
+        "LPTM-Hub/PAL-ETL.html:8104"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "PSE_OS",
+        "this.parseNumeric(row['PSE (USD)'] || row['PSE(USD)'] || row['PSE']),",
+        "LPTM-Hub/PAL-ETL.html:8105"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Total_Comm_Exposure",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8106"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Maturity_Date",
+        "this.formatDateSafe(row['Mainline Maturity Date']),",
+        "LPTM-Hub/PAL-ETL.html:8107"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Product_Underwriter",
+        "row['Investment Finance Lead Underwriter Name'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8108"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "CA_Expiration_Date",
+        "this.formatDateSafe(row['CA Expiration Date']),",
+        "LPTM-Hub/PAL-ETL.html:8109"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Credit_Classification",
+        "this.normalizeCreditClassification(row['Classification']),",
+        "LPTM-Hub/PAL-ETL.html:8110"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "PSE_non_PSE",
+        "this.determinePSE(facilityType, '', 'apac', pseMappingData),",
+        "LPTM-Hub/PAL-ETL.html:8111"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "SFT_Facility",
+        "this.determineSFT('', facilityType, 'apac'),",
+        "LPTM-Hub/PAL-ETL.html:8112"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Facility_First_Approval_Date",
+        "'',",
+        "LPTM-Hub/PAL-ETL.html:8113"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Origination_Date",
+        "this.formatDateSafe(row['Original Origination Date']),",
+        "LPTM-Hub/PAL-ETL.html:8114"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Renewal_Date",
+        "this.formatDateSafe(row['Renewal Date']),",
+        "LPTM-Hub/PAL-ETL.html:8115"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "CA_Review",
+        "'',",
+        "LPTM-Hub/PAL-ETL.html:8116"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Loan_Spread",
+        "row['Loan Spread'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8117"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Pricing_Exception",
+        "row['Pricing Exception'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8118"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "OSUC",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8119"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Total_OS",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8120"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Total_Unused_Commitment",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8121"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "Total_Undrawn",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8122"
+      ],
+      [
+        "mapPortfolioRowAPAC",
+        "ROTCE",
+        "''",
+        "LPTM-Hub/PAL-ETL.html:8123"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Report_Date",
+        "this.formatDateSafe(reportDate),",
+        "LPTM-Hub/PAL-ETL.html:8171"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Region",
+        "mappedRegion,",
+        "LPTM-Hub/PAL-ETL.html:8172"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Facility_ID",
+        "row['Facility ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8173"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Parent_Facility_ID",
+        "row['GFRN'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8174"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Product_Program",
+        "categoryLookup.productProgram,",
+        "LPTM-Hub/PAL-ETL.html:8175"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Product_Sub_Program",
+        "categoryLookup.productSubProgram,",
+        "LPTM-Hub/PAL-ETL.html:8176"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Management_Status",
+        "row['Management Status'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8177"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Facility_Type",
+        "facilityType,",
+        "LPTM-Hub/PAL-ETL.html:8178"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Committed_Uncommitted",
+        "committedFlag.includes('uncommitted') ? 'Uncommitted' : 'Committed',",
+        "LPTM-Hub/PAL-ETL.html:8179"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Risk_Category",
+        "row['Risk Category'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8180"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Relationship_ID",
+        "row['CARE Relationship ID'] || row['Relationship ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8181"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Relationship_Name",
+        "row['Relationship Short Name'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8182"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "CAID",
+        "row['CA ID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8183"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Lead_Underwriter",
+        "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter']),",
+        "LPTM-Hub/PAL-ETL.html:8184"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Underwriting_Team_Lead",
+        "this.normalizeUnderwriterName(row['Investment Finance Underwriting Team Lead']),",
+        "LPTM-Hub/PAL-ETL.html:8185"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Control_Unit",
+        "row['Control Unit'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8186"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Fac_Amount",
+        "this.parseNumeric(row['Total Reported Facility Amount'] || 0),",
+        "LPTM-Hub/PAL-ETL.html:8187"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Direct_OS",
+        "this.parseNumeric(row['Direct O/S (Fac Lvl)'] || row['Direct O/S']),",
+        "LPTM-Hub/PAL-ETL.html:8188"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Contingent_OS",
+        "this.parseNumeric(row['Contingent O/S (Fac Lvl)'] || row['Contingent O/S']),",
+        "LPTM-Hub/PAL-ETL.html:8189"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "PSE_OS",
+        "this.parseNumeric(row['PSE O/S (Fac Lvl)'] || row['PSE O/S']),",
+        "LPTM-Hub/PAL-ETL.html:8190"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Total_Comm_Exposure",
+        "this.parseNumeric( row['Total Comm Exposure (Fac Lvl)'] || row['Total Comm Exposure'] || row['Total Comm Exposure (Fav Lvl)'] || // Check for typo row['TotalCommExposure(FacLvl)'] || row['Total Committed Exposure (Fac Lvl)'] || 0",
+        "LPTM-Hub/PAL-ETL.html:8191"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Maturity_Date",
+        "this.formatDateSafe(row['Maturity Date Or Demand'] || row['Maturity Date']),",
+        "LPTM-Hub/PAL-ETL.html:8199"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Product_Underwriter",
+        "row['Investment Finance Product Underwriter'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8200"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "CA_Expiration_Date",
+        "this.formatDateSafe(row['CA Expiration Date']),",
+        "LPTM-Hub/PAL-ETL.html:8201"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Credit_Classification",
+        "this.normalizeCreditClassification(row['Credit Classification']),",
+        "LPTM-Hub/PAL-ETL.html:8202"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "PSE_non_PSE",
+        "this.determinePSE(facilityType, productProgram, 'nam', pseMappingData),",
+        "LPTM-Hub/PAL-ETL.html:8203"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "SFT_Facility",
+        "this.determineSFT(row['SFT Treatment'] || '', facilityType, 'nam'),",
+        "LPTM-Hub/PAL-ETL.html:8204"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Facility_First_Approval_Date",
+        "this.formatDateSafe( this.getColumnValue(row, ['Facility Approval Date', 'Facility First Approval Date', 'First Approval Date', 'Facility_Approval_Date', 'FacilityApprovalDate', 'Fac Approval Date'])",
+        "LPTM-Hub/PAL-ETL.html:8205"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Origination_Date",
+        "this.formatDateSafe( this.getColumnValue(row, ['Origination Date', 'OriginationDate', 'Origination_Date', 'Original Origination Date', 'Orig Date'])",
+        "LPTM-Hub/PAL-ETL.html:8209"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Renewal_Date",
+        "this.formatDateSafe(row['Renewal Date']),",
+        "LPTM-Hub/PAL-ETL.html:8213"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "CA_Review",
+        "'',",
+        "LPTM-Hub/PAL-ETL.html:8214"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Loan_Spread",
+        "row['Spread'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8215"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Pricing_Exception",
+        "row['Pricing Exception Y/N (Pre)'] || '',",
+        "LPTM-Hub/PAL-ETL.html:8216"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "OSUC",
+        "this.parseNumeric( row['Total Comm Exposure (Fac Lvl)'] || row['Total Comm Exposure'] || row['Total Comm Exposure (Fav Lvl)'] || // Check for typo: Fav vs Fac row['TotalCommExposure(FacLvl)'] || row['TotalCommExposure'] || row['Total Committed Exposure (Fac Lvl)'] || row['Total Committed Exposure'] || row['OSUC'] || 0",
+        "LPTM-Hub/PAL-ETL.html:8217"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Total_OS",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8228"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Total_Unused_Commitment",
+        "this.parseNumeric(row['Unused Commitment (Fac Lvl)'] || row['Unused Commitment']),",
+        "LPTM-Hub/PAL-ETL.html:8229"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "Total_Undrawn",
+        "0,",
+        "LPTM-Hub/PAL-ETL.html:8230"
+      ],
+      [
+        "mapPortfolioRowNAM",
+        "ROTCE",
+        "''",
+        "LPTM-Hub/PAL-ETL.html:8231"
+      ],
+      [
+        "mapCovenantRow",
+        "Report_Date",
+        "this.formatDate(row['As Of Date'] || row['AsOfDate'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6828"
+      ],
+      [
+        "mapCovenantRow",
+        "Region",
+        "mappedRegion,",
+        "LPTM-Hub/PAL-ETL.html:6829"
+      ],
+      [
+        "mapCovenantRow",
+        "Origination_Unit",
+        "originationUnit,",
+        "LPTM-Hub/PAL-ETL.html:6830"
+      ],
+      [
+        "mapCovenantRow",
+        "Underwriting_Team_Lead",
+        "this.normalizeUnderwriterName(row['Investment Finance Underwriting Team Lead'] || row['InvestmentFinanceUnderwritingTeamLead']),",
+        "LPTM-Hub/PAL-ETL.html:6831"
+      ],
+      [
+        "mapCovenantRow",
+        "Lead_Underwriter",
+        "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter'] || row['InvestmentFinanceLeadUnderwriter']),",
+        "LPTM-Hub/PAL-ETL.html:6832"
+      ],
+      [
+        "mapCovenantRow",
+        "Product_Underwriter",
+        "this.normalizeUnderwriterName(row['Investment Finance Product Underwriter'] || row['InvestmentFinanceProductUnderwriter']),",
+        "LPTM-Hub/PAL-ETL.html:6833"
+      ],
+      [
+        "mapCovenantRow",
+        "OU_Expense_Code",
+        "row['OU Expense Code'] || row['OUExpenseCode'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6834"
+      ],
+      [
+        "mapCovenantRow",
+        "CU_Expense_Code",
+        "row['CU Expense Code'] || row['CUExpenseCode'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6835"
+      ],
+      [
+        "mapCovenantRow",
+        "Relationship_ID",
+        "row['Relationship ID'] || row['RelationshipID'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6836"
+      ],
+      [
+        "mapCovenantRow",
+        "Relationship_Name",
+        "row['Relationship Name'] || row['RelationshipName'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6837"
+      ],
+      [
+        "mapCovenantRow",
+        "Borrowers_Name",
+        "row['Borrowers Name'] || row['BorrowersName'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6838"
+      ],
+      [
+        "mapCovenantRow",
+        "CA_Number",
+        "row['CA Number'] || row['CANumber'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6839"
+      ],
+      [
+        "mapCovenantRow",
+        "Facility_Number",
+        "row['Facility Number'] || row['FacilityNumber'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6840"
+      ],
+      [
+        "mapCovenantRow",
+        "Product_Program_Name",
+        "categoryLookup.productProgram, // OVERRIDE with mapped Product Program",
+        "LPTM-Hub/PAL-ETL.html:6841"
+      ],
+      [
+        "mapCovenantRow",
+        "Facility_Type",
+        "facilityType,",
+        "LPTM-Hub/PAL-ETL.html:6842"
+      ],
+      [
+        "mapCovenantRow",
+        "Covenant_Number",
+        "row['Covenant Number'] || row['CovenantNumber'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6843"
+      ],
+      [
+        "mapCovenantRow",
+        "Periodic_Frequency",
+        "row['Periodicity / Frequency'] || row['Periodicity/Frequency'] || row['PeriodicityFrequency'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6844"
+      ],
+      [
+        "mapCovenantRow",
+        "Covenant_Due_Date",
+        "this.formatDate(row['Covenant Due Date'] || row['CovenantDueDate'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6845"
+      ],
+      [
+        "mapCovenantRow",
+        "Covenant_Deferred_Date",
+        "this.formatDate(row['Covenant Deferred Date'] || row['CovenantDeferredDate'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6846"
+      ],
+      [
+        "mapCovenantRow",
+        "Days_Past_Due",
+        "row['No of Days Past Due'] || row['NoofDaysPastDue'] || row['DaysPastDue'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6847"
+      ],
+      [
+        "mapCovenantRow",
+        "Coming_Due_Past_Due",
+        "this.normalizeComingDuePastDue(row['Coming Due / Past Due'] || row['ComingDue/PastDue'] || row['ComingDuePastDue'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6848"
+      ],
+      [
+        "mapCovenantRow",
+        "Past_Due_Category",
+        "this.normalizePastDueCategory(row['Past Due Category'] || row['PastDueCategory'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6849"
+      ],
+      [
+        "mapCovenantRow",
+        "Covenant_Description",
+        "row['Covenant Description'] || row['CovenantDescription'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6850"
+      ],
+      [
+        "mapCovenantRow",
+        "Covenant_Remarks",
+        "row['Covenant Remarks'] || row['CovenantRemarks'] || '',",
+        "LPTM-Hub/PAL-ETL.html:6851"
+      ],
+      [
+        "mapCovenantRow",
+        "45_Days_Past_Due_Date",
+        "this.formatDate(row['45 Days Past Due Date'] || row['45DaysPastDueDate'] || ''),",
+        "LPTM-Hub/PAL-ETL.html:6852"
+      ],
+      [
+        "mapCovenantRow",
+        "Control_Unit",
+        "controlUnit",
+        "LPTM-Hub/PAL-ETL.html:6853"
+      ]
+    ],
+    "widths": [
+      29,
+      31,
+      125,
+      46
+    ]
+  },
+  "Metric Rules": {
+    "headers": [
+      "Rule",
+      "Metric",
+      "Entity",
+      "Definition",
+      "Boundary / exception"
+    ],
+    "rows": [
+      [
+        "M01",
+        "Actionable obligations",
+        "Monitoring",
+        "Count(action_required=true)",
+        "One obligation, one owner; count is not client count"
+      ],
+      [
+        "M02",
+        "Covenant past due",
+        "Monitoring",
+        "category=COVENANTS and status=PAST_DUE; effective due < as_of",
+        "Dates and source status must agree; internal-prefixed description/remarks excluded"
+      ],
+      [
+        "M03",
+        "Coming due",
+        "Monitoring",
+        "status=COMING_DUE and as_of <= effective_due <= DateAdd(m,3,as_of)",
+        "Inclusive 3 calendar months; not a fixed 90 days"
+      ],
+      [
+        "M04",
+        "Critical monitoring",
+        "Monitoring",
+        "Covenants >=31d; facility >=60d; appraisal >=90d; insurance awaiting cert; CCM SUBSTANDARD",
+        "Proposed screenshot-derived rules; CA has no critical threshold"
+      ],
+      [
+        "M05",
+        "CA actions",
+        "Monitoring",
+        "category=CA and status in PAST_DUE,PENDING_AUTH",
+        "PENDING_AUTH must come from workflow source, not expiry alone"
+      ],
+      [
+        "M06",
+        "Insurance issues",
+        "Monitoring",
+        "AWAITING_CERTIFICATE or PENDING_REVIEW",
+        "Expired and deficiency buckets remain separate"
+      ],
+      [
+        "M07",
+        "Total outstanding",
+        "Portfolio",
+        "direct_os + contingent_os + pse_os",
+        "USD units; null financial components must be resolved"
+      ],
+      [
+        "M08",
+        "OSUC",
+        "Portfolio",
+        "EMEA/APAC: committed ? tfa : total_os; Americas: supplied osuc",
+        "No implicit currency conversion"
+      ],
+      [
+        "M09",
+        "Undrawn and unused",
+        "Portfolio",
+        "total_undrawn=tfa-total_os; EMEA/APAC unused=committed ? total_undrawn : 0",
+        "Negative results retained; Americas unused supplied"
+      ],
+      [
+        "M10",
+        "Utilization",
+        "Portfolio",
+        "SUM(total_os)/SUM(tfa)",
+        "If denominator zero show unavailable"
+      ],
+      [
+        "M11",
+        "YTD / MTD new business",
+        "Portfolio",
+        "Non-PSE; origination else renewal in source reporting year/month through as_of",
+        "Prepared flags; count one facility snapshot record"
+      ],
+      [
+        "M12",
+        "ROTCE",
+        "Portfolio",
+        "One unique relationship return and period; value as decimal fraction",
+        "No facility-weighted average or missing-to-zero"
+      ],
+      [
+        "M13",
+        "History",
+        "History",
+        "Retained daily facility snapshots; legacy aggregate history retained",
+        "Never sum balances across dates. Daily KPI comparisons retain all filters; legacy trends have no staff filter."
+      ],
+      [
+        "M14",
+        "Activity",
+        "Activity",
+        "Count event_id by maker month and event_type",
+        "Latest 3 available months; DEACTIVATED => DELETED"
+      ],
+      [
+        "M15",
+        "Workload share",
+        "Monitoring",
+        "Top five owner action counts / all selected action counts",
+        "No denominator when selection empty"
+      ],
+      [
+        "M16",
+        "Clearance ratio",
+        "Not displayed",
+        "Requires full eligible population plus explicit cleared records",
+        "Unavailable for exceptions-only or mixed eligible populations"
+      ],
+      [
+        "PAL01",
+        "CA expiry eligibility",
+        "Portfolio",
+        "CM only; EMEA requires ca_review Yes; expiry before as_of; distinct relationship_id",
+        "Facility expiry includes CM and DM; dates equal to as_of are coming due"
+      ],
+      [
+        "PAL02",
+        "Expiry horizon",
+        "Portfolio",
+        "as_of through end of second following calendar month; pal_ca_month / pal_facility_month",
+        "Build month windows from first day to avoid month-end Date.setMonth overflow"
+      ],
+      [
+        "PAL03",
+        "New approvals",
+        "Portfolio",
+        "First approval date in current/previous month; NAM/LATAM/EMEA",
+        "APAC excluded; origination date is not first approval"
+      ],
+      [
+        "PAL04",
+        "Pending closure",
+        "Portfolio",
+        "NAM/LATAM, non-PSE, origination null, first approval in report year; 19 excluded facility types",
+        "Days since approval: 1-30 / 31-60 / 61-90 / >90. Exact exclusions in CreditHubPAL.bas"
+      ],
+      [
+        "PAL05",
+        "SBL spreads",
+        "Portfolio",
+        "SBL Direct OS >0; <=70 / >70 to125 / >125 bps; SUM(spread*OS)/SUM(valid-spread OS)",
+        "Original count and OS tables retained. Missing spread excluded from weighted denominator."
+      ],
+      [
+        "PAL06",
+        "Linked relationship ranking",
+        "Portfolio",
+        "Rank selected exposure by stable relationship_id; show same Top 5/10/20 order in ROTCE",
+        "ROTCE target12%; missing remains null, genuine zero retained; source return period separate"
+      ],
+      [
+        "PAL07",
+        "PAL covenant view",
+        "Monitoring",
+        "PAST_DUE: 1-45 / 46-90 / >90; COMING_DUE: next30 days inclusive",
+        "Separate from monitoring page three-calendar-month window"
+      ],
+      [
+        "PAL08",
+        "Regional CCM",
+        "Monitoring",
+        "ccm_status PAST_DUE / COMING_DUE / OPEN by APAC,EMEA,NAM,LATAM",
+        "Source status, independently of credit classification and lifecycle status"
+      ],
+      [
+        "PAL09",
+        "Prior comparable deals",
+        "Portfolio",
+        "Non-PSE origination/renewal fallback through same day last month/year",
+        "Clamp end-of-month / leap-year date; prepared flags, no browser ETL"
+      ],
+      [
+        "PAL11",
+        "Daily KPI variance",
+        "History",
+        "Current minus previous Monday-Friday snapshot; percentage uses prior balance",
+        "Requires complete comparison_ready history. Monday compares Friday. Zero prior = New balance; missing snapshot = unavailable."
+      ],
+      [
+        "PAL12",
+        "Period controls",
+        "Portfolio",
+        "YTD / calendar QTD / MTD / Monday-based week through report date",
+        "New deals exclude PSE; approval and pending periods use first approval. Prior quarter compares elapsed days; prior week caps at Friday."
+      ],
+      [
+        "PAL10",
+        "Historical variances",
+        "History",
+        "Latest four observations; MoM/QoQ/YoY compare matching calendar months",
+        "Missing comparison or zero denominator gives unavailable, never fabricated growth"
+      ]
+    ],
+    "widths": [
+      10,
+      30,
+      20,
+      110,
+      95
+    ]
+  },
+  "Taxonomy": {
+    "headers": [
+      "Field family",
+      "Allowed values / format",
+      "Validation",
+      "Meaning"
+    ],
+    "rows": [
+      [
+        "category",
+        "COVENANTS | CA | FACILITY | CCM | INSURANCE | APPRAISALS",
+        "Closed enumeration",
+        "Monitoring domain"
+      ],
+      [
+        "region",
+        "NAM | LATAM | EMEA | APAC | IPB | SARG | CROSS_REGION | UNMAPPED",
+        "UNMAPPED blocks publication",
+        "NAM/EMEA combination must use CROSS_REGION and retain original source value externally"
+      ],
+      [
+        "status",
+        "PAST_DUE | COMING_DUE | PENDING_AUTH | OPEN | AWAITING_CERTIFICATE | PENDING_REVIEW | CLEARED | UNKNOWN",
+        "UNKNOWN blocks publication",
+        "Allowed subset depends on category"
+      ],
+      [
+        "owner_role",
+        "UNDERWRITER | SPECIALIST",
+        "Required",
+        "One accountable owner; secondary contributors outside workload counts"
+      ],
+      [
+        "classification",
+        "PASS | PASS_WATCH_LIST | SPECIAL_MENTION | SUBSTANDARD | SUBSTANDARD_PERFORMING | SUBSTANDARD_NONPERFORMING | DOUBTFUL | LOSS | UNKNOWN",
+        "Preserve distinct codes",
+        "Confirm whether substandard subtypes enter critical CCM definition"
+      ],
+      [
+        "aging_bucket",
+        "CURRENT | 1-30 | 31-45 | 46-60 | 61-90 | 91-199 | 200+ | UNKNOWN",
+        "Computed in Access",
+        "Days calculated as of source date; date null stays null"
+      ],
+      [
+        "coverage",
+        "ALL_OBLIGATIONS | EXCEPTIONS_ONLY",
+        "Per source",
+        "Coverage describes supplied universe, not an assurance of completeness"
+      ],
+      [
+        "commitment",
+        "COMMITTED | UNCOMMITTED",
+        "Unknown blocks publication",
+        "Source-specific conversion in Access adapter"
+      ],
+      [
+        "maturity_basis",
+        "DATED | DEMAND | UNKNOWN",
+        "Required",
+        "DEMAND maturity_date=null, never a fabricated expiry"
+      ],
+      [
+        "event_type",
+        "DEFERRED | WAIVED | DELETED",
+        "DEACTIVATED maps to DELETED",
+        "Do not count repeated exports of the same event twice"
+      ],
+      [
+        "dates",
+        "Excel date value; JSON YYYY-MM-DD",
+        "Date only",
+        "No locale-dependent text parsing; publication date separate"
+      ],
+      [
+        "amounts",
+        "Numeric USD units",
+        "No strings or comma separators",
+        "Zero is a valid supplied amount; null means absent"
+      ],
+      [
+        "percentages",
+        "Decimal fraction",
+        "0.125 = 12.5%",
+        "Never mix percentage points and fraction units"
+      ],
+      [
+        "keys",
+        "Text; stable native IDs",
+        "Keep leading zeros",
+        "One snapshot per source; IDs cannot be regenerated by row position"
+      ],
+      [
+        "loan_spread",
+        "Numeric basis points",
+        "70 and 125 are inclusive upper boundaries",
+        "100 bps = 1 percentage point; do not submit decimal percentage"
+      ],
+      [
+        "ccm_status",
+        "PAST_DUE | COMING_DUE | OPEN",
+        "Required for CCM records",
+        "Map original CCM_Status separately from classification"
+      ],
+      [
+        "management_status / ca_review",
+        "CM | DM / Yes | No",
+        "Controls PAL CA eligibility",
+        "EMEA CA Review must equal Yes"
+      ],
+      [
+        "schema_version",
+        "2",
+        "Required for manifest and all envelopes",
+        "168 fields; daily period flags and comparison history are exported by Access"
+      ]
+    ],
+    "widths": [
+      21,
+      125,
+      40,
+      85
+    ]
+  },
+  "Migration Issues": {
+    "headers": [
+      "Issue",
+      "Observed evidence",
+      "Source reference",
+      "Resolution"
+    ],
+    "rows": [
+      [
+        "File format mismatch",
+        "ETL publishes .xlsb; dashboard constants read .xlsx",
+        "PAL-ETL.html:5398-5404; PAL-dashboard.html:3356-3359",
+        "Use versioned prepared JSON; remove Excel parsing from reader."
+      ],
+      [
+        "Mixed source dates",
+        "CCM Jul 13; covenants/CA/facility Aug 31; insurance/appraisal Sep 1",
+        "Provided screenshots",
+        "Keep as_of_date per source and display the range."
+      ],
+      [
+        "CA inconsistency",
+        "Overview pending auth 88; CA page pending auth 3",
+        "Screenshots 1 and 7",
+        "Do not seed either number as reconciled data; derive from the CA workflow extract."
+      ],
+      [
+        "Covenant gap",
+        "Displayed aging 121+41+0+3 = 165 versus 168 total",
+        "Screenshot 5",
+        "Include >90-day remainder explicitly; reconcile from source records."
+      ],
+      [
+        "Facility mismatch",
+        "KPI past due 49; donut legend values 17+11+9+13 = 50",
+        "Screenshot 9",
+        "Use the same filtered record set for KPIs, charts and register."
+      ],
+      [
+        "Appraisal mismatch",
+        "Past due KPI 169 versus donut bucket total 235",
+        "Screenshot 14",
+        "Different populations must be labelled or unified."
+      ],
+      [
+        "Clearance denominator",
+        "63.4% shown without a verifiable complete population",
+        "Screenshot 1",
+        "Do not expose a clearance KPI from exception-only feeds."
+      ],
+      [
+        "Local dummy data",
+        "covenants-local.html forces generated covenant and activity rows",
+        "covenants-local.html:31-35",
+        "Demo must be explicitly labelled; production rejects demo manifests."
+      ],
+      [
+        "Missing return becomes zero",
+        "ROTCE missing/no match assigned 0%",
+        "PAL-ETL.html:6564-6596",
+        "Preserve null; no default-zero profitability."
+      ],
+      [
+        "Numeric sign loss",
+        "Legacy parser removes parentheses without applying negative sign",
+        "PAL-ETL.html:7960-7985",
+        "Typed staging numbers; raw adapters must preserve negatives and reject nonnumeric input."
+      ],
+      [
+        "Regional policy ambiguity",
+        "SARG/IPB mode helpers exist but import path says import all regions",
+        "PAL-ETL.html:7760-7810",
+        "Keep region codes; apply an explicit approved inclusion policy in Access."
+      ],
+      [
+        "EMEA CCM label",
+        "CA ID mapped into Client_Name",
+        "PAL-ETL.html:8410",
+        "Store CA ID as ca_id; join approved relationship master for relationship_name."
+      ],
+      [
+        "Owner team inference",
+        "EMEA defaults team via hardcoded names",
+        "PAL-ETL.html:7928",
+        "Use approved owner map, with explicit UNASSIGNED exceptions."
+      ],
+      [
+        "Covenant rule drift",
+        "Legacy action count uses recognized source bucket; new design uses dated obligations",
+        "covenants.js:416-486",
+        "Proposed-1 is a documented rule change; reconcile legacy bucket discrepancies before go-live."
+      ],
+      [
+        "No live extract validation",
+        "Screenshots and local HTML are available; production feeds are not",
+        "Supplied files",
+        "Preview is illustrative; Access must be tested in Windows and Confluence in the internal instance."
+      ]
+    ],
+    "widths": [
+      32,
+      95,
+      64,
+      110
+    ]
+  },
+  "Access Workflow": {
+    "headers": [
+      "Step",
+      "Action",
+      "Instructions"
+    ],
+    "rows": [
+      [
+        "1",
+        "Preserve raw reports",
+        "Keep immutable dated raw files on the local drive; record source file, owner and as_of. Do not upload raw client extracts to the dashboard package."
+      ],
+      [
+        "2",
+        "Map in Access",
+        "Use saved Access import specifications and append queries using Legacy Mappings. Populate typed stg tables from the exact input headers. Product_Map, Region_Map and Owner_Map are supplied for adapters; BuildCreditRelease does not infer them."
+      ],
+      [
+        "3",
+        "Use the input template",
+        "Header row is row 1. Required fields in the dictionary must be populated. Blank rows are not data. Template has no sample rows. Set keys/IDs to text and dates to Excel dates."
+      ],
+      [
+        "4",
+        "Install once",
+        "Create a new .accdb. Import CreditHubInstall.bas, CreditHubBuild.bas and CreditHubPAL.bas (schema version 2). For a new database run InstallCreditHub. For the preceding installed schema, back up and run UpgradeCreditDashboardSchema to add fields without clearing history. Requires Windows Access/DAO; never run installation over existing tables."
+      ],
+      [
+        "5",
+        "Import canonical input",
+        "Run ImportCreditInputs \"C:\\CreditHub\\Credit_Input_Template.xlsx\". This replaces only stg tables. A failed import is partial: fix it and repeat all sheets before building."
+      ],
+      [
+        "6",
+        "Build locally",
+        "BuildCreditRelease accepts an optional third argument: the prior Credit_Prepared_<release>.xlsx. Retains previous Monitoring, Portfolio, Activity and Sources in one versioned previous JSON. Exact prior-weekday and matching-coverage checks control daily variances."
+      ],
+      [
+        "7",
+        "Reconcile release",
+        "Compare source totals, exclusion counts, unique keys, statuses and report dates. Confirm proposed-1 business rules. Run the bundled Python validator optionally; then review Windows Access results."
+      ],
+      [
+        "8",
+        "Publish files",
+        "Upload immutable versioned JSON attachments first. Verify downloads and expected counts; replace credit-manifest.json last. Keep the previous manifest and data for rollback."
+      ],
+      [
+        "9",
+        "Install reader",
+        "Paste Confluence_Macro.html into the existing HTML macro and replace attachment page IDs. Keep navBar and global fonts/CSS. Use same-origin attachments and current user session."
+      ],
+      [
+        "10",
+        "Verify live",
+        "Verify access permissions, loading timeout/error, every tab, filtered totals and CSV exports. Test an unauthorized account. Local browser tests do not establish Confluence or Access runtime behavior."
+      ]
+    ],
+    "widths": [
+      10,
+      30,
+      150
+    ]
+  }
+}

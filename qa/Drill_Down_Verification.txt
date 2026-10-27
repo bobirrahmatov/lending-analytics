@@ -1,0 +1,21 @@
+DRILL DOWN AND KPI ALIGNMENT — 26 OCTOBER 2026
+
+Shared KPI values and variance pills use centered alignment. Comparison dates span the complete value row instead of sitting below the pill column. Existing green/red/amber direction and status semantics remain unchanged.
+
+Source drill-down is separate from chart expansion. Page chart points, donut labels, KPI cards and linked table counts route to a records-only page. Expanded chart points use the same route; Back restores the existing analysis with its original chart nodes and filters. Explicit expand buttons retain the chart analysis view.
+
+Every supplied source field is available in drill-down, including optional null fields and original identifiers. The table defaults to 10 rows, supports global and column search, filters, sorting and numbered pagination. Export uses the complete matching selection before pagination. Empty clicked cohorts stay empty rather than falling back to the full chart population. Covenant association rows retain their linked facility fields and the existing same-date joins.
+
+Previous-period monitoring chart points now carry and open their actual prior records. No current records are substituted for historic points. Selected category and series labels identify the drill scope.
+
+Verification:
+- test_drill_down.cjs: 79 chart-series cohorts across 11 analytical pages; exact record and value comparisons; main KPI and linked table routes; expanded-view restoration; 37-row export vs 10 visible; null fields, search and empty selections.
+- Covenant regional Population and aging count cells reconcile to exact record counts.
+- test_all_pages.cjs: 13 page entries and all explicit chart expansions.
+- test_covenants.cjs: field parity, aging, source associations, financial totals and variances.
+- test_local_controls.cjs: partial rendering, retained cards, table controls and calendar baselines.
+- Browser at 1280px: CCM and Covenant headline values and pills share aligned centerlines; no page overflow. APAC Special mention bar opens exactly four records. APAC 1–30 covenant table cell opens exactly four source associations. No captured browser console errors.
+- Content-only package, paired scripts, shared CSS and attachment sizes verified.
+
+Evidence: Aligned-Pills-CCM.png and Drill-Down-CCM.png.
+Local synthetic preview only; not deployed to internal Confluence. Source count units remain documented: obligations and links are not interchangeable with distinct facilities.

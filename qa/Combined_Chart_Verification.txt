@@ -1,0 +1,29 @@
+CHART REFINEMENT — 25 October 2026
+Build: 8ed5d3847b6c
+
+Removed inner border/background from shared donut layout. Kept outer chart frame.
+New deals: grouped horizontal bars compare current/prior facility counts by
+product, retaining YTD/QTD/MTD/week cohorts and record drill-through.
+1512px desktop default: New deals and Pending Closure each 522px wide and 564px
+high. Four-row Portfolio coverage table follows on the same row.
+
+Top Relationships & ROTCE: one full-width inverted bar/scatter combination.
+Blue USD bars; purple ROTCE diamond markers; independent USD and percent axes;
+12% ROTCE reference. Same ranked relationship sources for both series. Null
+ROTCE remains null; tooltip reports unavailable. Zero remains a valid ratio.
+Methodology documents separate units and source ratios. Full-page analysis
+includes the former low-ROTCE analysis as well as exposure/product details.
+
+Consulted official Highcharts demo catalog and combination documentation:
+https://www.highcharts.com/demo
+https://www.highcharts.com/docs/chart-and-series-types/combining-chart-types
+https://www.highcharts.com/demo/combo-dual-axes
+Selected bar + scatter because relationships are categories, not a time series.
+
+Browser verified full-page expansion, Top 5 control while expanded (five
+relationships retained), close/restore, 390px layout without page overflow,
+final desktop axes, equal card geometry and zero captured console errors.
+Passed test_portfolio_view.cjs (including product cohorts, null ROTCE, axis
+mapping and shared source rows), test_pal_analysis.cjs, test_chart_details.cjs,
+and verify_page_package.py (13 production page pairs).
+Local illustrative preview only; not a live Confluence deployment test.

@@ -1,0 +1,157 @@
+{
+  "build": "10739f0ae710",
+  "cases": [
+    {
+      "page": "portfolio",
+      "amountColors": [
+        "rgb(37, 59, 84)"
+      ],
+      "amounts": 25,
+      "categories": 14,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 3,
+      "unstyledMoney": []
+    },
+    {
+      "page": "overview",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 30,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "workload",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 20,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "covenants",
+      "amountColors": [
+        "rgb(37, 59, 84)"
+      ],
+      "amounts": 20,
+      "categories": 22,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 4,
+      "unstyledMoney": []
+    },
+    {
+      "page": "ca",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 20,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "facility",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 20,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "ccm",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 10,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "insurance",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 20,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "appraisals",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 20,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "activity",
+      "amountColors": [],
+      "amounts": 0,
+      "categories": 10,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "deepdive",
+      "amountColors": [
+        "rgb(37, 59, 84)"
+      ],
+      "amounts": 18,
+      "categories": 6,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 1,
+      "unstyledMoney": []
+    },
+    {
+      "page": "portfolio-expanded-approvals",
+      "amountColors": [
+        "rgb(37, 59, 84)"
+      ],
+      "amounts": 77,
+      "categories": 55,
+      "categoryWeights": [
+        "600"
+      ],
+      "overflow": false,
+      "tables": 6,
+      "unstyledMoney": []
+    }
+  ]
+}

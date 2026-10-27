@@ -1,0 +1,36 @@
+PORTFOLIO AND UNDERWRITERS SUMMARY LAYOUT — 27 OCTOBER 2026
+Build 5f8d1ae53870
+
+Causes fixed
+The shared 12-column layout was missing the span-6 rule used by all four
+Summary chart cards. The cards therefore occupied single narrow columns.
+An older unequal-column Summary rule also remained active at tablet width.
+Portfolio used the dynamic drill flex layout permanently. Sequential packing
+separated Coverage from Approvals and Covenants from CCM.
+
+Current composition
+Summary: two equal-width chart pairs above a full-width action register; cards
+stack at widths up to 1000px. Original high-level counts/charts are retained.
+Portfolio: Approvals + Coverage, New deals + Pending Closure, Relationships +
+Monitoring priorities, Covenants + CCM. At widths >=1600px, Expiring joins the
+first row; at901–1599px it fills the preceding row. At <=900px cards stack.
+DOM order matches keyboard reading order. Trend tables remain full width.
+Dynamic flex reflow now applies only while an inline drill is active. Reset
+restores the published layout. Expanded charts continue to use modal dialogs.
+No financial calculation, source record or data-linking rule was changed.
+
+Verification
+PASS real browser matrix: Summary and Portfolio at390,900,1280,1920px (8/8).
+Checks include row alignments, card widths, overflow, overlaps, full-width
+registers, intended order and generated build revision. Results saved in
+Layout_Regression_Browser.json; rerun using layout-regression.html via local HTTP.
+PASS manual browser: Summary local drill occupies full row; All restores2x2.
+Portfolio covenant drill occupies full row; All restores approvals/coverage and
+covenants/CCM pairs. Expanded Covenant analysis still opens in its modal.
+PASS test_all_pages.cjs:12routes,58chart expansions plus KPI expansions,
+per-page composition and supported CSS span regression checks.
+PASS test_portfolio_view.cjs: financial periods,cohorts,metrics and cardorder.
+PASS test_local_controls.cjs: partial updates preserve unrelated cardidentity/order.
+PASS test_bento.cjs: chart series and supporting-record populations reconcile.
+PASS verify_page_package.py: generated fragments/scripts,syntax and size limits.
+Local previews and simulated native-host checks only; live Confluence not tested.

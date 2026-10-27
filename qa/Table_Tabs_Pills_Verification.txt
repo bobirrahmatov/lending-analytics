@@ -1,0 +1,14 @@
+TABLE SEGMENTS AND NUMERIC PILLS — 26 October 2026
+
+Trends Exposure (TFA/OSUC/Outstanding), PSE (All/PSE/Non-PSE), and Commitment (All/Committed/Uncommitted) now use the shared animated segmented controls. Each group is labelled, exposes its pressed state and supports Arrow/Home/End keyboard selection. Selection updates only the Trends card and retains the other two filters.
+
+One shared CreditTables formatter applies number pills to summary, register and expanded tables. Counts and signed/labelled variances include zero values and total rows. Currency amounts, monetary columns, identifiers, dates and spread measurements remain plain. Pills do not change text, source values, calculations, sorting, search, pagination, CSV export or row-action handlers. Neutral brand colors do not imply that an increase is favorable.
+
+Validation passed:
+- test_table_controls.cjs: count/change pills, zero/negative values, totals, no currency/identifier/date pills, idempotence and row handlers; shared sorting/filtering/pagination checks.
+- test_local_controls.cjs: local Trends segment changes retain unrelated chart nodes; existing PAL total and calendar comparison tests.
+- test_all_pages.cjs: all 13 compatibility entrypoints, overview/expanded table rendering and methods.
+- Browser: TFA + Non-PSE + Committed combination changed the displayed total; clearing filters restored totals; all 15 variance cells including totals have pills; no currency cells wrapped. New Facilities Approved expansion has a count pill in its regional summary and plain TFA/OSUC/balance values.
+- Screenshot: Table-Tabs-Pills.png.
+
+Verified locally with illustrative data, not on the live Confluence instance.

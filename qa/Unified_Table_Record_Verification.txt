@@ -1,0 +1,9 @@
+UNIFIED TABLE RECORD NAVIGATION — 26 OCTOBER 2026
+
+Removed the legacy recordDialog/showDetail popup route. All dashboard register row links now open the same records-only page as chart point drill-down. Expanded supporting-record tables use the same navigation for individual records. Every supplied field remains available; row selection does not broaden into a relationship population.
+
+Back preserves the original table DOM, filters, pagination and chart analysis. Download targets the selected record while the records page is open and restores the prior export scope on return. Methodology remains a right drawer.
+
+Verification: test_drill_down.cjs checks dashboard row links across analytical pages, exact record equality, original table restoration, expanded record links and 79 chart-series cohorts. Browser reproduced Illustrative relationship 027 / CCM:0002 from the reported CCM table and confirmed no record modal. Screenshot: Unified-Table-Record.png.
+
+Local illustrative preview only; not deployed to internal Confluence.

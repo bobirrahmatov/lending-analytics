@@ -1,0 +1,51 @@
+{
+  "schema_version": 2,
+  "bundle_id": "demo-comparison-20261025",
+  "rows": [
+    {
+      "history_id": "2025-08-31|PORT:0001",
+      "as_of_date": "2025-08-31",
+      "region": "NAM",
+      "product": "Real Estate",
+      "commitment": "UNCOMMITTED",
+      "pse": true,
+      "tfa": 3075000.0,
+      "total_os": 768750.0,
+      "osuc": 768750.0,
+      "facility_count": 1,
+      "facility_key": "PORT:0001",
+      "owner_id": "UW001",
+      "owner_name": "Morgan Ellis",
+      "team_lead": "North team",
+      "management_status": "DM",
+      "product_subprogram": null,
+      "facility_type": "Credit Card",
+      "unused_commitment": 0.0,
+      "unused_uncommitted": 2306250.0,
+      "comparison_ready": true
+    },
+    {
+      "history_id": "2025-08-31|PORT:0002",
+      "as_of_date": "2025-08-31",
+      "region": "LATAM",
+      "product": "Real Estate",
+      "commitment": "COMMITTED",
+      "pse": false,
+      "tfa": 4100000.0,
+      "total_os": 1230000.0,
+      "osuc": 4100000.0,
+      "facility_count": 1,
+      "facility_key": "PORT:0002",
+      "owner_id": "UW002",
+      "owner_name": "Jordan Lee",
+      "team_lead": "International team",
+      "management_status": "CM",
+      "product_subprogram": null,
+      "facility_type": "Term Loan",
+      "unused_commitment": 2870000.0,
+      "unused_uncommitted": 0.0,
+      "comparison_ready": true
+    }
+  ],
+  "note": "ILLUSTRATIVE EXCERPT ONLY. Not a complete release and not suitable for publication. Use release/ for reconciled files."
+}

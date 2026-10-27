@@ -1,0 +1,11 @@
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.inspect.ndjson
+/Credit_Monitoring_Package.zip
+/Confluence_Deployment.zip
+/Data_Integration_Kit.zip
+/SHA256SUMS

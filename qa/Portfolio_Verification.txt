@@ -1,0 +1,41 @@
+PORTFOLIO UI VERIFICATION — 25 October 2026
+
+Changed sources: credit-pal.js, credit-workspace.js, credit-dashboard.js;
+WCSpedia ui.js, ui.css and credit-dashboard.css. Rebuilt shared assets and all
+13 page pairs. Original LPTM-Hub/PAL-dashboard.html was not edited.
+
+Browser checks, Chrome, illustrative demo data:
+- Full portfolio: 120 facilities / 65 relationships; six core Highcharts.
+- PAL charts retained: expirations, approved facilities, ranked exposure,
+  aligned ROTCE, covenant aging, regional CCM. New deals and pipeline retained.
+- Securities Based Lending: 30 facilities, eight charts plus original SFT and
+  spread tables. Original PAL source-record drill-down opens correctly.
+- Official palette checked on actual SVG point fills: #255BE3, #00AF68,
+  #FFCD00, #8E319C, #FF3C28. Product color mapping stable across scope filters.
+- NAM draft: preview 30; background remains 120 until Apply.
+- Apply NAM: 30 facilities and 30 register records; removable Region chip.
+- NAM + Committed: zero facilities with explicit empty states.
+- Remove Commitment chip: restored 30; focus remains on next removable chip.
+- Reset then Cancel: draft 120, applied NAM remains 30.
+- Clear all: restored 120 records, six charts, applied-chip row hidden.
+- Escape first closes dropdown, then drawer; focus returns to Filters.
+- Drawer is a native modal in the browser top layer, above a fixture header
+  with z-index 2147483647; shared WCSpedia selects remain interactive inside.
+- Header fixture sidebar collapse 240 -> 64 -> 240; native URLs unchanged;
+  six charts reflow with no horizontal page overflow.
+- 390px portfolio and rounded drawer visually inspected in mobile fixture.
+- All 13 pages render with expected chart counts and no error panels or
+  desktop page overflow. Exactly one shared stylesheet on portfolio.
+
+Automated checks:
+- 7 PAL business-rule cases passed.
+- 22 existing WCSpedia DOM behavior checks passed (jsdom 26.1.0).
+- Page-package checks: all 13 production fragments, 26 paired scripts,
+  native ownership, single CSS, JavaScript syntax and attachment sizes pass.
+
+Scope notes:
+Region / underwriter / team / product affect portfolio and monitoring charts.
+Facility attributes affect portfolio metrics, charts and register only; this
+scope is stated in the drawer. Subprogram is disabled when absent from source.
+Internal Confluence and live Access inputs were not available for validation.
+Update the host WCSpedia shared runtime as well as its global CSS during rollout.

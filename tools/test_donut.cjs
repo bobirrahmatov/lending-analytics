@@ -1,0 +1,6 @@
+const {JSDOM}=require('jsdom'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const dom=new JSDOM('<div id="credit-hub"><div id="chart"></div></div>',{runScripts:'outside-only'}),w=dom.window,d=w.document;w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-workspace.js'),'utf8'));
+let opts,selected;const chart={renderTo:d.querySelector('#chart'),series:[{data:[{name:'<unsafe>',y:3,color:'#255BE3',options:{custom:{rows:[1,2,3]}}},{name:'Other',y:1,color:'#8E319C',options:{custom:{rows:[4]}}}]}],update(o){opts=o;},reflow(){},redraw(){}};
+const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;');w.CreditDonut(chart,{esc,format:String,label:'Total facilities',onSelect:p=>selected=p});
+assert.equal(d.querySelector('.cw-donut-center strong').textContent,'4');assert.equal(d.querySelector('.cw-donut-row small').textContent,'75.0%');assert.equal(d.querySelector('unsafe'),null);assert.equal(opts.legend.enabled,false);assert.equal(opts.plotOptions.pie.innerSize,'72%');d.querySelector('button').click();assert.deepEqual(selected.custom.rows,[1,2,3]);w.CreditDonut(chart,{esc,format:String});assert.equal(d.querySelectorAll('.cw-donut-layout').length,1);
+console.log('PASS: shared donut center, values, percentages, escaped labels, point selection, chart options and idempotent decoration.');

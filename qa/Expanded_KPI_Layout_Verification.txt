@@ -1,0 +1,38 @@
+EXPANDED CHART AND KPI LAYOUT — 2026-10-27
+Build: 09e60adff7e3
+
+Current presentation
+- In this selection is plain text above KPI cards, without an information button
+  or reporting/comparison dates. The standalone heading Methodology action is
+  removed; chart, KPI and table methodology remains available.
+- Methodology remains with charts, KPIs and supporting records.
+- Recognized Covenant and monitoring KPI actions open their full domain-specific
+  analysis, using the shared expanded dialog, instead of the generic explorer.
+- Expanded charts have at least two analytical chart hosts, paired on desktop,
+  followed by visible full-width supporting records.
+- Chart-point drilling remains local; the page population is not silently changed.
+- Covenant status chart labels are readable and use consistent colors across
+  status and regional views. Over 90 days metrics and their linked populations
+  are restricted to past-due obligations.
+
+Verification
+- test_all_pages.cjs: PASS all 13 entrypoints, 58 chart expansions, plus main-page
+  Covenant and monitoring KPI expansions. Checks exactly one plain summary,
+  no summary button or displayed date, no standalone KPI heading methodology,
+  at least two charts, supporting records visible, and modal
+  close/scroll restoration.
+- test_drill_down.cjs: PASS 67 chart-series cohorts across 10 pages, plus related
+  datasets, record exports, null fields, search, empty selections and breadcrumbs.
+- test_covenants.cjs: PASS field parity, aging, seven chart and four KPI
+  expansions, linked facility totals, duplicate associations and comparisons.
+- Browser: Total Covenants KPI opens full analysis with 200 obligations,
+  65 relationships, 120 facilities and 13 past-due obligations over 90 days.
+  Status donut: 120 coming due and 80 past due; regional bars reconcile to them.
+  Paired cards visually aligned; summary has no info button; no console errors.
+- Proof: Covenants-KPI-Full-Analysis.png and Covenants-KPI-Chart-Pair.png.
+
+Scope
+Local illustrative data and browser verification only. Live Confluence hosting
+and Windows Access execution have not been validated by these checks.
+This supersedes older screenshots with a summary info button or single-chart
+Covenant KPI selection explorer.

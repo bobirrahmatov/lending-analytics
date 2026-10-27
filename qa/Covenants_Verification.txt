@@ -1,0 +1,60 @@
+COVENANTS PAGE — VERIFIED 2026-10-25
+Build: 057ff0c88a9d
+
+SOURCE AND PARITY
+Reviewed original covenantsHTMLPage.js, covenants.js, covenants-local.html,
+covenants-style.css and covenants-page-style.css. Read both source workbook
+samples without editing them. See Covenants_Field_Parity.txt for feature mapping,
+field aliases and documented differences from legacy aging/cutoff behavior.
+
+Original local fixture, deterministic seed 20261025:
+200 covenants = 80 past due + 120 coming due; 50 distinct relationships.
+Past due: 1–30=25, 31–45=8, 46–60=11, 61–90=23, >90=13.
+420 original activity events retained, including uncharted event types.
+Deferred chart window Sep/Oct/Nov 2024: 38 + 38 + 39 = 115 events.
+Workbook sample mode separately renders 3 covenants, 1 past due, 2 coming due,
+3 relationships; six activity source rows. Global report date 30 Jun 2026.
+
+AUTOMATED CHECKS PASSED
+- test_covenants.cjs: raw field preservation; date validation; explicit deferral
+  approval; both five-band aging boundaries; source-event month window; local
+  fixture totals; six main chart/table expansions and four KPI expansions;
+  methodology on all cards; one visible detail area; status/activity/table
+  controls; safe empty populations.
+- test_chart_details.cjs: expansion/restore, tables, drawers, escaped source text.
+- test_table_controls.cjs: global/column filters, ranges, sorting, pagination,
+  numbered links, 10-row default, summary tables remain simple.
+- test_portfolio_view.cjs: portfolio and monitoring regressions, five aging bands.
+- test_register_columns.cjs: mounted register, filtering/export alignment;
+  CSV retains optional fields appearing after the first row.
+- test_pal_analysis.cjs: PAL expansion/table-tab lifecycle and scoped exports.
+- test_donut.cjs: shared donut values, shares, labels and point selection.
+- verify_page_package.py: 13 content-only production fragments, 26 scripts,
+  global CSS/native Confluence ownership and attachment size limits.
+
+CHROME VERIFICATION
+Main and expanded views render with Highcharts. Removed duplicate KPI icons and
+methodology buttons. Every expanded chart has a methodology control. Chart SVG
+height equals its 320px container; legends are not clipped. Expanded chart pairs
+measure 708px each at desktop width. One tabbed bottom detail area is visible.
+Search REL012 in past-due supporting records returns 4 rows, page 1 of 1.
+NAM filter yields 50 total, 20 past due, 30 coming due, 25 relationships; region
+summary contains NAM only. Filter chip removes the selection correctly.
+Coming-due expansion shows 120 covenants, 30 relationships, 30 facilities and
+60 in the first 30-day band; methodology explicitly includes >90 coming due.
+Workbook preview rendered separately with no load errors.
+390px viewport: main and expanded document width=390, no page overflow;
+KPI cards and chart cards stack. Desktop viewport restored after checks.
+No captured browser console errors in the final verification session.
+
+EVIDENCE
+Covenants-overview.png
+Covenants-expanded.png
+Covenants-methodology.png
+
+LIMITS
+This is a local illustrative preview plus generated deployment assets. It has not
+been published or checked on the real Confluence host. Production uses prepared
+monitoring/activity files. Optional raw fields omitted upstream cannot be restored
+by the UI; retain them as documented in Covenants_Field_Parity.txt. The local
+fixture is a seeded capture of the original random generator, not a live snapshot.

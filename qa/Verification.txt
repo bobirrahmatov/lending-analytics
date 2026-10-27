@@ -1,0 +1,19 @@
+Latest UI revision: see Layout_Verification.txt for the Citi header, REUI palette and customizable widgets. The checks below document the preceding chart-restoration baseline.
+
+CREDIT MONITORING — REVISED PAL VERIFICATION, 2026-10-23
+PASS current revision: all13 top tabs open, no rendered error state.
+PASS current revision: original SBL/SFT, spread tables, expiry/approval, linked relationship/ROTCE, covenant and CCM chart sections render.
+PASS current revision: Top5/TFA relationship ordering matches ROTCE axis ordering; source-record drill modal returns5 records in selected SBL example.
+PASS current revision: physical Highcharts expiry point opens24 supporting records.
+PASS current revision: previous approval month and coming-due covenant controls change views; trend TFA matrix displays calendar MoM/QoQ and unavailable YoY.
+PASS current revision: relationship deep dive metrics/facilities/performance/covenants subtabs.
+PASS current revision: production loader valid synthetic release; rejects demo/mixed-release/count/type/missing-manifest fixtures.
+PASS current revision: visual desktop layout and narrow390px iframe; card left accent strips removed.
+PASS current revision: seven PAL boundary test groups (CA eligibility, expiry month boundaries, approval rollover, pipeline exclusions/buckets, spread boundaries/nulls, prior month/leap dates, covenant days45/46/90/91 and30day horizon).
+PASS current revision: all718 records validated against144 fields, source counts and PAL outputs.
+PASS current revision: three XLSX exports /21 sheets rendered; changed PAL dictionary/rules/output/template ranges visually reviewed.
+
+Earlier revision checks (not rerun for this change): denied403 simulation, HTML escaping fixture, delayed loading overlay, CSV export, full mobile scrolling.
+The current release retains the shared WCSpedia loading component.
+NOT EXECUTED: VBA compile/runtime in Windows Microsoft Access; real-feed adapters; internal Confluence host permissions/runtime.
+Preview data is synthetic. The deployment archive has assets only, no demo data.

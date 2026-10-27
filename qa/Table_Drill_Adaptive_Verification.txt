@@ -1,0 +1,57 @@
+SHARED TABLE DRILL AND ADAPTIVE CHART VERIFICATION
+27 October 2026 — local illustrative data
+Generated build: 4bf53840cc20
+
+CHANGES
+- Removed the redundant Underwriters Summary insight strip.
+- One shared row binder for page registers, aggregate analysis tables and
+  supporting-record datasets. Compact facility and related-monitoring tables
+  also retain their exact source cohorts. Whole-row and native button actions
+  enter the same widget; expanded-dialog tables retain their parent dialog.
+- Back to table restores retained DOM, search, filters, sorting, pagination,
+  focus, scroll and export scope. Chart switches and close/reset clear drills.
+- Source cohorts are attached when tables are built, never reconstructed from
+  display names. Covenant grouped and facility rows retain all exact members;
+  period/status/aging cells retain their own explicit subsets.
+- First drill level uses bars. Deeper levels use a donut only for 2–6 finite,
+  nonnegative groups that reconcile to the same additive parent measure.
+  Other groups, ratios, overlapping counts and ordered/date data keep bars or
+  trends. Donut slices and labels follow the same source-cohort path.
+
+AUTOMATED LOCAL CHECKS
+- test_table_drill.cjs: 11 page registers, seven Covenant dataset tabs,
+  static grouped detail, nested in-widget returns, no extra record overlay,
+  exact exports, search/sort/page/focus restoration, embedded controls and
+  selection-of-text protection. Duplicate names and mixed dates retain exact
+  membership. Metadata cannot invent facility links.
+- test_summary_table_drill.cjs: exact row and cell populations across PAL
+  coverage, current/prior/change, Covenant population/aging, monitoring
+  priorities and SBL split/spread tables. Sort/page restoration and switching
+  from a chart/table drill to another chart clear stale export scopes.
+- test_adaptive_drill.cjs: both chart engines, 0/1/2/5/6/7 groups, ratios,
+  overlap, Other, negative/missing/zero values, reconciliation tolerance,
+  bar-to-donut-to-leaf, legend actions, Data visibility and breadcrumbs.
+- test_portfolio_journey.cjs: explicit paths and same-date related records.
+- test_drill_down.cjs: 10 dashboard domains and 65 chart-series cohorts.
+- test_all_pages.cjs: 12 preview routes, 58 chart expansions and KPI analyses.
+- test_covenants.cjs, test_table_controls.cjs,
+  test_shared_analysis_controls.cjs, test_local_controls.cjs,
+  test_bento.cjs and test_portfolio_view.cjs passed during this change.
+
+BROWSER CHECKS
+- Summary: Action distribution > Covenants > APAC renders region bars then
+  a three-slice team donut. Breadcrumbs, labels and full-width layout visible.
+- Covenant expanded table row opens within its existing dialog, with one
+  open overlay, a Back to table breadcrumb and no page horizontal overflow.
+- Final browser: register > facility balance > related Covenants stays inline,
+  repeats do not create recursive frames, and two Back steps restore the
+  original register. No overlay or page horizontal overflow is introduced.
+- Summary and Portfolio layout fixture passes all eight cases at 390, 900,
+  1280 and 1920 pixels on build 4bf53840cc20.
+  Final generated-build results are in Layout_Regression_Browser.json.
+
+LIMITS
+These checks use the local illustrative release and generated preview pages.
+They do not establish live Confluence permissions, host/theme integration,
+production data completeness or Windows Access execution. Related records are
+limited to supplied prepared sources and exact compatible identifiers/dates.

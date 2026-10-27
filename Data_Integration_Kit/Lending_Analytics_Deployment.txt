@@ -1,0 +1,176 @@
+LENDING ANALYTICS — PARENT PAGE, STARTUP AND LARGE DATASETS
+27 October 2026
+
+INSTALLATION
+The original Overview is Underwriters Summary (overview.html). Portfolio
+(portfolio.html) remains the financial dashboard; workload.html is detailed owner
+workload. Rename existing native page titles accordingly and retain their IDs.
+Sources & definitions is no longer a page or navigation destination. Remove its
+old HTML macro/page from the native tree when deploying. Retain the required
+sources JSON data: every dashboard uses it to validate source counts and dates.
+
+1. Create/use the native Lending Analytics parent page. Keep Confluence's title,
+   navbar and sidebar. Put the 11 distinct dashboard pages beneath it. Trends is
+   a compatibility URL for Portfolio, not another navigation destination.
+2. Set lendingAnalytics and child IDs in attachments/credit-pages.js. Set the
+   real attachment host ID in Shared_WCSpedia_Include.html and all page fragments.
+   Missing IDs show unavailable links; no guessed live page URL is used.
+3. Keep the existing {include:wcspedia:navBar}. Update its ONE shared CSS and UI
+   attachment references. Do not inject a second navbar, sidebar or stylesheet.
+4. Put confluence-pages/lendinganalytics.html in the parent HTML macro. Install
+   each child fragment on its matching page. Each macro has small inline settings,
+   shared dependencies, its logic attachment and its matching HTMLPage renderer.
+   Use both scripts from the same build. One macro/page pair per native page.
+5. The landing uses credit-lendinganalyticsPage.js and
+   credit-lendinganalyticsHTMLPage.js. It does not download financial records or
+   Highcharts. Its cards link to the configured native dashboards.
+6. Upload all new assets before replacing macro references. Keep old revision
+   assets available for rollback. Validate native page links with normal viewers.
+
+PUBLISHED DASHBOARD LAYOUT
+Underwriters Summary uses two equal-width chart pairs and a full-width action
+register. Portfolio pairs New Facilities Approved with Portfolio coverage,
+New deals with Pending Closure, Relationships with Monitoring priorities, and
+Covenants with CCM. At desktop widths of 1200 px and above, the first row contains
+CAs & Facilities Expiring, New Facilities Approved and smaller Portfolio coverage
+in 5/4/3 column proportions. Expiry columns form close pairs within each month;
+the compact coverage table fits its card. Narrower screens wrap and stack.
+Inline drilling temporarily fills a row; Reset restores
+the normal arrangement. Expanded charts retain their modal dialogs.
+
+SHARED TABLE AND CHART DRILLING
+The redundant three-part insight strip has been removed from Underwriters
+Summary. Detailed registers, aggregate analysis tables and supporting-record
+tables share row drilling. Selecting a row opens its exact source population
+inside the same widget. Back to table restores the original search, column
+filters, sorting, page and focus. Tables inside expanded charts stay within
+the existing dialog; they do not open another record popover or overlay.
+
+Rows retain explicit source cohorts, including grouped Covenant associations
+and current/prior-period cells. Display names are not used to join records.
+Related data keeps exact identifiers, reporting dates and compatible CA keys.
+Downloads follow the visible selected dataset and include all matching pages.
+Switching charts, resetting or closing an analysis clears its table selection.
+
+The first drill breakdown uses bars. Deeper levels use a donut for two to six
+nonnegative, mutually exclusive groups that reconcile to the selected total.
+Larger groups, overlapping entity counts, ratios, dates and ordered aging bands
+retain a suitable bar or trend view. Slices and legend labels continue drilling;
+breadcrumbs restore earlier levels without changing unrelated charts.
+See qa/Table_Drill_Adaptive_Verification.txt for local validation and limits.
+
+Table row labels and category/product cells use larger, semibold text. Monetary
+cells and their drill links use the host-aware primary text colour rather than
+link blue. Currency recognition is cell-specific, including snapshot-date
+columns and mixed count/amount comparisons. Status and variance colours remain.
+The shared treatment covers summary tables, registers and expanded/drill tables.
+See qa/Table_Typography_Verification.txt.
+
+RESET AND TAB RESPONSIVENESS
+Pending chart updates merge their affected widgets. A full Reset takes priority
+over partial updates, and only the latest request may replace the rendered view.
+Existing charts stay alive while sources load. Segmented controls retain the
+latest selection, including when another render is pending. Reset clears page
+filters, local drills, advanced-table filters, search, sorting and pagination.
+An unrelated chart tab preserves the current register's download population.
+
+Related-data lookup uses indexes within each selected cohort, retaining exact
+entity/date/CA matching and ambiguity rules. It no longer scans every covenant
+for every event or every historical record for every selected entity. Inline
+table transitions build the visible table once and reuse the related cohort.
+Optional enrichment failures are remembered for the loaded release, so Reset
+does not repeatedly retry a missing attachment. Reload the page to retry them.
+See qa/Reset_Tab_Performance_Verification.txt for regression checks and limits.
+
+THE SAME OVERLAY AS WCSPEDIA
+The package copies wcspedia/confluence-upload/attachments/
+wcspedia-loading-overlay.js verbatim. No separate Lending Analytics overlay is
+maintained. The landing and every dashboard claim WCSHeaderLoading when present,
+otherwise create the same WCSLoadingOverlay instance. They await its paint,
+release it after content is ready, and destroy it on failure. Dashboard startup
+has a 60-second deadline; individual attachment reads have a 15-second deadline.
+Late startup responses cannot replace a timeout error. Background filter changes
+reuse data and do not block the page with the startup overlay.
+
+For the optional early overlay, merge Lending Analytics and dashboard page IDs
+into the existing navBar helper's data-wcs-loading-pages allow-list. The example
+in Shared_WCSpedia_Include.html is commented out deliberately: replace the IDs
+and reuse the existing helper, never install two helpers. This only presents the
+loading layer; it does not initialize settings or change the macro sequence.
+Scripts cannot guarantee a paint before Confluence runs the shared header.
+
+CACHE CONTRACT
+PAL-dashboard.html uses in-memory indexes and memoized results. The new shared
+credit-data-cache.js follows that model:
+- A page-scoped loader coalesces concurrent reads for each logical dataset.
+- Fully validated rows are reused during that page's lifetime.
+- WeakMap indexes belong to the exact array, so a new release/snapshot array has
+  fresh caches. Filter results are bounded to 24 entries per input array.
+- Region, owner, product and facility attributes use exact indexed selections.
+- Relationship ranking groups rows once instead of rescanning every facility for
+  every relationship. Sums reuse results for the same array and measure.
+- Dates are validated once per distinct value during a dataset validation pass.
+- Empty results and boolean false are valid cached filters.
+- Failed requests/validation are evicted and can be retried. No partial dataset is
+  committed. Mixed bundle IDs, invalid types, duplicate primary keys, source/date
+  mismatches and source control-count mismatches fail validation.
+- Every new document load revalidates attachments with Confluence using the
+  current session (credentials same-origin, cache no-cache). This permits normal
+  HTTP revalidation; it is not a cache-first authorization bypass. A 403 or a
+  sign-in HTML response never falls back to retained financial data.
+- No financial data is stored in localStorage, sessionStorage or IndexedDB.
+  App caches do not persist between native Confluence document navigations.
+  A full reload obtains the latest manifest. An open page stays on one published
+  snapshot; background polling and automatic mixed-release refresh are not used.
+
+LARGE DATASETS / IMMUTABLE ATTACHMENTS
+A 75,000-row full-field facility fixture was 139,360,471 UTF-8 bytes before
+transport compression. It cannot be published as one Confluence attachment.
+The new Access exporter streams core datasets into numbered parts below 8 MB.
+It uses create-only writes, one release ID and a manifest published last. No
+Python installation is required for that Access path. Import the updated
+CreditHubBuild.bas alongside the other two modules and compile/test on Windows.
+Windows Access execution has NOT been verified on this Mac.
+
+Both forms are supported for each required dataset:
+  "portfolio": {"filename":"credit-portfolio-RELEASE.json","rows":3000}
+  "portfolio": {"rows":3000,"parts":[
+    {"filename":"credit-portfolio-RELEASE-part-0001.json","rows":1500},
+    {"filename":"credit-portfolio-RELEASE-part-0002.json","rows":1500}
+  ]}
+The numbers above only illustrate descriptor syntax. Size determines the real
+part boundaries; every actual payload must be strictly below 10,000,000 bytes.
+Every part has schema_version=2, the same bundle_id and its rows. Two requests
+run concurrently per dataset; combined records are validated before display.
+Primary keys must be unique across all parts, not merely within each part.
+
+Optional Python path for an existing unsplit export:
+  python tools/partition_release.py SOURCE_EXPORT NEW_UPLOAD_FOLDER
+  python tools/validate_release.py NEW_UPLOAD_FOLDER
+This writes content-hashed payload names into a new folder and never modifies the
+input. It removes its newly created output if validation fails. Upload all
+payloads first and credit-manifest.json last. Retain old payloads for rollback.
+Do not reuse a release ID. Do not overwrite live data with illustrative examples.
+
+Optional previous and covenant_history envelopes still use single attachments.
+Oversized optional snapshots are rejected rather than silently truncated. Large
+comparison/history publication needs a separate nested-dataset partition contract;
+it is not covered by the current 75,000-current-facility processing result.
+The retained-history utility can read current partitioned releases but still
+rejects output exceeding its attachment limits. Do not treat that rejection as a
+successful history publication.
+
+VERIFICATION AND LIMITS
+qa/Performance_75000.json records local Chrome runs with 75,000 full facility rows,
+74,945 distinct relationships and seven real Highcharts. The timer includes JSON
+parse, field/source validation, calculations, DOM rendering and chart paint.
+It excludes data generation, network transfer, initial script download, Windows
+Access ETL and server work. qa/performance-75000.html can rerun the check locally.
+Local runs met the five-second PROCESSING target. No five-second live end-to-end
+SLA is established: 139 MB transfer over Horizon/Confluence must be measured there.
+
+Regression checks cover every existing page/expanded chart, native sidebar
+behavior, correct related-data joins, exact cache/reference parity, partitioned
+publication roundtrip, cross-part duplicates, stale releases, permission errors,
+invalid JSON, UTF-8 byte limits, overlay adoption/cleanup and startup timeout.
+No assertion of zero bugs or live Confluence/Windows validation is made.

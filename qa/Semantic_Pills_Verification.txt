@@ -1,0 +1,21 @@
+26 October 2026 — Shared semantic pills
+
+Positive variance: green; negative variance: red; zero/unchanged: amber.
+Past due/overdue/expired: red. Coming due/upcoming/expiring: green.
+Open/pending/watch states and counts without an explicit due state: amber.
+Status count precedence: column definition, record status, row label, summary title,
+then expanded-view title. Explicit delta signs take precedence over due status.
+Currency amounts, balances, dates and identifiers are not boxed as count pills.
+Existing KPI comparison deltas use the same filled green/red/amber pills.
+Totals retain the same colors. Text/signs remain visible; meaning is not color-only.
+
+Verified real browser rendering in Portfolio Trends, Covenants and CCM.
+Positive total pills: #E7F6EE background, #17613F text, 999px radius.
+Negative covenant comparison: #FDECEB background, #A12622 text.
+CCM past due is red; coming due green; open amber.
+Expanded covenant source records retain red past-due labels and counts.
+No browser errors observed. Illustrative local data only.
+
+PASS test_table_controls.cjs including semantic status/delta/total cases,
+idempotence, context updates, amount exclusions, search/sort/pagination.
+PASS test_local_controls.cjs; PASS test_all_pages.cjs (13 entries + expansions).

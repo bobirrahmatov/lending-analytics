@@ -1,0 +1,171 @@
+{
+  "revision": "8ef58ac0ddc2",
+  "desktop": [
+    {
+      "charts": 4,
+      "expand": 4,
+      "framed": 4,
+      "overflow": false,
+      "rendered": 4,
+      "summaries": 4,
+      "textError": false,
+      "title": "Monitoring overview"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Underwriter workload"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Covenants"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "CA expiration"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Facility maturity"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "CCM"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Insurance"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Appraisals"
+    },
+    {
+      "charts": 2,
+      "expand": 2,
+      "framed": 2,
+      "overflow": false,
+      "rendered": 2,
+      "summaries": 2,
+      "textError": false,
+      "title": "Covenant activity"
+    },
+    {
+      "charts": 1,
+      "expand": 1,
+      "framed": 1,
+      "overflow": false,
+      "rendered": 1,
+      "summaries": 0,
+      "textError": false,
+      "title": "Portfolio trends"
+    },
+    {
+      "charts": 0,
+      "expand": 0,
+      "framed": 0,
+      "overflow": false,
+      "rendered": 0,
+      "summaries": 0,
+      "textError": false,
+      "title": "Relationship deep dive"
+    },
+    {
+      "charts": 0,
+      "expand": 0,
+      "framed": 0,
+      "overflow": false,
+      "rendered": 0,
+      "summaries": 0,
+      "textError": false,
+      "title": "Sources & definitions"
+    }
+  ],
+  "mobile": [
+    {
+      "framed": 2,
+      "scroll": 390,
+      "title": "Underwriter workload",
+      "width": 390
+    },
+    {
+      "framed": 2,
+      "scroll": 390,
+      "title": "Covenants",
+      "width": 390
+    },
+    {
+      "framed": 1,
+      "scroll": 390,
+      "title": "Portfolio trends",
+      "width": 390
+    },
+    {
+      "framed": 2,
+      "scroll": 390,
+      "title": "Covenant activity",
+      "width": 390
+    }
+  ],
+  "portfolio": {
+    "controlsHeight": 40,
+    "framed": 8,
+    "charts": 7,
+    "pairings": [
+      [
+        "newDealsChart",
+        "pal-pipeline"
+      ],
+      [
+        "facilityTrendChart",
+        "creditClassificationChart"
+      ]
+    ],
+    "mobileWidth": 390,
+    "noOverflow": true,
+    "filters": true,
+    "expansion": true,
+    "periodChangeInExpandedView": true
+  }
+}

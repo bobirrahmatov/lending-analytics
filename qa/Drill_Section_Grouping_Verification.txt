@@ -1,0 +1,7 @@
+Build 1306430b3848 — local browser verification 2026-10-26
+
+Supporting-record dataset tabs align at x=1222, the header inner right edge (1242 minus 20 px padding). Chart/Data, search, methodology and expansion remain right-aligned.
+Relationship & ownership and Dates & status use a pale background; all four leaf sections have border-top width 0 px. Table row rules remain for scanability. No added cards or nested frames.
+Tables retain the full inner card width. Existing sticky breadcrumb and cohort/data behavior are unchanged.
+The actual demo path Facilities expiring / October / APAC / R0004 was checked in Chart and Data modes. Browser console has no errors.
+This is a presentation-only change. Live Confluence and Windows Access were not tested.

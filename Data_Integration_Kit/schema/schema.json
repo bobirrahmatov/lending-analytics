@@ -1,0 +1,1034 @@
+{
+  "Monitoring": [
+    {
+      "field": "item_id",
+      "type": "text",
+      "required": true,
+      "definition": "Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association."
+    },
+    {
+      "field": "category",
+      "type": "text",
+      "required": true,
+      "definition": "COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS."
+    },
+    {
+      "field": "source_id",
+      "type": "text",
+      "required": true,
+      "definition": "Approved source identifier; foreign key to Sources.source_id."
+    },
+    {
+      "field": "source_record_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable source key; never a worksheet row number."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": true,
+      "definition": "Business reporting date from this source, not publication date."
+    },
+    {
+      "field": "region",
+      "type": "text",
+      "required": true,
+      "definition": "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+    },
+    {
+      "field": "owner_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+    },
+    {
+      "field": "owner_name",
+      "type": "text",
+      "required": true,
+      "definition": "Display name from controlled owner mapping."
+    },
+    {
+      "field": "team_lead",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled team lead display name; UNASSIGNED if unresolved."
+    },
+    {
+      "field": "product",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled product program; UNMAPPED if unresolved."
+    },
+    {
+      "field": "relationship_id",
+      "type": "text",
+      "required": true,
+      "definition": "CARE or approved relationship identifier, stored as text."
+    },
+    {
+      "field": "relationship_name",
+      "type": "text",
+      "required": true,
+      "definition": "Relationship display name; never substitute a CA ID."
+    },
+    {
+      "field": "owner_role",
+      "type": "text",
+      "required": true,
+      "definition": "UNDERWRITER or SPECIALIST; one accountable owner per item."
+    },
+    {
+      "field": "ca_id",
+      "type": "text",
+      "required": false,
+      "definition": "CA identifier, deduplicated by approval cycle for CA monitoring."
+    },
+    {
+      "field": "facility_id",
+      "type": "text",
+      "required": false,
+      "definition": "Facility identifier; not itself a unique insurance/appraisal key."
+    },
+    {
+      "field": "covenant_id",
+      "type": "text",
+      "required": false,
+      "definition": "Native covenant identifier; required for COVENANTS."
+    },
+    {
+      "field": "status",
+      "type": "text",
+      "required": true,
+      "definition": "PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN."
+    },
+    {
+      "field": "due_date",
+      "type": "date",
+      "required": false,
+      "definition": "Original contractual due/expiry date; required for date-based categories."
+    },
+    {
+      "field": "deferred_date",
+      "type": "date",
+      "required": false,
+      "definition": "Approved deferred due date; used only when deferral_approved is true."
+    },
+    {
+      "field": "deferral_approved",
+      "type": "boolean",
+      "required": true,
+      "definition": "Explicit source approval; a date alone does not authorize a deferral."
+    },
+    {
+      "field": "effective_due_date",
+      "type": "date",
+      "required": false,
+      "definition": "Access output: approved deferral date or original due date."
+    },
+    {
+      "field": "days_past_due",
+      "type": "integer",
+      "required": false,
+      "definition": "Access output: nonnegative days as of source date; null if no date."
+    },
+    {
+      "field": "aging_bucket",
+      "type": "text",
+      "required": true,
+      "definition": "Access output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN."
+    },
+    {
+      "field": "action_required",
+      "type": "boolean",
+      "required": true,
+      "definition": "Access output: actionable under the documented category rule."
+    },
+    {
+      "field": "critical",
+      "type": "boolean",
+      "required": true,
+      "definition": "Access output: category escalation threshold; rule version attached to release."
+    },
+    {
+      "field": "coming_due",
+      "type": "boolean",
+      "required": true,
+      "definition": "Access output: COMING_DUE in inclusive next 3 calendar months."
+    },
+    {
+      "field": "classification",
+      "type": "text",
+      "required": false,
+      "definition": "PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN."
+    },
+    {
+      "field": "next_month_end",
+      "type": "date",
+      "required": false,
+      "definition": "CCM data month end, separate from approval due date."
+    },
+    {
+      "field": "expired_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "Insurance source expiration bucket, kept separately from deficiency aging."
+    },
+    {
+      "field": "deficiency_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "Insurance source deficiency bucket; never overwrite expiration bucket."
+    },
+    {
+      "field": "description",
+      "type": "text",
+      "required": false,
+      "definition": "Covenant or monitoring description; internal covenants excluded in Access."
+    },
+    {
+      "field": "remarks",
+      "type": "text",
+      "required": false,
+      "definition": "Source remarks; internal-prefixed covenant remarks excluded in Access."
+    },
+    {
+      "field": "origination_unit",
+      "type": "text",
+      "required": false,
+      "definition": "Source originating unit, distinct from Control Unit."
+    },
+    {
+      "field": "control_unit",
+      "type": "text",
+      "required": false,
+      "definition": "Source Control Unit used for region mapping."
+    },
+    {
+      "field": "ou_expense_code",
+      "type": "text",
+      "required": false,
+      "definition": "Origination Unit expense code; text preserves leading zeros."
+    },
+    {
+      "field": "cu_expense_code",
+      "type": "text",
+      "required": false,
+      "definition": "Control Unit expense code; text preserves leading zeros."
+    },
+    {
+      "field": "borrowers_name",
+      "type": "text",
+      "required": false,
+      "definition": "Source borrower display name, distinct from relationship."
+    },
+    {
+      "field": "product_underwriter",
+      "type": "text",
+      "required": false,
+      "definition": "Source product underwriter; not counted as a second owner."
+    },
+    {
+      "field": "facility_type",
+      "type": "text",
+      "required": false,
+      "definition": "Source facility type."
+    },
+    {
+      "field": "frequency",
+      "type": "text",
+      "required": false,
+      "definition": "Covenant periodicity or CCM frequency."
+    },
+    {
+      "field": "source_aging_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "Original source aging category for past-due reconciliation and coming-due display bands."
+    },
+    {
+      "field": "day45_date",
+      "type": "date",
+      "required": false,
+      "definition": "Source 45 Days Past Due Date; retained separately from computed day count."
+    },
+    {
+      "field": "pal_covenant_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date."
+    },
+    {
+      "field": "pal_due30",
+      "type": "boolean",
+      "required": true,
+      "definition": "Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window."
+    },
+    {
+      "field": "ccm_status",
+      "type": "text",
+      "required": false,
+      "definition": "Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle."
+    },
+    {
+      "field": "banker_name",
+      "type": "text",
+      "required": false,
+      "definition": "Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links."
+    }
+  ],
+  "Portfolio": [
+    {
+      "field": "facility_key",
+      "type": "text",
+      "required": true,
+      "definition": "Unique source + facility identifier at the selected snapshot."
+    },
+    {
+      "field": "source_id",
+      "type": "text",
+      "required": true,
+      "definition": "Approved source identifier; foreign key to Sources.source_id."
+    },
+    {
+      "field": "source_record_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable source key; never a worksheet row number."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": true,
+      "definition": "Business reporting date from this source, not publication date."
+    },
+    {
+      "field": "region",
+      "type": "text",
+      "required": true,
+      "definition": "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+    },
+    {
+      "field": "owner_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+    },
+    {
+      "field": "owner_name",
+      "type": "text",
+      "required": true,
+      "definition": "Display name from controlled owner mapping."
+    },
+    {
+      "field": "team_lead",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled team lead display name; UNASSIGNED if unresolved."
+    },
+    {
+      "field": "product",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled product program; UNMAPPED if unresolved."
+    },
+    {
+      "field": "relationship_id",
+      "type": "text",
+      "required": true,
+      "definition": "CARE or approved relationship identifier, stored as text."
+    },
+    {
+      "field": "relationship_name",
+      "type": "text",
+      "required": true,
+      "definition": "Relationship display name; never substitute a CA ID."
+    },
+    {
+      "field": "facility_id",
+      "type": "text",
+      "required": true,
+      "definition": "Native facility identifier as text."
+    },
+    {
+      "field": "parent_facility_id",
+      "type": "text",
+      "required": false,
+      "definition": "Parent identifier for reconciliation; do not add parent and child balances twice."
+    },
+    {
+      "field": "ca_id",
+      "type": "text",
+      "required": false,
+      "definition": "Credit approval ID."
+    },
+    {
+      "field": "commitment",
+      "type": "text",
+      "required": true,
+      "definition": "COMMITTED or UNCOMMITTED; unknown values block publication."
+    },
+    {
+      "field": "pse",
+      "type": "boolean",
+      "required": true,
+      "definition": "Controlled PSE classification from Product_Mapping."
+    },
+    {
+      "field": "sft",
+      "type": "boolean",
+      "required": true,
+      "definition": "Controlled SFT classification; do not infer from blank fields."
+    },
+    {
+      "field": "classification",
+      "type": "text",
+      "required": true,
+      "definition": "Canonical credit classification code."
+    },
+    {
+      "field": "tfa",
+      "type": "number",
+      "required": true,
+      "definition": "Total facility amount in USD units; reporting basis must be confirmed."
+    },
+    {
+      "field": "direct_os",
+      "type": "number",
+      "required": true,
+      "definition": "Direct outstanding in USD units."
+    },
+    {
+      "field": "contingent_os",
+      "type": "number",
+      "required": true,
+      "definition": "Contingent outstanding in USD units."
+    },
+    {
+      "field": "pse_os",
+      "type": "number",
+      "required": true,
+      "definition": "Pre-settlement exposure outstanding in USD units."
+    },
+    {
+      "field": "osuc",
+      "type": "number",
+      "required": true,
+      "definition": "NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed in Access."
+    },
+    {
+      "field": "total_os",
+      "type": "number",
+      "required": true,
+      "definition": "Access output: direct_os + contingent_os + pse_os."
+    },
+    {
+      "field": "unused_commitment",
+      "type": "number",
+      "required": true,
+      "definition": "Source supplied for Americas; computed for EMEA/APAC."
+    },
+    {
+      "field": "total_undrawn",
+      "type": "number",
+      "required": true,
+      "definition": "Access output: tfa minus total_os; negative values retained for review."
+    },
+    {
+      "field": "rotce",
+      "type": "number",
+      "required": false,
+      "definition": "Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null."
+    },
+    {
+      "field": "maturity_date",
+      "type": "date",
+      "required": false,
+      "definition": "Facility maturity; null for demand with maturity_basis DEMAND."
+    },
+    {
+      "field": "maturity_basis",
+      "type": "text",
+      "required": true,
+      "definition": "DATED, DEMAND or UNKNOWN."
+    },
+    {
+      "field": "ca_expiration_date",
+      "type": "date",
+      "required": false,
+      "definition": "CA expiration date; does not establish authorization workflow status."
+    },
+    {
+      "field": "origination_date",
+      "type": "date",
+      "required": false,
+      "definition": "Primary new-business date."
+    },
+    {
+      "field": "renewal_date",
+      "type": "date",
+      "required": false,
+      "definition": "Fallback new-business date when origination absent."
+    },
+    {
+      "field": "ytd_new",
+      "type": "boolean",
+      "required": true,
+      "definition": "Access output: non-PSE business date in reporting year to as_of_date."
+    },
+    {
+      "field": "mtd_new",
+      "type": "boolean",
+      "required": true,
+      "definition": "Access output: non-PSE business date in reporting month to as_of_date."
+    },
+    {
+      "field": "product_subprogram",
+      "type": "text",
+      "required": false,
+      "definition": "Approved product subprogram from Product_Mapping category mapping."
+    },
+    {
+      "field": "management_status",
+      "type": "text",
+      "required": false,
+      "definition": "Source DM/CM management status."
+    },
+    {
+      "field": "facility_type",
+      "type": "text",
+      "required": false,
+      "definition": "Original facility type for product lineage."
+    },
+    {
+      "field": "risk_category",
+      "type": "text",
+      "required": false,
+      "definition": "Original risk category; NAM Clearing/Notation/Settlement excluded upstream in Access."
+    },
+    {
+      "field": "control_unit",
+      "type": "text",
+      "required": false,
+      "definition": "Source Control Unit used for region mapping."
+    },
+    {
+      "field": "product_underwriter",
+      "type": "text",
+      "required": false,
+      "definition": "Source product underwriter; not an additional accountable workload owner."
+    },
+    {
+      "field": "facility_first_approval_date",
+      "type": "date",
+      "required": false,
+      "definition": "Original facility approval date, kept separately from origination."
+    },
+    {
+      "field": "ca_review",
+      "type": "text",
+      "required": false,
+      "definition": "Canonical Yes or No from EMEA CA Review; required for EMEA CA eligibility."
+    },
+    {
+      "field": "loan_spread",
+      "type": "number",
+      "required": false,
+      "definition": "Loan spread in basis points, matching original PAL thresholds 70 / 125; 100 bps = 1 percentage point."
+    },
+    {
+      "field": "pricing_exception",
+      "type": "text",
+      "required": false,
+      "definition": "Source pricing exception indicator."
+    },
+    {
+      "field": "total_comm_exposure",
+      "type": "number",
+      "required": false,
+      "definition": "Source committed exposure in USD; retained for OSUC reconciliation."
+    },
+    {
+      "field": "reporting_currency",
+      "type": "text",
+      "required": true,
+      "definition": "USD; amounts must be translated upstream using an approved FX basis."
+    },
+    {
+      "field": "unused_uncommitted",
+      "type": "number",
+      "required": true,
+      "definition": "Total undrawn minus unused commitment; PAL overview card."
+    },
+    {
+      "field": "pal_ca_expired",
+      "type": "boolean",
+      "required": true,
+      "definition": "CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships."
+    },
+    {
+      "field": "pal_ca_month",
+      "type": "text",
+      "required": false,
+      "definition": "Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null."
+    },
+    {
+      "field": "pal_facility_expired",
+      "type": "boolean",
+      "required": true,
+      "definition": "Facility maturity before report date; CM and DM both included."
+    },
+    {
+      "field": "pal_facility_month",
+      "type": "text",
+      "required": false,
+      "definition": "Facility expiry month in reporting month and next two months, date >= report date; otherwise null."
+    },
+    {
+      "field": "pal_approval_period",
+      "type": "text",
+      "required": false,
+      "definition": "CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null."
+    },
+    {
+      "field": "pal_pipeline_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null."
+    },
+    {
+      "field": "pal_spread_bucket",
+      "type": "text",
+      "required": false,
+      "definition": "SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null."
+    },
+    {
+      "field": "pal_spread_weight",
+      "type": "number",
+      "required": false,
+      "definition": "Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread."
+    },
+    {
+      "field": "pal_spread_os",
+      "type": "number",
+      "required": true,
+      "definition": "Direct OS denominator for valid-spread SBL; zero otherwise."
+    },
+    {
+      "field": "pal_pricing_exception",
+      "type": "boolean",
+      "required": true,
+      "definition": "SBL Direct OS >0 and pricing exception Yes."
+    },
+    {
+      "field": "pal_prior_ytd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback in prior year through same month/day."
+    },
+    {
+      "field": "pal_prior_mtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback in prior month through same day; clamped to month end."
+    },
+    {
+      "field": "pal_new_ytd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_approved_ytd",
+      "type": "boolean",
+      "required": true,
+      "definition": "NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_pending_ytd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Eligible pending closure first approval within YTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_new_qtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_approved_qtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_pending_qtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Eligible pending closure first approval within QTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_new_mtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_approved_mtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_pending_mtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Eligible pending closure first approval within MTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_new_wtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_approved_wtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_pending_wtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Eligible pending closure first approval within WTD through report date. Weeks start Monday."
+    },
+    {
+      "field": "pal_prior_qtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end."
+    },
+    {
+      "field": "pal_prior_wtd",
+      "type": "boolean",
+      "required": true,
+      "definition": "Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end."
+    },
+    {
+      "field": "rotce_period",
+      "type": "text",
+      "required": false,
+      "definition": "Source ROTCE reporting period, displayed independently of portfolio report date."
+    },
+    {
+      "field": "banker_name",
+      "type": "text",
+      "required": false,
+      "definition": "Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links."
+    }
+  ],
+  "History": [
+    {
+      "field": "history_id",
+      "type": "text",
+      "required": true,
+      "definition": "Unique report date + facility key for daily snapshots; legacy aggregate IDs are retained."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": true,
+      "definition": "Historical snapshot date; stocks must not be summed across dates."
+    },
+    {
+      "field": "region",
+      "type": "text",
+      "required": true,
+      "definition": "Canonical region."
+    },
+    {
+      "field": "product",
+      "type": "text",
+      "required": true,
+      "definition": "Canonical product."
+    },
+    {
+      "field": "commitment",
+      "type": "text",
+      "required": true,
+      "definition": "COMMITTED or UNCOMMITTED."
+    },
+    {
+      "field": "pse",
+      "type": "boolean",
+      "required": true,
+      "definition": "Canonical PSE flag."
+    },
+    {
+      "field": "tfa",
+      "type": "number",
+      "required": true,
+      "definition": "Sum of prepared facility amounts, USD units."
+    },
+    {
+      "field": "total_os",
+      "type": "number",
+      "required": true,
+      "definition": "Sum of prepared total outstanding, USD units."
+    },
+    {
+      "field": "osuc",
+      "type": "number",
+      "required": true,
+      "definition": "Sum of prepared OSUC, USD units."
+    },
+    {
+      "field": "facility_count",
+      "type": "integer",
+      "required": true,
+      "definition": "Distinct facilities at this exact grain; nonadditive if grain overlaps."
+    },
+    {
+      "field": "facility_key",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: facility_key. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "owner_id",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: owner_id. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "owner_name",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: owner_name. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "team_lead",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: team_lead. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "management_status",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: management_status. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "product_subprogram",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: product_subprogram. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "facility_type",
+      "type": "text",
+      "required": false,
+      "definition": "Daily comparison snapshot: facility_type. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "unused_commitment",
+      "type": "number",
+      "required": false,
+      "definition": "Daily comparison snapshot: unused_commitment. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "unused_uncommitted",
+      "type": "number",
+      "required": false,
+      "definition": "Daily comparison snapshot: unused_uncommitted. Legacy aggregated history may leave this null."
+    },
+    {
+      "field": "comparison_ready",
+      "type": "boolean",
+      "required": false,
+      "definition": "Daily comparison snapshot: comparison_ready. Legacy aggregated history may leave this null."
+    }
+  ],
+  "Activity": [
+    {
+      "field": "event_id",
+      "type": "text",
+      "required": true,
+      "definition": "Unique source event ID; one row per event, not one per covenant."
+    },
+    {
+      "field": "source_id",
+      "type": "text",
+      "required": true,
+      "definition": "Approved source identifier; foreign key to Sources.source_id."
+    },
+    {
+      "field": "source_record_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable source key; never a worksheet row number."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": true,
+      "definition": "Business reporting date from this source, not publication date."
+    },
+    {
+      "field": "region",
+      "type": "text",
+      "required": true,
+      "definition": "NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap."
+    },
+    {
+      "field": "owner_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable staff identifier; use UNASSIGNED explicitly when unresolved."
+    },
+    {
+      "field": "owner_name",
+      "type": "text",
+      "required": true,
+      "definition": "Display name from controlled owner mapping."
+    },
+    {
+      "field": "team_lead",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled team lead display name; UNASSIGNED if unresolved."
+    },
+    {
+      "field": "product",
+      "type": "text",
+      "required": true,
+      "definition": "Controlled product program; UNMAPPED if unresolved."
+    },
+    {
+      "field": "relationship_id",
+      "type": "text",
+      "required": true,
+      "definition": "CARE or approved relationship identifier, stored as text."
+    },
+    {
+      "field": "relationship_name",
+      "type": "text",
+      "required": true,
+      "definition": "Relationship display name; never substitute a CA ID."
+    },
+    {
+      "field": "covenant_id",
+      "type": "text",
+      "required": true,
+      "definition": "Covenant key associated with event."
+    },
+    {
+      "field": "event_date",
+      "type": "date",
+      "required": true,
+      "definition": "Maker date from activity source."
+    },
+    {
+      "field": "month",
+      "type": "text",
+      "required": true,
+      "definition": "Access output: event_date formatted YYYY-MM."
+    },
+    {
+      "field": "event_type",
+      "type": "text",
+      "required": true,
+      "definition": "DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED in Access."
+    }
+  ],
+  "Sources": [
+    {
+      "field": "source_id",
+      "type": "text",
+      "required": true,
+      "definition": "Unique source/feed identifier."
+    },
+    {
+      "field": "domain",
+      "type": "text",
+      "required": true,
+      "definition": "Monitoring category, PORTFOLIO, HISTORY or ACTIVITY."
+    },
+    {
+      "field": "source_name",
+      "type": "text",
+      "required": true,
+      "definition": "Human-readable extract name."
+    },
+    {
+      "field": "source_file",
+      "type": "text",
+      "required": true,
+      "definition": "Actual original filename or approved report reference."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": true,
+      "definition": "Source business date; one per selected source snapshot."
+    },
+    {
+      "field": "coverage",
+      "type": "text",
+      "required": true,
+      "definition": "ALL_OBLIGATIONS or EXCEPTIONS_ONLY; an exceptions-only feed cannot support clearance rate."
+    },
+    {
+      "field": "record_count",
+      "type": "integer",
+      "required": true,
+      "definition": "Reconciled published row count for this source, after exclusions."
+    },
+    {
+      "field": "source_owner",
+      "type": "text",
+      "required": true,
+      "definition": "Accountable source provider."
+    },
+    {
+      "field": "quality_note",
+      "type": "text",
+      "required": false,
+      "definition": "Specific limitation, stale date or mapping issue; not a generic quality score."
+    }
+  ],
+  "Documents": [
+    {
+      "field": "document_id",
+      "type": "text",
+      "required": true,
+      "definition": "Stable document ID."
+    },
+    {
+      "field": "category",
+      "type": "text",
+      "required": true,
+      "definition": "Monitoring category or ALL."
+    },
+    {
+      "field": "title",
+      "type": "text",
+      "required": true,
+      "definition": "Document title."
+    },
+    {
+      "field": "url",
+      "type": "text",
+      "required": true,
+      "definition": "Approved https or same-origin relative URL; javascript/file/data URLs rejected."
+    },
+    {
+      "field": "as_of_date",
+      "type": "date",
+      "required": false,
+      "definition": "Document reporting date."
+    }
+  ]
+}

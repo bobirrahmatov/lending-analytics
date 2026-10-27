@@ -1,0 +1,33 @@
+{
+  "schema_version": 2,
+  "bundle_id": "demo-20261023",
+  "is_demo": true,
+  "published_at": "2026-10-23",
+  "rule_version": "proposed-1",
+  "files": {
+    "monitoring": {
+      "filename": "credit-monitoring-demo-20261023.json",
+      "rows": 356
+    },
+    "portfolio": {
+      "filename": "credit-portfolio-demo-20261023.json",
+      "rows": 120
+    },
+    "history": {
+      "filename": "credit-history-demo-20261023.json",
+      "rows": 360
+    },
+    "activity": {
+      "filename": "credit-activity-demo-20261023.json",
+      "rows": 90
+    },
+    "sources": {
+      "filename": "credit-sources-demo-20261023.json",
+      "rows": 8
+    },
+    "documents": {
+      "filename": "credit-documents-demo-20261023.json",
+      "rows": 0
+    }
+  }
+}

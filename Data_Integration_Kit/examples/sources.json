@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "bundle_id": "demo-comparison-20261025",
+  "rows": [
+    {
+      "source_id": "SRC_COVENANTS",
+      "domain": "COVENANTS",
+      "source_name": "Covenants monitoring",
+      "source_file": "ILLUSTRATIVE aligned scenario / COVENANTS",
+      "as_of_date": "2026-08-31",
+      "coverage": "ALL_OBLIGATIONS",
+      "record_count": 200,
+      "source_owner": "Demo source owner",
+      "quality_note": "Synthetic comparison scenario derived from local field contracts; not live or historical results."
+    },
+    {
+      "source_id": "SRC_CA",
+      "domain": "CA",
+      "source_name": "Ca monitoring",
+      "source_file": "ILLUSTRATIVE aligned scenario / CA",
+      "as_of_date": "2026-08-31",
+      "coverage": "ALL_OBLIGATIONS",
+      "record_count": 48,
+      "source_owner": "Demo source owner",
+      "quality_note": "Synthetic comparison scenario derived from local field contracts; not live or historical results."
+    }
+  ],
+  "note": "ILLUSTRATIVE EXCERPT ONLY. Not a complete release and not suitable for publication. Use release/ for reconciled files."
+}

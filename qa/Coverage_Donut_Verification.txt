@@ -1,0 +1,29 @@
+PORTFOLIO COVERAGE AND DONUT VERIFICATION — 25 October 2026
+Build: 42d0e3c3b36e
+
+Coverage: exactly four rows (Facilities 120, Relationships 65, CAs expired 24,
+Facilities expired 24 in the illustrative preview). Default 1512px desktop:
+New deals, Pending Closure, then coverage on the same row. Smaller screens stack.
+No added monitoring/critical-count rows. Count drill-through retained.
+
+Pending Closure: View data removed; Methodology/Expand restored. Full-page
+analysis includes four colored SVG KPI cards, regional table, aging, product
+count/TFA, facility type, underwriter and relationship charts, source records.
+Financial balance KPI expansions include regional/product/underwriter analyses.
+Original LPTM-Hub/PAL-dashboard.html remains unchanged.
+
+Shared CreditDonut decorates main portfolio, generic monitoring and expanded pie
+charts. Rounded white-separated segments, center totals, labels/value/share list.
+Category colors and source populations retained; no invented comparison badges.
+Browser label click: Approved Facilities > Real Estate selected 10 matching
+records from the 30-record MTD approval cohort. Close restored dashboard.
+Past Due Covenants: center 82, shares 51.2%, 24.4%, 24.4%; expanded product donut
+uses the same component. Pipeline expansion shows 4 / $51.3m / 0 / $12.8m.
+
+Browser: 1512px desktop and 390px mobile, no horizontal page overflow; mobile
+expanded KPI tiles and chart controls inspected. No captured console errors.
+
+Passed: test_donut.cjs, test_pal_analysis.cjs, test_portfolio_view.cjs,
+test_chart_details.cjs; verify_page_package.py (13 generated pages).
+All checks use illustrative/local fixtures. Live Confluence and Access execution
+are not verified by these checks.

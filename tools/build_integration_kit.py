@@ -1,0 +1,155 @@
+"""Build a reviewable data handoff from current schemas and validated illustrative files."""
+import json,html,shutil,zipfile
+from pathlib import Path
+P=Path(__file__).resolve().parents[1];K=P/'Data_Integration_Kit';K.mkdir(exist_ok=True)
+(K/'page-examples/sources.json').unlink(missing_ok=True)
+S=json.loads((P/'tools/schema.json').read_text());I=json.loads((P/'tools/input-schema.json').read_text())
+M=json.loads((P/'demo-comparison/credit-manifest.json').read_text())
+D={k:json.loads((P/'demo-comparison'/v['filename']).read_text()) for k,v in M['files'].items()}
+keys={'monitoring':'item_id','portfolio':'facility_key','activity':'event_id','history':'history_id','sources':'source_id','documents':'document_id'}
+grains={'monitoring':'One obligation association per source/cycle: covenant × relationship × facility where applicable.','portfolio':'One facility in the current source snapshot.','activity':'One recorded maker event, not one covenant.','history':'One dated facility snapshot when comparison_ready=true; otherwise explicitly aggregated history.','sources':'One source/feed control row for its current reporting date.','documents':'One reference document; entity linkage requires extensions below.'}
+pages=[
+ ('lendingAnalytics','Lending Analytics','Choose portfolio, action management or a monitoring area','No financial dataset; credit-pages.js contains native Confluence page IDs','Destination dashboards load validated shared release files'),
+ ('portfolio','Portfolio','Financial position, approvals, pipeline, return and consolidated monitoring','portfolio + monitoring (COVENANTS, CCM and other action categories) + history','activity; linked documents; previous; covenant_history'),
+ ('overview','Underwriters Summary','High-level action distribution, accountable-owner workload, regional distribution and critical items','monitoring (all six categories)','portfolio; activity; history; documents; previous; covenant_history'),
+ ('workload','Underwriter workload','Accountable-owner action counts, critical work and action aging; includes specialists supplied in source','monitoring (all six categories)','portfolio; activity; history; documents; previous; covenant_history'),
+ ('deepdive','Relationship deep dive','Relationship facilities, exposure, utilization and supplied return','portfolio','monitoring; activity; history; documents; previous; covenant_history'),
+ ('COVENANTS','Covenants','Past due / coming due associations and covenant activity','monitoring where category=COVENANTS + activity; portfolio for linked exposure','previous; covenant_history; history; documents'),
+ ('CA','CA expiration','CA workflow obligations, authorization status and expiry','monitoring where category=CA','portfolio; activity; history; documents; previous; covenant_history'),
+ ('FACILITY','Facility maturity','Maturity obligations, due horizon and owner follow-up','monitoring where category=FACILITY','portfolio; activity; history; documents; previous; covenant_history'),
+ ('CCM','CCM','CCM lifecycle, classification, approval due dates and owner queue','monitoring where category=CCM','portfolio; activity; history; documents; previous; covenant_history'),
+ ('INSURANCE','Insurance','Certificates, review status and insurance exceptions','monitoring where category=INSURANCE','portfolio; activity; history; documents; previous; covenant_history'),
+ ('APPRAISALS','Appraisals','Valuation requirements, due dates, aging and owner queue','monitoring where category=APPRAISALS','portfolio; activity; history; documents; previous; covenant_history'),
+ ('activity','Covenant activity','Deferred, waived and deleted maker events','activity','monitoring covenant associations; portfolio; previous; documents; history'),
+ ('trends','Portfolio trends (compatibility URL)','Existing Trends route resolves to Portfolio; no second sidebar page is needed','Same as portfolio; history supports trends','Same as portfolio')]
+for sub in ['release','schema','examples','page-examples','access','excel','tools','qa']:(K/sub).mkdir(exist_ok=True)
+for f in ['credit-manifest.json']+[v['filename'] for v in M['files'].values()]:shutil.copy2(P/'demo-comparison'/f,K/'release'/f)
+# Optional retained covenant history, built from the same validated current/prior payloads.
+from build_covenant_history import snapshot
+history_rows=[];history_portfolio=[];history_controls=[]
+for dataset in [D['previous']['datasets'],{k:v['rows'] for k,v in D.items() if k!='previous'}]:
+ control,rows=snapshot({k:{'rows':v} for k,v in dataset.items()})
+ history_portfolio.extend(control.pop('_portfolio_rows',[]));history_rows.extend(rows);history_controls.append(control)
+ch={'schema_version':2,'bundle_id':M['bundle_id'],'is_demo':True,'rows':history_rows,'snapshots':history_controls,'portfolio_rows':history_portfolio}
+ch_name='credit-covenant_history-'+M['bundle_id']+'.json'
+(K/'release'/ch_name).write_text(json.dumps(ch,separators=(',',':')))
+kit_manifest={**M,'files':{**M['files'],'covenant_history':{'filename':ch_name,'rows':len(history_rows)}}}
+(K/'release/credit-manifest.json').write_text(json.dumps(kit_manifest,indent=2))
+(K/'examples/covenant_history.json').write_text(json.dumps({**ch,'rows':history_rows[:2],'portfolio_rows':history_portfolio[:2],'note':'ILLUSTRATIVE EXCERPT ONLY. Full reconciled history is in release/.'},indent=2))
+for f in ['schema.json','input-schema.json','legacy-mappings.json']:shutil.copy2(P/'tools'/f,K/'schema'/f)
+# Validator retains its existing tools-relative schema location.
+for f in ['validate_release.py','pal_contract.py','schema.json','build_covenant_history.py','partition_release.py']:shutil.copy2(P/'tools'/f,K/'tools'/f)
+for f in (P/'access').glob('*.bas'):shutil.copy2(f,K/'access'/f.name)
+for f in (P/'excel').glob('*.xlsx'):shutil.copy2(f,K/'excel'/f.name)
+for f in ['Covenants_Risk_Reporting.txt','Covenants_Field_Parity.txt','Lending_Analytics_Deployment.txt']:shutil.copy2(P/f,K/f)
+for f in ['Data_Linkage_Verification.json','Navigation_Data_Handoff_Verification.txt','View_Identity_Verification.txt','Monitoring-Sidebar-Expanded.png','Monitoring-Sidebar-Collapsed.png']:shutil.copy2(P/'qa'/f,K/'qa'/f)
+for name,envelope in D.items():
+ if name=='previous':sample={**envelope,'rows':envelope['rows'][:2],'datasets':{k:v[:2] for k,v in envelope['datasets'].items()}}
+ else:sample={**envelope,'rows':envelope['rows'][:2]}
+ sample['note']='ILLUSTRATIVE EXCERPT ONLY. Not a complete release and not suitable for publication. Use release/ for reconciled files.'
+ (K/'examples'/(name+'.json')).write_text(json.dumps(sample,indent=2))
+for key,title,question,primary,related in pages:
+ pkey=key.lower();kind='portfolio' if key in ['portfolio','deepdive','trends'] else 'activity' if key=='activity' else 'monitoring'
+ rows=D[kind]['rows'];rows=[r for r in rows if r.get('category')==key] if key in ['COVENANTS','CA','FACILITY','CCM','INSURANCE','APPRAISALS'] else rows
+ if key=='lendingAnalytics':kind=None;rows=[]
+ sample={'is_demo':True,'page':key,'title':title,'primary_dataset':kind,'eligible_sample_rows':len(rows),'note':'Inspection sample only. Pages read shared release files, not these excerpts. See page-source-map.json for every primary/enrichment dependency.','rows':rows[:3]}
+ if key in ['portfolio','COVENANTS']:sample['monitoring_examples']=[next(r for r in D['monitoring']['rows'] if r['category']==c) for c in ['COVENANTS','CCM','FACILITY']]
+ (K/'page-examples'/(pkey+'.json')).write_text(json.dumps(sample,indent=2))
+(K/'page-source-map.json').write_text(json.dumps([dict(zip(['page_key','title','question','primary','related'],row)) for row in pages],indent=2))
+# A coherent, real subset of the illustrative release, without synthetic joins.
+p=max(D['portfolio']['rows'],key=lambda p:sum(r['facility_id']==p['facility_id'] for r in D['monitoring']['rows']))
+entity=lambda r:all(r.get(k)==p.get(k) for k in ['region','relationship_id','facility_id','as_of_date'])
+(K/'examples/linked-journey.json').write_text(json.dumps({'is_demo':True,'note':'Exact same-date entity subset; full source controls remain in release/.','facility':p,'monitoring':[r for r in D['monitoring']['rows'] if entity(r)],'activity':[r for r in D['activity']['rows'] if entity(r)]},indent=2))
+(K/'examples/document-entity-extension.json').write_text(json.dumps({'is_demo':True,'note':'Proposed ETL extension example. Base Access Documents export does not emit entity keys. Not included in release/.','row':{'document_id':'ILLUSTRATIVE-DOC-001','category':'COVENANTS','title':'Illustrative supporting review','url':'https://example.invalid/review','as_of_date':p['as_of_date'],'region':p['region'],'relationship_id':p['relationship_id'],'facility_id':p['facility_id'],'ca_id':p['ca_id']}},indent=2))
+source_catalog=json.loads((P/'tools/workbook-content.json').read_text())['Source Catalogue']
+(K/'source-catalog.json').write_text(json.dumps(source_catalog,indent=2))
+parts=[]
+def h(title):parts.append('<h2>'+html.escape(title)+'</h2>')
+def para(t):parts.append('<p>'+html.escape(t)+'</p>')
+def table(headers,rows):parts.append('<div class="scroll"><table><thead><tr>'+''.join('<th>'+html.escape(str(x))+'</th>' for x in headers)+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+html.escape(str(x))+'</td>' for x in row)+'</tr>' for row in rows)+'</tbody></table></div>')
+def link(path,title):parts.append('<p><a href="'+path+'">'+html.escape(title)+'</a></p>')
+h('Portfolio versus Underwriters Summary')
+para('Portfolio answers: How large is the portfolio, where is exposure concentrated, what is approved or expiring, and what monitoring risk needs attention? It consolidates facility balances, covenant and CCM obligations, and dated history. Underwriters Summary answers: Which obligations need action across the six monitoring areas, who owns them, and where are critical items concentrated? Their overlap is intentional; their counting units differ.')
+para('The original Overview is Underwriters Summary, retaining the overview route key and existing page ID. It is the high-level monitoring view. Underwriter workload remains the detailed owner queue and aging view. Both include specialist-owned obligations where supplied; the title does not introduce an owner-role filter. Portfolio remains the separate PAL financial dashboard. Rename the native Confluence overview page to Underwriters Summary and portfolio page to Portfolio. The Sources & definitions page is removed; the sources dataset remains required for validation and lineage.')
+h('What to give each source owner')
+para('Collect the original source records and stable native IDs, snapshot date, approved product/region/owner mappings, and reconciled controls. Map to Credit_Input_Template.xlsx, run the Access preparation, then publish six versioned JSON datasets plus the manifest. The browser does not load raw spreadsheets. Complete field lists below are generated from the actual input and output schemas, not inferred from screenshots.')
+link('excel/Credit_Input_Template.xlsx','Input workbook: staging sheets and mapping sheets')
+link('excel/Credit_Data_Contract.xlsx','Existing Excel contract and legacy mappings (use this guide for current UI names and extension gaps)')
+link('excel/Credit_Prepared_Example.xlsx','Prepared workbook example (separate illustrative scenario; do not mix into release/)')
+link('source-catalog.json','Original source catalogue and lineage references')
+table(['Upstream feed','Required native/business identity','Destination / limits'],[
+['Portfolio_current and regional portfolio extracts','Source + facility ID + snapshot date; region and relationship ID retained','Portfolio; confirm parent/child balance eligibility and USD basis.'],
+['Covenants_current','Source + covenant + relationship + facility association + obligation/cycle','Monitoring/COVENANTS. Covenant number alone is not unique.'],
+['CCM_current; retained CCM_previous','Source + relationship + CCM approval cycle; retain facility association when explicit','Monitoring/CCM. Classification, next_month_end, approval due date and ccm_status are distinct fields.'],
+['Covenants_Activity_Report','Native event ID; covenant ID + relationship + region + Maker Date; facility and CA if supplied','Activity. DEFERRED does not mean cleared. Maker Date is not Deferred Date.'],
+['CA workflow extract (not supplied)','CA ID + approval/review cycle + stable workflow obligation ID','Monitoring/CA. Portfolio expiration alone cannot infer PENDING_AUTH. Avoid repeating one CA action per linked facility.'],
+['Facility maturity extract / prepared facility feed','Source + facility + maturity/review cycle','Monitoring/FACILITY; reconcile its eligibility with portfolio dates, not balances alone.'],
+['Insurance extract (not supplied)','Policy/requirement + facility association + renewal cycle','Monitoring/INSURANCE. Facility ID alone is not a policy key.'],
+['Appraisal extract (not supplied)','Collateral + valuation requirement + cycle + explicit facility association','Monitoring/APPRAISALS. Facility ID alone is not a valuation key.'],
+['ROTCE_current','Relationship ID + return period','Join consistently upstream into portfolio.rotce; decimal fraction, never sum ratios. Explicit return period is not currently a mandatory output field.'],
+['Product_Mapping / Product_Map','region + raw_product','Controlled product; richer PSE/SFT/category mapping must be supplied by source adapter.'],
+['Regions_Mapping / Region_Map','control_unit','Exact region mapping; no default region.'],
+['Owner_Map','raw_owner (unambiguous approved alias)','owner_id + owner_name + team_lead. If aliases collide across feeds, extend mapping with source_id before use.'],
+['Retained prepared releases','Same entity key at distinct reporting dates','Previous snapshot and history, not a fabricated change from current data.']])
+h('Published files, primary keys and join keys')
+para('Large datasets: the Access exporter now writes immutable parts below 8 MB. Each manifest entry supplies rows and parts [{filename,rows}], or the original single filename/rows form. The browser combines and validates the entire logical dataset before use; primary keys remain unique across parts. Use validate_release.py on the publication folder. No Python runtime is required for the Access export. partition_release.py is an optional equivalent for an existing unsplit export. Optional previous and covenant_history envelopes still require each file below 10 MB; the current publisher rejects oversized comparisons rather than trimming records. Windows Access compilation and export need validation on the actual Windows installation.')
+para('Every JSON envelope uses schema_version=2, the same bundle_id as credit-manifest.json, and rows. Every field in schema.json must be present; optional means null is allowed, not that the field may be silently omitted. Keys are text and must preserve leading zeros. Primary keys below are unique within each dataset/snapshot; across an archive retain as_of_date and bundle_id. Never generate a key from worksheet position.')
+table(['Logical file','Example publication name','Primary key','Record grain'],[[k,M['files'][k]['filename'],v,grains[k]] for k,v in keys.items()])
+para('Required core: monitoring, portfolio, history, activity, sources and documents entries in manifest.files. A file with zero rows is permitted where the source is genuinely unavailable (for example documents); disclose missing coverage. This does not make all financial or analytical views complete. Startup loads monitoring and sources even for Portfolio. Related enrichment failures are isolated so the primary page can remain usable.')
+para('Optional previous file: schema_version + current bundle_id + rows (equal to datasets.monitoring), datasets.monitoring/portfolio/activity/sources and retained historical/document data if supplied. Its manifest rows counts previous monitoring rows, not all nested rows. Keys repeat between periods by design; evaluate per snapshot. Daily comparisons require the exact preceding weekday and reconciled matching source coverage.')
+para('Optional covenant_history: rows of retained monitoring associations, snapshots with as_of_date, complete flag and source controls, and optional portfolio_rows with portfolio_sources. Identity is (as_of_date,item_id); associated balance history is (as_of_date,facility_key). Use build_covenant_history.py with validated releases, not hand-created aggregate comparisons.')
+link('release/credit-manifest.json','Complete illustrative release manifest (current plus previous)')
+for name in [*keys,'previous','covenant_history']:link('examples/'+name+'.json',name+' — short JSON example')
+h('Linking rules and cardinalities')
+table(['Link','Cardinality / exact condition','Failure behavior'],[
+['Fact → source control','Many rows → one source_id; current fact.as_of_date must equal Sources.as_of_date; source domain must match','Reject wrong feed/date and unreconciled source counts.'],
+['Monitoring / activity → facility','Many associations → one (region, relationship_id, facility_id, as_of_date); supplied CA IDs must agree','Keep original records; exposure unavailable for missing, ambiguous, conflicting-date/CA or non-USD matches.'],
+['Facility snapshot balance','One facility snapshot, regardless of how many covenant links','Deduplicate before summing TFA/OSUC; linked partial totals are not complete portfolio totals.'],
+['Covenant event without facility ID','Explicit (region, relationship_id, covenant_id, as_of_date) associations only','Do not guess links from names or owners; ambiguous scope must not bring unrelated facilities.'],
+['Previous related rows','Same composite entity, earlier as_of_date, compatible CA','Related history is not automatically a comparable daily KPI population.'],
+['Owner / product / region','Approved exact mapping → canonical code','Unresolved values remain explicit UNASSIGNED/UNMAPPED; resolve before claiming complete coverage.'],
+['History','Daily (as_of_date,facility_key) or declared aggregate grain','Do not sum balances over dates. Aggregate history cannot be drilled into invented facility records.'],
+['Documents','Base file lists references; entity drill needs region + relationship_id + facility_id + as_of_date (+ compatible CA)','Generic category-only documents do not automatically appear as entity-specific evidence.']])
+para('Important current restriction: validate_release.py and preparation currently require globally unique facility_id across the current portfolio, although the UI protects joins with region + relationship + facility. If your native IDs are region-local or a facility is legitimately associated with multiple relationships, do not drop rows to satisfy validation. Agree the master facility identity and allocation/association contract, then update schema, Access, validation and UI together. No such source-system change has been assumed here.')
+link('examples/linked-journey.json','One coherent facility → monitoring → activity journey from actual demo rows')
+h('Every page and its data dependencies')
+table(['Page / stable route','Business question','Primary datasets','Related data'],[[title+' ['+key+']',q,primary,related] for key,title,q,primary,related in pages])
+para('All these pages use the same published files. Do not create a separate authoritative database/file per page. page-examples/ contains inspection excerpts only. Source controls always show the complete published feed controls, not the filtered table count. Trends is a compatibility route; new navigation should use Portfolio.')
+for key,title,*_ in pages:link('page-examples/'+key.lower()+'.json',title+' — sample records')
+h('Fields still needed for the complete linked journey')
+table(['Dataset','Current support','Needed for richer linking / production action'],[
+['Activity','Base contract has event_id, covenant_id, relationship_id, region, event_date/month/type, owner and source date','Add facility_id and ca_id where supplied; preserve deferred_date, due_date, cumulative_deferred_days and modified_in_reporting_month for activity-specific analysis. Demo/UI support these extras, but base Access input/output schemas do not emit all of them. Update staging, export, field dictionary and tests together.'],
+['Documents','Reference list only; no sample documents in the reconciled release','Add region, relationship_id, facility_id and matching as_of_date for entity linking; source_id if provenance is needed. Do not claim the extension example is already produced by Access.'],
+['History','Daily facility_key and owner/team available; legacy aggregates supported','Current terminal entity matcher needs region, relationship_id, facility_id and date. Base history lacks relationship_id/facility_id and detailScope does not expose arbitrary portfolio history as a related tab. This requires a designed ETL/UI extension; trend charts and previous snapshot tabs already work.'],
+['Covenant and other monitoring IDs','Stable item_id preserves each association','Native cycle, policy, collateral and requirement IDs must be encoded in stable item_id/source_record_id or carried explicitly; actual raw CA/insurance/appraisal formats are still needed.'],
+['ROTCE','Consistent relationship decimal return in current snapshot','Retain explicit source return period in a coordinated extension for cross-period attribution; do not infer it from facility date.']])
+link('examples/document-entity-extension.json','Proposed document entity-link example (not part of validated release)')
+h('Left sidebar and deployment')
+para('Keep the native Confluence tree, navbar, links and collapse/branch handlers. The dashboard adapter only styles and marks existing nodes; it never creates a second sidebar. The local previews have no production sidebar by design. The browser fixture simulates the host tree, so it cannot establish live Confluence behavior.')
+para('Set lendingAnalytics to the native Lending Analytics parent page ID, then set the real dashboard page IDs in attachments/credit-pages.js and replace REPLACE_WITH_ATTACHMENTS_PAGE_ID in the shared include and page fragments. Currently all page IDs are placeholders. Keep route key overview and change the native Confluence page title to Underwriters Summary. Place the 11 distinct dashboards beneath Lending Analytics. Each dashboard has a distinct SVG reused in both sidebar states, with compact keyboard/hover tooltips. The top-left content breadcrumb reads Lending Analytics then the current page, linking the parent only when its ID is valid. Do not add the legacy Trends alias as a duplicate overview. Native sidebar labels come from actual page titles, not the JavaScript label map.')
+para('Local sidebar checks cover one tree, unchanged native hrefs, preserved click handlers, user-controlled collapse/expand, nested branch toggling, current page marking, accessible compact tooltips and teardown. Before live signoff: verify those behaviors with ordinary viewer permissions, real page IDs, navigation to every page, back/forward, keyboard focus, expanded-dialog Close and no content overlap at narrow widths. No actual native page title or permission was changed in this task.')
+link('qa/Navigation_Data_Handoff_Verification.txt','Navigation and release verification report')
+link('qa/Monitoring-Sidebar-Expanded.png','Sidebar browser proof: simulated native host')
+h('Validation and publishing sequence')
+para('1. Confirm source owners, raw formats, stable IDs, reporting dates, eligible populations and coverage. Resolve critical rule_version=proposed-1 thresholds with the business owner. Do not treat proposed rules as signed-off policy.')
+para('2. Populate the staging workbook. Import the three Access modules and use the existing schema/install workflow. On Windows run ImportCreditInputs and BuildCreditRelease into a new release directory. Retain the prior prepared workbook for the optional previous-snapshot argument. Windows Access execution remains a required dry run; this environment has not executed VBA.')
+parts.append('<pre>BuildCreditRelease "C:\\CreditMonitoring\\releases\\20261027-01", "20261027-01", "C:\\CreditMonitoring\\releases\\prior\\Credit_Prepared_prior.xlsx"\npython3 tools/validate_release.py release --allow-demo</pre>')
+para('The Python command above validates the included illustrative release only. For real data use validate_release.py YOUR_RELEASE without --allow-demo. Production rejects is_demo=true. Publish versioned data files first, optional previous/history files next, then manifest last; retain rollback files. All attachments and archives must remain strictly below 10,000,000 bytes.')
+para('Local results: all 444 monitoring records matched exact same-date demo facilities; all 420 demo activity events linked to facilities. Negative checks rejected date mismatches, ambiguous portfolio records, conflicting CA IDs and non-USD exposure; duplicate associations retained one facility balance. Current and prior release validation passed. These figures validate the synthetic fixture, not external feed completeness.')
+link('qa/Data_Linkage_Verification.json','Machine-readable join audit and limitations')
+h('Complete output field dictionary')
+para('Required=yes means non-null and nonblank. Required=no permits null. Conditional business requirements, such as covenant_id for COVENANTS, still apply. Additional JSON properties may be preserved by the UI but are not automatically imported/exported by Access.')
+for entity,fields in S.items():
+ parts.append('<h3>'+entity+'</h3>');table(['Field','Type','Required','Definition'],[[f['field'],f['type'],'yes' if f['required'] else 'no',f['definition']] for f in fields])
+h('Complete staging workbook field dictionary')
+para('These are the actual input-schema fields consumed by the existing workbook/Access staging contract. Calculated output fields are prepared downstream. History is retained from releases rather than imported as a generic current-input sheet.')
+for entity,fields in I.items():
+ parts.append('<h3>'+entity+'</h3>');table(['Field','Type','Required','Definition'],[[f['field'],f['type'],'yes' if f['required'] else 'no',f['definition']] for f in fields])
+body=''.join(parts)
+(K/'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Credit dashboard data integration guide</title><style>body{font:16px/1.55 system-ui;color:#183453;margin:0;background:#f5f7fa}main{max-width:1200px;margin:auto;padding:36px;background:white}h1{font-size:32px}h2{margin-top:42px}h3{margin-top:30px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:12px;text-align:left;border-bottom:1px solid #dbe3eb;vertical-align:top}th{background:#edf3f9}.scroll{overflow:auto}a{color:#2456cf}pre{white-space:pre-wrap;padding:20px;background:#edf3f9}p{max-width:1050px}@media print{body{background:white}main{padding:0}h2,h3{break-after:avoid}tr{break-inside:avoid}}</style><main><h1>Credit dashboard data integration guide</h1><p>27 October 2026 · Source code audit · Illustrative data only</p>'+body+'</main></html>')
+(K/'README.txt').write_text('Open index.html for the page-by-page guide, primary keys, joins, field dictionaries and examples.\nrelease/ is a complete validated ILLUSTRATIVE current + prior release. Never publish it as production.\nexamples/ and page-examples/ are partial inspection samples, not independently publishable releases.\nexcel/ contains existing input/contract/prepared workbooks; the prepared workbook is a separate example scenario.\naccess/ contains the three current VBA modules. tools/ contains the standalone release validator and its schema/dependency.\nActual Confluence IDs, raw CA/insurance/appraisal source formats, Windows Access dry run and richer entity-key extensions remain required as described in the guide.\n')
+with zipfile.ZipFile(P/'Data_Integration_Kit.zip','w',zipfile.ZIP_DEFLATED) as z:
+ for f in sorted(K.rglob('*')):
+  if f.is_file():assert f.stat().st_size<10_000_000;z.write(f,f.relative_to(K))
+assert (P/'Data_Integration_Kit.zip').stat().st_size<10_000_000
+print('Integration kit:',len(list(K.rglob('*'))),'entries;', (P/'Data_Integration_Kit.zip').stat().st_size,'bytes')

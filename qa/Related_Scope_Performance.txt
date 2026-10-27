@@ -1,0 +1,1 @@
+PASS related scope: 354 differential fixtures; exact dates/keys/CA and duplicates; 75,000 facilities + prior snapshots 962 ms (1050000 entity reads); 75,000 repeated covenant events + associations 1210 ms. Model-only timings, not browser or Confluence load time.

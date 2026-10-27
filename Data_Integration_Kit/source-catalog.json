@@ -1,0 +1,132 @@
+{
+  "headers": [
+    "Source",
+    "Worksheet / columns",
+    "Evidence",
+    "Grain",
+    "Dashboard use",
+    "Handling / limitation"
+  ],
+  "rows": [
+    [
+      "Portfolio regional extracts",
+      "NAM Report 1; EMEA/APAC first sheet",
+      "LPTM-Hub/PAL-ETL.html:7717",
+      "Facility \u00d7 source snapshot",
+      "TFA, OS, OSUC, classification, owners, maturity, new business",
+      "Exact regional field maps in Legacy Mappings; currency basis must be confirmed"
+    ],
+    [
+      "Portfolio_current.xlsx / .xlsb",
+      "Dashboard first sheet; ETL consolidated output",
+      "LPTM-Hub/PAL-dashboard.html:3356; PAL-ETL.html:5399",
+      "Facility snapshot",
+      "Portfolio / deep dive; facility maturity candidates",
+      "Legacy reader .xlsx and writer .xlsb mismatch. Replace with prepared JSON."
+    ],
+    [
+      "Covenants_current.xlsx / .xlsb",
+      "First worksheet",
+      "PAL-ETL.html:6827; covenants.js:1179",
+      "Covenant \u00d7 facility \u00d7 cycle \u00d7 source snapshot",
+      "Covenants, aging, due dates, accountable owner",
+      "Source covenant ID alone may repeat across facilities/cycles; preserve full native key."
+    ],
+    [
+      "Covenants_Activity_Report.xlsx",
+      "Covenant Compliance; Maker Date",
+      "covenants.js:1204; 1418",
+      "One maker event",
+      "Deferred / waived / deleted monthly events",
+      "Activity counts are events, not unique covenants. Add stable event IDs."
+    ],
+    [
+      "CCM_current.xlsx / .xlsb",
+      "First worksheet; regional variants",
+      "PAL-ETL.html:8367",
+      "Relationship \u00d7 CCM approval cycle",
+      "Classification, next month end, next approval, status",
+      "APAC Specialist maps to Underwriter; EMEA CA ID is not a client name."
+    ],
+    [
+      "CCM_previous.xlsx",
+      "Previous month snapshot",
+      "PAL-dashboard.html:3359",
+      "Relationship \u00d7 previous approval cycle",
+      "Legacy monthly comparison",
+      "Do not invent prior deltas without aligned historical cycles; previous CCM comparison not populated here."
+    ],
+    [
+      "ROTCE_current.xlsx",
+      "clientRelationshipId; variableRoTCE",
+      "PAL-ETL.html:6564",
+      "Relationship \u00d7 return reporting period",
+      "Relationship return, decimal fraction",
+      "Missing values remain null. Check uniqueness before a many-to-one join."
+    ],
+    [
+      "Product_Mapping.xlsx",
+      "PSE map and category map",
+      "PAL-ETL.html:7019-7130",
+      "Region \u00d7 raw program/type",
+      "Product, subprogram, PSE",
+      "EMEA uses Facility Type; NAM/APAC use Product Program Name for category lookup."
+    ],
+    [
+      "Regions_Mapping.xlsx",
+      "Control Unit mapping",
+      "PAL-ETL.html:6906-7014",
+      "Unique control unit",
+      "NAM / LATAM / IPB / SARG region mapping",
+      "Never silently infer NAM. Current pipeline imports all regions."
+    ],
+    [
+      "Portfolio_Aggregated_History.xlsx",
+      "Historical aggregates",
+      "PAL-ETL.html:7190; PAL-dashboard.html:3368",
+      "Date \u00d7 region \u00d7 product \u00d7 subproduct \u00d7 commitment \u00d7 PSE",
+      "Stock trends",
+      "Legacy history has no staff grain. Owner/team filters unavailable in trends."
+    ],
+    [
+      "CA workflow extract",
+      "Not supplied; proposed input",
+      "Screenshots 7/8; portfolio has expiry only",
+      "CA \u00d7 approval cycle",
+      "Pending authorization versus upcoming expiry",
+      "Expiry alone cannot establish pending auth. CA extract must be deduplicated across facilities."
+    ],
+    [
+      "Insurance extract",
+      "Not supplied; proposed input",
+      "Screenshots 12/13",
+      "Policy/requirement \u00d7 facility \u00d7 renewal cycle",
+      "Awaiting certificate; pending review; two aging buckets",
+      "Facility ID alone is not a policy key. Named source file/owner required before production."
+    ],
+    [
+      "Appraisal extract",
+      "Not supplied; proposed input",
+      "Screenshots 14/28",
+      "Collateral \u00d7 valuation requirement \u00d7 cycle",
+      "Appraisal due date, specialist and delinquency",
+      "Collateral/requirement key is needed; not every facility row is one appraisal."
+    ],
+    [
+      "Owner and team mapping",
+      "Approved local mapping table",
+      "Proposed canonical owner map",
+      "One source alias \u2192 stable staff identity",
+      "Cross-domain workload",
+      "Do not join names by fuzzy text; one accountable owner per obligation."
+    ]
+  ],
+  "widths": [
+    34,
+    48,
+    53,
+    47,
+    65,
+    90
+  ]
+}

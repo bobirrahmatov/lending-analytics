@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),{JSDOM}=require('jsdom');
+const dom=new JSDOM('<div id="credit-hub"><div id="ch-content"></div></div>',{runScripts:'outside-only'}),w=dom.window,root=w.document.querySelector('#credit-hub'),charts=[];
+for(const file of ['credit-covenants.js','credit-monitoring.js'])w.eval(fs.readFileSync(path.join(__dirname,'../attachments',file),'utf8'));
+const normalized=w.CreditCovenantsData.normalize({'Covenant Compliance':'Deferred','Maker Date':'2026-07-11','Covenant Deferred Date':'2026-09-30','Cumulative Deferred Days':45},0,true);
+assert.equal(normalized.event_type,'DEFERRED');assert.equal(normalized.month,'2026-07');assert.equal(normalized.deferred_date,'2026-09-30');assert.equal(normalized.cumulative_deferred_days,45);
+w.CreditIcons={icon:()=>'',metric:()=>''};w.CreditCovenantRisk={delta:()=>({ready:false})};w.CreditSnapshots={compare:()=>({ready:false,prior:[],reason:'No history'})};w.CreditDonut=()=>{};
+w.Highcharts={chart(el,o){charts.push({el,o});return{destroy(){}}}};
+const rows=[0,15,45,120,null].map((days,i)=>({...normalized,cumulative_deferred_days:days,event_id:'D'+i,relationship_id:'R'+i,owner_id:'U'+i}));rows.push({...normalized,event_id:'W',event_type:'WAIVED',cumulative_deferred_days:900});
+const monitor=w.CreditMonitoring({root,esc:x=>String(x??''),register:()=>'',num:String,data:()=>({}),filters:()=>({}),addChart(){},methodology(){}});
+monitor.main('activity',rows);
+assert.equal(charts[0].o.chart.type,'column');assert.equal(charts[0].o.plotOptions.series.stacking,'normal');assert.equal(charts[0].o.series.reduce((n,s)=>n+s.data.reduce((n,p)=>n+p.y,0),0),6);
+const panel=w.document.createElement('div');panel.innerHTML='<div class="cd-chart-slot"></div><div class="cd-analysis-kpis"></div><div class="cd-analysis-grid"></div>';root.append(panel);const a={id:'mon-activity-chart-0',panel};monitor.expanded(a);
+const deferred=charts.find(c=>c.el.id==='mon-activity-chart-0-detail-2');assert.ok(deferred);assert.deepEqual(Array.from(deferred.o.xAxis.categories),['0 days','1–30 days','31–60 days','>90 days','Not supplied']);
+const records=deferred.o.series[0].data.flatMap(p=>p.custom.rows);assert.equal(records.length,5);assert.ok(records.every(r=>r.event_type==='DEFERRED'));assert.ok(records.some(r=>r.cumulative_deferred_days===null));assert.ok(records.some(r=>r.cumulative_deferred_days===0));assert.match(monitor.getMethod('mon-activity-chart-0-detail-2')[0],/not completion or clearance/);
+console.log('PASS covenant compliance mapping; Maker Date versus deferred deadline; stacked activity counts; deferred-only duration cohorts; zero/missing values and exact drill rows.');dom.window.close();

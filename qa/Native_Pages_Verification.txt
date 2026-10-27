@@ -1,0 +1,22 @@
+25 October 2026 — native-page architecture
+
+PASS — all 13 independent page entrypoints render expected titles/registers/charts.
+PASS — one stylesheet link per preview; no stylesheet in page macro fragments.
+PASS — no custom header, sidebar, breadcrumbs or top-tab navigation.
+PASS — native host fixture 240px expanded -> 64px collapsed -> 240px expanded;
+       existing collapse and branch handlers preserved; one sidebar; URLs unchanged.
+PASS — saved Focus layout survives reload; Restore default restores Overview layout.
+PASS — monitoring category KPI opens separate Covenants page with action-required drill.
+PASS — NAM region filter shows 28 covenant records; table contains only NAM.
+PASS — shared Rows per page dropdown selects 10; Next shows records 11–20.
+PASS — sort control responds; no-match search shows 0 results with valid pagination.
+PASS — row detail dialog opens using WCSUI; Escape closes; widget editor renders.
+PASS — 390px mobile composition visually inspected.
+PASS — seven PAL boundary-rule test groups.
+PASS — 13 production fragments, 26 JS pairs, inline syntax and attachment sizes.
+
+Production fragments use the native Confluence title. Standalone demo pages show
+one content title because Confluence is absent. Sidebar fixture is QA-only and
+is not packaged for deployment. The real internal Confluence instance has not
+been tested. Actual page IDs and approved data must be supplied at installation.
+Chart series palettes and source computation rules were not changed.

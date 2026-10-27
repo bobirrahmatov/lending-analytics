@@ -1,0 +1,93 @@
+[
+  {
+    "view": "portfolio",
+    "charts": 7,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "trends",
+    "charts": 1,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "deepdive",
+    "charts": 0,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "overview",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "workload",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "covenants",
+    "charts": 5,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "ca",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "facility",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "ccm",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "insurance",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "appraisals",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "activity",
+    "charts": 4,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  },
+  {
+    "view": "sources",
+    "charts": 0,
+    "errors": 0,
+    "overflow": false,
+    "undefinedText": false
+  }
+]

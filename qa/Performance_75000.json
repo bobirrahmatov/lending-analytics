@@ -1,0 +1,63 @@
+{
+  "scope": "Local Chrome browser. Parsing, validation, calculations and charts; excludes transfer, script download and input generation. Not live Confluence or Windows Access.",
+  "runs": [
+    {
+      "rows": 75000,
+      "distinctRelationships": 74945,
+      "payloadBytes": 139360471,
+      "jsonParseMs": 65,
+      "mountAndPaintMs": 893.5,
+      "parseToChartsMs": 958.5,
+      "firstFilterMs": 13.600000143051147,
+      "cachedFilterMeanMs": 0.0005999999046325683,
+      "matchingRows": 6250,
+      "renderedCharts": 7,
+      "processingUnderFiveSeconds": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
+    {
+      "rows": 75000,
+      "distinctRelationships": 74945,
+      "payloadBytes": 139360471,
+      "jsonParseMs": 70.89999985694885,
+      "mountAndPaintMs": 796.2000000476837,
+      "parseToChartsMs": 867.0999999046326,
+      "firstFilterMs": 13,
+      "cachedFilterMeanMs": 0.0005,
+      "matchingRows": 6250,
+      "renderedCharts": 7,
+      "processingUnderFiveSeconds": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
+    {
+      "build": "2d3b8d6b2e3c:portfolio",
+      "rows": 75000,
+      "distinctRelationships": 74945,
+      "payloadBytes": 139360471,
+      "jsonParseMs": 157.5,
+      "mountAndPaintMs": 1725.7999999523163,
+      "parseToChartsMs": 1883.2999999523163,
+      "firstFilterMs": 25.200000047683716,
+      "cachedFilterMeanMs": 0.0010999999046325684,
+      "matchingRows": 6250,
+      "renderedCharts": 7,
+      "processingUnderFiveSeconds": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    },
+    {
+      "build": "6e2a920f9d3a:portfolio",
+      "rows": 75000,
+      "distinctRelationships": 74945,
+      "payloadBytes": 139360471,
+      "jsonParseMs": 145.39999985694885,
+      "mountAndPaintMs": 1779.5,
+      "parseToChartsMs": 1925,
+      "firstFilterMs": 25.799999952316284,
+      "cachedFilterMeanMs": 0.001,
+      "matchingRows": 6250,
+      "renderedCharts": 7,
+      "processingUnderFiveSeconds": true,
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+    }
+  ]
+}

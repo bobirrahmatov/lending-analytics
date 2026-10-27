@@ -1,0 +1,27 @@
+SHARED TABLE TYPOGRAPHY — 27 OCTOBER 2026
+Build: 10739f0ae710
+
+Primary row labels and category/product/measure/area cells are 14 px, weight 600.
+Amount cells and clickable amounts use var(--ink), following host --ds-text or
+--wcs-theme-text tokens. There is no hardcoded black override in dark themes.
+Amount detection handles currency under date/bps headings, numeric amount fields
+and comparison columns containing both counts and balances in different rows.
+Hover underline and existing keyboard focus preserve the link affordance.
+Counts, statuses and comparison deltas retain their existing semantic colours.
+Advanced table surfaces and hover colours also use the existing surface tokens.
+
+CHECKS
+- Browser inspection: all 11 dashboard pages plus Portfolio expanded approvals.
+  All inspected currency cells have neutral amount styling. Row/category labels
+  are semibold, including the compact Portfolio coverage table. No page overflow.
+- Trend amount click opens the existing local drill with the selected snapshot.
+- test_table_controls.cjs passes search, sort, filters, pagination, missing values,
+  semantic pills, idempotent formatting and preserved DOM handlers.
+- test_table_drill.cjs passes 11 registers, seven Covenant datasets, nested
+  navigation, exact exports, state restoration and embedded controls.
+- Eight responsive Summary/Portfolio cases pass at 390, 900, 1280 and 1920 px.
+- Generated package checks pass matching fragments/scripts and attachment sizes.
+
+Evidence: Table_Typography_Browser.json, Table-Typography-Portfolio.png and
+Layout_Regression_Browser.json. Local illustrative-data verification only;
+live Confluence theme rendering was not validated in this session.

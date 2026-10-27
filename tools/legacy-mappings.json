@@ -1,0 +1,842 @@
+[
+  [
+    "mapPortfolioRowEMEA",
+    "Report_Date",
+    "this.formatDateSafe(reportDate),",
+    "LPTM-Hub/PAL-ETL.html:8030"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Region",
+    "'EMEA',",
+    "LPTM-Hub/PAL-ETL.html:8031"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Facility_ID",
+    "row['Fac ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8032"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Parent_Facility_ID",
+    "row['Parent Facility ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8033"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Product_Program",
+    "categoryLookup.productProgram,",
+    "LPTM-Hub/PAL-ETL.html:8034"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Product_Sub_Program",
+    "categoryLookup.productSubProgram,",
+    "LPTM-Hub/PAL-ETL.html:8035"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Management_Status",
+    "row['DM/CM Flag'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8036"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Facility_Type",
+    "facilityType,",
+    "LPTM-Hub/PAL-ETL.html:8037"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Committed_Uncommitted",
+    "committedFacility === 'YES' ? 'Committed' : 'Uncommitted',",
+    "LPTM-Hub/PAL-ETL.html:8038"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Risk_Category",
+    "'',",
+    "LPTM-Hub/PAL-ETL.html:8039"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Relationship_ID",
+    "row['Relationship ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8040"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Relationship_Name",
+    "row['EG Title'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8041"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "CAID",
+    "row['CA ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8042"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Lead_Underwriter",
+    "leadUnderwriter,",
+    "LPTM-Hub/PAL-ETL.html:8043"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Underwriting_Team_Lead",
+    "this.getEMEAUnderwritingTeamLead(leadUnderwriter),",
+    "LPTM-Hub/PAL-ETL.html:8044"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Control_Unit",
+    "row['Control Unit'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8045"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Fac_Amount",
+    "this.parseNumeric(row['Approved Line Amount']),",
+    "LPTM-Hub/PAL-ETL.html:8046"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Direct_OS",
+    "this.parseNumeric(row['Total Direct OS']),",
+    "LPTM-Hub/PAL-ETL.html:8047"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Contingent_OS",
+    "this.parseNumeric(row['Total Cont OS']),",
+    "LPTM-Hub/PAL-ETL.html:8048"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "PSE_OS",
+    "this.parseNumeric(row['Total FX / Derivatives OS']),",
+    "LPTM-Hub/PAL-ETL.html:8049"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Total_Comm_Exposure",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8050"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Maturity_Date",
+    "this.formatDateSafe(row['Facility Maturity Date']),",
+    "LPTM-Hub/PAL-ETL.html:8051"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Product_Underwriter",
+    "leadUnderwriter,",
+    "LPTM-Hub/PAL-ETL.html:8052"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "CA_Expiration_Date",
+    "this.formatDateSafe(row['CA Maturity Date']),",
+    "LPTM-Hub/PAL-ETL.html:8053"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Credit_Classification",
+    "this.normalizeCreditClassification(row['Credit Classification']),",
+    "LPTM-Hub/PAL-ETL.html:8054"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "PSE_non_PSE",
+    "this.determinePSE(facilityType, '', 'emea', pseMappingData),",
+    "LPTM-Hub/PAL-ETL.html:8055"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "SFT_Facility",
+    "this.determineSFT('', facilityType, 'emea'),",
+    "LPTM-Hub/PAL-ETL.html:8056"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Facility_First_Approval_Date",
+    "this.formatDateSafe(row['Facility First Approval Date']),",
+    "LPTM-Hub/PAL-ETL.html:8057"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Origination_Date",
+    "this.formatDateSafe(row['Origination Date']),",
+    "LPTM-Hub/PAL-ETL.html:8058"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Renewal_Date",
+    "this.formatDateSafe(row['Renewal Date']),",
+    "LPTM-Hub/PAL-ETL.html:8059"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "CA_Review",
+    "caReview,",
+    "LPTM-Hub/PAL-ETL.html:8060"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Loan_Spread",
+    "row['Fac Int Spread Percent'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8061"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Pricing_Exception",
+    "row['Pricing Exception'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8062"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "OSUC",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8063"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Total_OS",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8064"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Total_Unused_Commitment",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8065"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "Total_Undrawn",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8066"
+  ],
+  [
+    "mapPortfolioRowEMEA",
+    "ROTCE",
+    "''",
+    "LPTM-Hub/PAL-ETL.html:8067"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Report_Date",
+    "this.formatDateSafe(reportDate),",
+    "LPTM-Hub/PAL-ETL.html:8086"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Region",
+    "'APAC',",
+    "LPTM-Hub/PAL-ETL.html:8087"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Facility_ID",
+    "row['Facility Id'] || row['Facility ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8088"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Parent_Facility_ID",
+    "row['Facility Id'] || row['Facility ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8089"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Product_Program",
+    "categoryLookup.productProgram,",
+    "LPTM-Hub/PAL-ETL.html:8090"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Product_Sub_Program",
+    "categoryLookup.productSubProgram,",
+    "LPTM-Hub/PAL-ETL.html:8091"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Management_Status",
+    "row['Management status'] || row['Management Status'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8092"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Facility_Type",
+    "facilityType,",
+    "LPTM-Hub/PAL-ETL.html:8093"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Committed_Uncommitted",
+    "legalStatus === 'C' ? 'Committed' : 'Uncommitted',",
+    "LPTM-Hub/PAL-ETL.html:8094"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Risk_Category",
+    "row['Risk Category'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8095"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Relationship_ID",
+    "row['Relationship Id'] || row['Relationship ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8096"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Relationship_Name",
+    "'',",
+    "LPTM-Hub/PAL-ETL.html:8097"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "CAID",
+    "row['CA No.'] || row['CA No'] || row['CANo'] || row['CANo.'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8098"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Lead_Underwriter",
+    "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter Name']),",
+    "LPTM-Hub/PAL-ETL.html:8099"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Underwriting_Team_Lead",
+    "this.normalizeUnderwriterName(row['Team Lead']),",
+    "LPTM-Hub/PAL-ETL.html:8100"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Control_Unit",
+    "row['Control unit'] || row['Control Unit'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8101"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Fac_Amount",
+    "this.parseNumeric(row['TFA (USD)'] || row['TFA(USD)'] || row['TFA']),",
+    "LPTM-Hub/PAL-ETL.html:8102"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Direct_OS",
+    "this.parseNumeric(row['Direct (USD)'] || row['Direct(USD)'] || row['Direct']),",
+    "LPTM-Hub/PAL-ETL.html:8103"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Contingent_OS",
+    "this.parseNumeric(row['Contingent (USD)'] || row['Contingent(USD)'] || row['Contingent']),",
+    "LPTM-Hub/PAL-ETL.html:8104"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "PSE_OS",
+    "this.parseNumeric(row['PSE (USD)'] || row['PSE(USD)'] || row['PSE']),",
+    "LPTM-Hub/PAL-ETL.html:8105"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Total_Comm_Exposure",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8106"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Maturity_Date",
+    "this.formatDateSafe(row['Mainline Maturity Date']),",
+    "LPTM-Hub/PAL-ETL.html:8107"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Product_Underwriter",
+    "row['Investment Finance Lead Underwriter Name'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8108"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "CA_Expiration_Date",
+    "this.formatDateSafe(row['CA Expiration Date']),",
+    "LPTM-Hub/PAL-ETL.html:8109"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Credit_Classification",
+    "this.normalizeCreditClassification(row['Classification']),",
+    "LPTM-Hub/PAL-ETL.html:8110"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "PSE_non_PSE",
+    "this.determinePSE(facilityType, '', 'apac', pseMappingData),",
+    "LPTM-Hub/PAL-ETL.html:8111"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "SFT_Facility",
+    "this.determineSFT('', facilityType, 'apac'),",
+    "LPTM-Hub/PAL-ETL.html:8112"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Facility_First_Approval_Date",
+    "'',",
+    "LPTM-Hub/PAL-ETL.html:8113"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Origination_Date",
+    "this.formatDateSafe(row['Original Origination Date']),",
+    "LPTM-Hub/PAL-ETL.html:8114"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Renewal_Date",
+    "this.formatDateSafe(row['Renewal Date']),",
+    "LPTM-Hub/PAL-ETL.html:8115"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "CA_Review",
+    "'',",
+    "LPTM-Hub/PAL-ETL.html:8116"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Loan_Spread",
+    "row['Loan Spread'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8117"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Pricing_Exception",
+    "row['Pricing Exception'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8118"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "OSUC",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8119"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Total_OS",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8120"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Total_Unused_Commitment",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8121"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "Total_Undrawn",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8122"
+  ],
+  [
+    "mapPortfolioRowAPAC",
+    "ROTCE",
+    "''",
+    "LPTM-Hub/PAL-ETL.html:8123"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Report_Date",
+    "this.formatDateSafe(reportDate),",
+    "LPTM-Hub/PAL-ETL.html:8171"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Region",
+    "mappedRegion,",
+    "LPTM-Hub/PAL-ETL.html:8172"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Facility_ID",
+    "row['Facility ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8173"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Parent_Facility_ID",
+    "row['GFRN'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8174"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Product_Program",
+    "categoryLookup.productProgram,",
+    "LPTM-Hub/PAL-ETL.html:8175"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Product_Sub_Program",
+    "categoryLookup.productSubProgram,",
+    "LPTM-Hub/PAL-ETL.html:8176"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Management_Status",
+    "row['Management Status'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8177"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Facility_Type",
+    "facilityType,",
+    "LPTM-Hub/PAL-ETL.html:8178"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Committed_Uncommitted",
+    "committedFlag.includes('uncommitted') ? 'Uncommitted' : 'Committed',",
+    "LPTM-Hub/PAL-ETL.html:8179"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Risk_Category",
+    "row['Risk Category'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8180"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Relationship_ID",
+    "row['CARE Relationship ID'] || row['Relationship ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8181"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Relationship_Name",
+    "row['Relationship Short Name'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8182"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "CAID",
+    "row['CA ID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8183"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Lead_Underwriter",
+    "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter']),",
+    "LPTM-Hub/PAL-ETL.html:8184"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Underwriting_Team_Lead",
+    "this.normalizeUnderwriterName(row['Investment Finance Underwriting Team Lead']),",
+    "LPTM-Hub/PAL-ETL.html:8185"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Control_Unit",
+    "row['Control Unit'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8186"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Fac_Amount",
+    "this.parseNumeric(row['Total Reported Facility Amount'] || 0),",
+    "LPTM-Hub/PAL-ETL.html:8187"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Direct_OS",
+    "this.parseNumeric(row['Direct O/S (Fac Lvl)'] || row['Direct O/S']),",
+    "LPTM-Hub/PAL-ETL.html:8188"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Contingent_OS",
+    "this.parseNumeric(row['Contingent O/S (Fac Lvl)'] || row['Contingent O/S']),",
+    "LPTM-Hub/PAL-ETL.html:8189"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "PSE_OS",
+    "this.parseNumeric(row['PSE O/S (Fac Lvl)'] || row['PSE O/S']),",
+    "LPTM-Hub/PAL-ETL.html:8190"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Total_Comm_Exposure",
+    "this.parseNumeric( row['Total Comm Exposure (Fac Lvl)'] || row['Total Comm Exposure'] || row['Total Comm Exposure (Fav Lvl)'] || // Check for typo row['TotalCommExposure(FacLvl)'] || row['Total Committed Exposure (Fac Lvl)'] || 0",
+    "LPTM-Hub/PAL-ETL.html:8191"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Maturity_Date",
+    "this.formatDateSafe(row['Maturity Date Or Demand'] || row['Maturity Date']),",
+    "LPTM-Hub/PAL-ETL.html:8199"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Product_Underwriter",
+    "row['Investment Finance Product Underwriter'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8200"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "CA_Expiration_Date",
+    "this.formatDateSafe(row['CA Expiration Date']),",
+    "LPTM-Hub/PAL-ETL.html:8201"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Credit_Classification",
+    "this.normalizeCreditClassification(row['Credit Classification']),",
+    "LPTM-Hub/PAL-ETL.html:8202"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "PSE_non_PSE",
+    "this.determinePSE(facilityType, productProgram, 'nam', pseMappingData),",
+    "LPTM-Hub/PAL-ETL.html:8203"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "SFT_Facility",
+    "this.determineSFT(row['SFT Treatment'] || '', facilityType, 'nam'),",
+    "LPTM-Hub/PAL-ETL.html:8204"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Facility_First_Approval_Date",
+    "this.formatDateSafe( this.getColumnValue(row, ['Facility Approval Date', 'Facility First Approval Date', 'First Approval Date', 'Facility_Approval_Date', 'FacilityApprovalDate', 'Fac Approval Date'])",
+    "LPTM-Hub/PAL-ETL.html:8205"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Origination_Date",
+    "this.formatDateSafe( this.getColumnValue(row, ['Origination Date', 'OriginationDate', 'Origination_Date', 'Original Origination Date', 'Orig Date'])",
+    "LPTM-Hub/PAL-ETL.html:8209"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Renewal_Date",
+    "this.formatDateSafe(row['Renewal Date']),",
+    "LPTM-Hub/PAL-ETL.html:8213"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "CA_Review",
+    "'',",
+    "LPTM-Hub/PAL-ETL.html:8214"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Loan_Spread",
+    "row['Spread'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8215"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Pricing_Exception",
+    "row['Pricing Exception Y/N (Pre)'] || '',",
+    "LPTM-Hub/PAL-ETL.html:8216"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "OSUC",
+    "this.parseNumeric( row['Total Comm Exposure (Fac Lvl)'] || row['Total Comm Exposure'] || row['Total Comm Exposure (Fav Lvl)'] || // Check for typo: Fav vs Fac row['TotalCommExposure(FacLvl)'] || row['TotalCommExposure'] || row['Total Committed Exposure (Fac Lvl)'] || row['Total Committed Exposure'] || row['OSUC'] || 0",
+    "LPTM-Hub/PAL-ETL.html:8217"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Total_OS",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8228"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Total_Unused_Commitment",
+    "this.parseNumeric(row['Unused Commitment (Fac Lvl)'] || row['Unused Commitment']),",
+    "LPTM-Hub/PAL-ETL.html:8229"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "Total_Undrawn",
+    "0,",
+    "LPTM-Hub/PAL-ETL.html:8230"
+  ],
+  [
+    "mapPortfolioRowNAM",
+    "ROTCE",
+    "''",
+    "LPTM-Hub/PAL-ETL.html:8231"
+  ],
+  [
+    "mapCovenantRow",
+    "Report_Date",
+    "this.formatDate(row['As Of Date'] || row['AsOfDate'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6828"
+  ],
+  [
+    "mapCovenantRow",
+    "Region",
+    "mappedRegion,",
+    "LPTM-Hub/PAL-ETL.html:6829"
+  ],
+  [
+    "mapCovenantRow",
+    "Origination_Unit",
+    "originationUnit,",
+    "LPTM-Hub/PAL-ETL.html:6830"
+  ],
+  [
+    "mapCovenantRow",
+    "Underwriting_Team_Lead",
+    "this.normalizeUnderwriterName(row['Investment Finance Underwriting Team Lead'] || row['InvestmentFinanceUnderwritingTeamLead']),",
+    "LPTM-Hub/PAL-ETL.html:6831"
+  ],
+  [
+    "mapCovenantRow",
+    "Lead_Underwriter",
+    "this.normalizeUnderwriterName(row['Investment Finance Lead Underwriter'] || row['InvestmentFinanceLeadUnderwriter']),",
+    "LPTM-Hub/PAL-ETL.html:6832"
+  ],
+  [
+    "mapCovenantRow",
+    "Product_Underwriter",
+    "this.normalizeUnderwriterName(row['Investment Finance Product Underwriter'] || row['InvestmentFinanceProductUnderwriter']),",
+    "LPTM-Hub/PAL-ETL.html:6833"
+  ],
+  [
+    "mapCovenantRow",
+    "OU_Expense_Code",
+    "row['OU Expense Code'] || row['OUExpenseCode'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6834"
+  ],
+  [
+    "mapCovenantRow",
+    "CU_Expense_Code",
+    "row['CU Expense Code'] || row['CUExpenseCode'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6835"
+  ],
+  [
+    "mapCovenantRow",
+    "Relationship_ID",
+    "row['Relationship ID'] || row['RelationshipID'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6836"
+  ],
+  [
+    "mapCovenantRow",
+    "Relationship_Name",
+    "row['Relationship Name'] || row['RelationshipName'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6837"
+  ],
+  [
+    "mapCovenantRow",
+    "Borrowers_Name",
+    "row['Borrowers Name'] || row['BorrowersName'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6838"
+  ],
+  [
+    "mapCovenantRow",
+    "CA_Number",
+    "row['CA Number'] || row['CANumber'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6839"
+  ],
+  [
+    "mapCovenantRow",
+    "Facility_Number",
+    "row['Facility Number'] || row['FacilityNumber'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6840"
+  ],
+  [
+    "mapCovenantRow",
+    "Product_Program_Name",
+    "categoryLookup.productProgram, // OVERRIDE with mapped Product Program",
+    "LPTM-Hub/PAL-ETL.html:6841"
+  ],
+  [
+    "mapCovenantRow",
+    "Facility_Type",
+    "facilityType,",
+    "LPTM-Hub/PAL-ETL.html:6842"
+  ],
+  [
+    "mapCovenantRow",
+    "Covenant_Number",
+    "row['Covenant Number'] || row['CovenantNumber'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6843"
+  ],
+  [
+    "mapCovenantRow",
+    "Periodic_Frequency",
+    "row['Periodicity / Frequency'] || row['Periodicity/Frequency'] || row['PeriodicityFrequency'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6844"
+  ],
+  [
+    "mapCovenantRow",
+    "Covenant_Due_Date",
+    "this.formatDate(row['Covenant Due Date'] || row['CovenantDueDate'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6845"
+  ],
+  [
+    "mapCovenantRow",
+    "Covenant_Deferred_Date",
+    "this.formatDate(row['Covenant Deferred Date'] || row['CovenantDeferredDate'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6846"
+  ],
+  [
+    "mapCovenantRow",
+    "Days_Past_Due",
+    "row['No of Days Past Due'] || row['NoofDaysPastDue'] || row['DaysPastDue'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6847"
+  ],
+  [
+    "mapCovenantRow",
+    "Coming_Due_Past_Due",
+    "this.normalizeComingDuePastDue(row['Coming Due / Past Due'] || row['ComingDue/PastDue'] || row['ComingDuePastDue'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6848"
+  ],
+  [
+    "mapCovenantRow",
+    "Past_Due_Category",
+    "this.normalizePastDueCategory(row['Past Due Category'] || row['PastDueCategory'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6849"
+  ],
+  [
+    "mapCovenantRow",
+    "Covenant_Description",
+    "row['Covenant Description'] || row['CovenantDescription'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6850"
+  ],
+  [
+    "mapCovenantRow",
+    "Covenant_Remarks",
+    "row['Covenant Remarks'] || row['CovenantRemarks'] || '',",
+    "LPTM-Hub/PAL-ETL.html:6851"
+  ],
+  [
+    "mapCovenantRow",
+    "45_Days_Past_Due_Date",
+    "this.formatDate(row['45 Days Past Due Date'] || row['45DaysPastDueDate'] || ''),",
+    "LPTM-Hub/PAL-ETL.html:6852"
+  ],
+  [
+    "mapCovenantRow",
+    "Control_Unit",
+    "controlUnit",
+    "LPTM-Hub/PAL-ETL.html:6853"
+  ]
+]

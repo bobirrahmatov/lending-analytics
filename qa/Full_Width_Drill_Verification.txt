@@ -1,0 +1,10 @@
+FULL-WIDTH SHARED DRILL DETAILS — 2026-10-27
+Build: e71747f37637
+
+The chart margin was still applied to the non-Portfolio terminal profile host. Chart-only margins now exclude hosts containing the shared pj-leaf profile. Both Portfolio and other-page terminal detail hosts explicitly use 100% width with no margin or padding. Metadata bands, facility balances and related-monitoring tables reach the inner card edges. Existing headings, facts and table cells keep their own padding. Nonterminal charts keep their plot gutters.
+
+Browser check: CCM -> APAC / Special mention -> North team.
+Card inner width: 1204px. Shared profile, all four sections and both tables: 1204px. Left inset equals only the 1px card border. No browser console errors observed.
+Evidence: qa/Full-Width-Drill-Details.png.
+
+The same shared selectors cover all dashboard local drills, including those within expanded analyses. No data calculations, selections or export behavior changed. Production page build and package verification cover all 13 entrypoints. Local illustrative validation only; live Confluence remains unverified.

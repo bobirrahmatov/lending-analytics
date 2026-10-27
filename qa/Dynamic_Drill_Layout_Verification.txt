@@ -1,0 +1,34 @@
+DYNAMIC DRILL ROW AND TABLE HEADERS — 2026-10-26
+Build: 2a94433f74e3
+
+Current interaction contract supersedes the prior fixed-width local drill layout.
+- One active drill widget spans the complete grid row. Other cards retain their data.
+- Chart/Data, conditional search, methodology and Expand share the Portfolio widget title row.
+- Breadcrumb labels are compact; full Portfolio context remains in accessible titles.
+- All returns to the original chart layout and scroll position. Page Reset clears filters/drills.
+- Header order: Charts/Data, Filters, Reset, Download. Charts/Data remains Portfolio-specific.
+- Shared non-Portfolio drills use full rows and title-row Chart/Data/search controls too.
+- Expand still opens the original detailed native dialog on every page.
+- Table title, dataset tabs, search and info share one desktop header. Long tab groups scroll;
+  small status groups remain fully visible. Mobile headers wrap. Search has one border.
+- Removed the redundant Show all chart data button. Column filters and Reset table remain.
+- Counts, monetary values, populations and exact-date join rules are unchanged.
+
+Checks:
+13 routes / 58 expansions passed, including tab movement between detail tables.
+14 Portfolio chart series and 67 other-page series passed drill/population/export checks.
+Page Reset control order and cleanup, local table search/pagination, data units,
+missing/multiple joins, date matching and restoration tests passed.
+Shared table and local-control suites passed. PAL analytical/lifecycle fixture was
+updated for the current local drill/toolbar contract and passed.
+
+Browser evidence:
+Portfolio drill width 1206px equals grid width 1206px; reset restores its 589px card.
+31–45 aging (8 associations) -> EMEA (4); Data shows those same four rows.
+Title-row tabs/search, short breadcrumb and full-row table visually checked.
+Expanded supporting table tabs/search/info on one row; input border computed 0px
+inside its single bordered search wrapper. Covenants register dataset switch and
+search retained exactly one header search. No browser errors captured.
+Screenshots: Dynamic-Drill-Row.png; Aligned-Expanded-Table.png.
+
+Local illustrative-data checks only. Live Confluence and Windows Access were not tested.

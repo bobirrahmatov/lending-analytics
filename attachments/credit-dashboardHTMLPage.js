@@ -1,0 +1,1 @@
+(function(){'use strict';const root=document.getElementById('credit-hub');if(!root)return;if(!window.CreditHub){root.textContent='Dashboard logic did not load. Check the page attachments.';return;}window.CreditHub.mount(root);})();

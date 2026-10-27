@@ -1,0 +1,30 @@
+EXPANDED TABLE SCOPE — 2026-10-25
+Build: 283c3beb78df
+Supersedes the earlier table consolidation that included analytical summaries.
+
+Summary tables are explicitly marked data-table-mode=summary and are never
+converted into data tables, including during expansion. They stay in the chart
+grid with all rows, normal headers and methodology. No search, sorting controls,
+column filters or pagination. This includes covenant regional aging, Regional
+Distribution, period comparisons, top-ten summaries and Pending Closure aging.
+
+Only bottom detail views are marked data-table-mode=detail and grouped with
+Supporting records. The covenant bottom table offers Relationship & Underwriter
+and Supporting records tabs; Top Relationships offers Relationships and
+Supporting records. Other analyses retain their bottom supporting-record table
+without unnecessary view tabs. Existing cohort tabs (e.g. Expiring/Expired CAs
+and facilities) remain. All five covenant aging bands are retained.
+
+PASS test_pal_analysis.cjs across all PAL analyses and generic chart expansion:
+summary tables stay visible in the grid and have no controls; bottom details
+have search, column filters, sorting and numbered pagination; tab searches are
+retained; point selections activate supporting records; original pending-closure
+summary DOM and row handlers are preserved on close.
+PASS test_table_controls.cjs: summary opt-out applies to overview and expansion.
+PASS test_chart_details.cjs: source search/export, methods, selection and lifecycle.
+PASS Chrome: Past Due Covenants by Region has zero search inputs and no paging;
+bottom grouped details have eight column searches and paging; Supporting records
+has nineteen. New deals Regional Distribution, period comparison and underwriter
+summary each have zero search inputs and no pagination; bottom Supporting records
+retains sixteen column searches and paging.
+Screenshot: Expanded-simple-summaries.png. No live Confluence deployment.

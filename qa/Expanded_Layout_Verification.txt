@@ -1,0 +1,54 @@
+PAL expanded analysis refinement — 2026-10-25
+Build: e4e3b0cbda7a
+
+Reference reviewed: LPTM-Hub/PAL-dashboard.html, expanded TFA, new deals,
+pipeline, approvals, relationships, ROTCE, expiration, covenant and CCM views.
+
+Layout:
+- Four KPI cards appear first on every expanded portfolio analysis.
+- Principal analysis and calculated insight card each use 6 of 12 columns.
+- Supporting charts use equal 50/50 pairs, with matching 320px plot heights.
+- Expanded donuts share the portfolio centered-total and right-side value/share treatment.
+- Wide detail tables span the row; KPIs remain at the top.
+- PAL regional, product, owner, aging and return sections remain available.
+- Native Confluence canvas remains transparent; shared card and drawer styling retained.
+
+Added analysis:
+- Approval Volume by Month: eligible facility record count by first approval month,
+  including a separate Date not supplied group. A single blue series represents time.
+- Aging chart uses a single blue series and integer count axis.
+- Top 10 Relationships by selected balance: aggregate by relationship_id and rank
+  by the chosen KPI balance. Chart points retain supporting source records.
+- Insight cards calculate concentration, approval date coverage, aged pipeline TFA,
+  expired/expiring TFA, known below-target exposure, monitoring queues and CCM status.
+  Each card has a methodology control. Missing historical comparisons stay unavailable.
+
+Browser checks:
+- All eight portfolio expansions: KPI row above grid; 708px principal card with
+  708px insight card at 1512px viewport. No horizontal page overflow.
+- All eight portfolio expansions: every visible chart card measures 708px on desktop.
+- Expired aging and product cards have matching widths/heights. Aging bands retain
+  chronological order and zero-count bands; missing dates have a separate bucket.
+- New insight methodology drawer verified with concentration formula and scope.
+- Approval MTD/YTD controls recalculate totals and preserve expansion.
+- 390px mobile TFA expansion: two KPI columns, stacked cards, no page overflow.
+
+Automated checks:
+- test_chart_details.cjs passed: lifecycle, top KPI order, independent methodology,
+  pagination, source selection/export and restoration.
+- test_pal_analysis.cjs passed: PAL sections, monthly approval aggregation (dated
+  and undated), concentration reconciliation, empty/missing values and cleanup.
+- test_portfolio_view.cjs passed: existing periods, filters, daily comparisons,
+  combined relationship/ROTCE and priority calculations.
+- verify_page_package.py passed: all 13 fragments, 26 paired scripts and shared CSS.
+
+Suggested next analyses (not added in this release):
+1. Utilization by product and region: total_os / tfa for a consistently defined
+   positive-capacity population, showing excluded zero/missing-denominator records.
+2. Maturity exposure ladder: monthly TFA and Direct OS grouped by maturity_date,
+   with undated exposure separately disclosed.
+3. Daily balance movement: current/prior weekday changes by product, only when
+   complete comparable facility-level snapshots are available.
+
+Verification scope is the local illustrative preview and generated deployment
+package. No live Confluence deployment was performed.

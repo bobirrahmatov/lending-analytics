@@ -1,0 +1,28 @@
+SHARED EXPANDED ANALYSIS AND TABLE CONTROLS — 2026-10-27
+Build: b898f79cdce8
+
+Changes
+- Expanded analyses always show the detailed supporting-record table below their charts. Terminal local drills and selection dialogs show entity context and the same table in Chart mode; Data provides the focused table-only view.
+- Two relevant charts and In this selection / attention insights share the first desktop row below KPIs. Responsive wrapping is retained; analyses without two charts do not invent additional visuals.
+- One shared SVG supplies round overlay/popover close buttons and dark search-clear controls. Overlay download remains blue on hover. Closing restores the origin; search clearing dispatches both input and change and restores focus.
+- Overlay header remains visible during body scrolling and search focus. Column filter choices remain horizontally aligned inside the overlay.
+- Advanced table footers appear only for filtered totals greater than 10. Previous/Next, first three and last three pages, nearby current pages and ellipses are preserved. Full matching exports remain independent of the visible page.
+
+Verification
+- test_all_pages.cjs: 13 entrypoints, 58 expansions, visible supporting table, three-card placement where applicable, SVG close and primary download. Trends remains a Portfolio compatibility alias.
+- test_drill_down.cjs: 67 chart series across non-Portfolio pages, terminal profile and visible source table, related datasets, complete export, search, missing fields, selection restoration and nested overlays.
+- test_portfolio_journey.cjs: 14 Portfolio chart series, terminal table visibility, dates/CA/ambiguity, currency units, local independence, breadcrumbs/reset and pagination.
+- test_table_controls.cjs: thresholds 0/1/10/11, filtered totals, page ranges, first/last three links, sorting, filter combinations, keyboard focus and exports.
+- test_shared_analysis_controls.cjs: real shared UI search enhancement, single clear button on repeat enhancement, shared SVG, clear events/focus, disabled fields, overlay close/download and cleanup.
+- Browser: expanded Activity displayed Maker month trend, Event mix and In this selection at the same vertical position and equal 380.664px widths. Supporting records showed page 2 of 42 (11–20 of 420), links 1/2/3/.../40/41/42 and Previous/Next.
+- Browser: Activity COV-ACT-0 selection retained Chart mode with profile and supporting table visible; its one selected row had no footer. Column filter showed round X, horizontal checkbox/label and white-on-blue Apply.
+- Browser: CCM search R0026 reduced the expanded table to one result and removed its footer; clearing restored 14 records and pagination. Search focus retained overlay header at y=17 inside the y=16 dialog, with no outer dialog scroll.
+- No browser console errors observed in the final Activity check.
+
+Evidence
+qa/Expanded-Three-Card-Row.png
+qa/Expanded-Table-Pagination.png
+qa/Terminal-Supporting-Records.png
+
+Limits
+Verified with local illustrative data and a host-style fixture. Live Confluence, Windows Access execution and production data remain separate validation steps. Related data is restricted to available validated attachments, exact identifiers, compatible dates and permitted page filters. No live data or entitlements changed.

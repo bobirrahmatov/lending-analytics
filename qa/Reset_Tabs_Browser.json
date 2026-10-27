@@ -1,0 +1,250 @@
+{
+  "build": "bec4fba610d1",
+  "environment": "Local Chromium IAB; illustrative data",
+  "cases": [
+    {
+      "page": "portfolio",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 7,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 7,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "chartsRestored": {
+        "build": null,
+        "busy": 0,
+        "charts": 7,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "overview",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "workload",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "covenants",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "ca",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "facility",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "ccm",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "insurance",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "appraisals",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "activity",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 4,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    },
+    {
+      "page": "deepdive",
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 2,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 0,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "expectedReset": "Empty relationship entry with no charts"
+    },
+    {
+      "page": "covenants-sequence",
+      "actions": [
+        "Coming due",
+        "Waived",
+        "Activity records",
+        "Reset"
+      ],
+      "before": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      },
+      "after": {
+        "build": null,
+        "busy": 0,
+        "charts": 5,
+        "errors": [],
+        "inline": 0,
+        "overflow": false
+      }
+    }
+  ],
+  "consoleErrors": []
+}

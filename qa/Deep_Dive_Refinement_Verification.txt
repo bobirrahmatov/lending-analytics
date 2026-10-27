@@ -1,0 +1,17 @@
+DEEP DIVE REFINEMENT — 26 OCTOBER 2026
+
+One searchable Relationship dropdown replaces the separate search field and selection controls. Options show relationship ID – name, with ID-only fallback when no name is supplied. Case-insensitive ID/name matching, keyboard selection, no-result handling and Escape were checked.
+
+Sample: R0033 – Illustrative relationship 033. Selected scope contains two facilities across NAM and LATAM: TFA $41.25m, OSUC $30.9m. The regional grouped bars compare TFA and OSUC without stacking; the product donut shares reconcile to TFA. Both charts open expanded analyses with KPIs, supporting charts, methodology and source records. Risk indicators remain linked to their source cohorts.
+
+At 1280px viewport, the facility/covenant tabs, global register search and methodology control share a 40px height on the title row. Search is 235px wide with a 10px gap before methodology. No document-level horizontal overflow. The details table retains column search/filter/sort, totals and pagination. Chart cards remain mounted during table-tab changes.
+
+Validation:
+- 28 shared UI behavior tests passed.
+- Local chart/table control regression tests passed.
+- All-page smoke test passed for 13 entries, including two Deep Dive chart expansions.
+- Production package verification passed: 13 content-only fragments, 26 paired scripts, shared stylesheet and attachment sizes.
+- Browser checked relationship ID search, selection, both chart expansions, product methodology and aligned toolbar; no captured console errors.
+
+Evidence: Deep-Dive-Redesign.png and Deep-Dive-Search.png.
+All browser checks use illustrative local preview data. Internal Confluence deployment was not performed.

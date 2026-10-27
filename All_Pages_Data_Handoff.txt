@@ -1,0 +1,118 @@
+CURRENT HANDOFF — 27 OCTOBER 2026
+Open Data_Integration_Kit/index.html (or download Data_Integration_Kit.zip separately) for the current file/key contract, each page source map, typed field dictionaries, examples and known ETL gaps. Monitoring overview is now labelled Underwriters Summary; the route overview is preserved. The older notes below are historical: KPI cards are compact, expansion uses modal dialogs, and no methodology/date appears in the In this selection summary.
+
+ALL DASHBOARD PAGES — DESIGN AND DATA HANDOFF
+Updated 26 October 2026
+
+Start with Dashboard_Preview.html. It links the 11 dashboards and each dashboard's current
+and previous demonstration extracts. The preview uses the shared WCSpedia CSS,
+blue controls, colored SVG KPI tiles, native-host canvas and consistent card frames.
+Dribbble dashboard-card references and REUI dashboards informed the composition;
+no Mobbin service or copied commercial component source was used.
+
+SHARED PAGE BEHAVIOR
+Portfolio's existing analyses remain. Monitoring overview, workload, CA, facility
+maturity, CCM, insurance, appraisals and activity now use credit-monitoring.js.
+Every analytical card has methodology and full-page expansion. Expansions begin
+with KPI cards, then region/product/owner/status or month analyses and one bottom
+supporting-record table. Drawers share WCSUI. Detail tables alone receive search,
+column search/filter/sort, 10-row default, numbered pagination and Previous/Next.
+Summary tables remain simple and fill their cards. Charts resize with card width
+and height. The Sources & definitions page is retired; required source controls
+remain unfiltered. Trends use dated snapshots and never add balances across dates.
+
+COVENANT KPI AND FACILITY GRAIN
+The original four cards are Total Covenants, Action Needed, Coming Due and Distinct
+Relationships. Facility count, relationship count, linked TFA/OSUC and their daily
+changes appear INSIDE each card. These measures use that card's covenant cohort.
+A covenant number may have several facility/relationship links. Preserve each
+association using a unique item_id; never collapse records by covenant number alone.
+Exposure is counted once per region + relationship ID + facility ID, joined to the
+same-date portfolio row. No fuzzy name match or underwriter-as-banker substitution.
+Missing/ambiguous/foreign-currency amounts remain unavailable, not zero. Linked
+partial subtotals are labelled and financial variance is withheld when incomplete.
+The link register includes covenant number, relationship name/ID, facility ID,
+banker_name, TFA, OSUC, underwriter, dates and join status. Use Facility level for
+unique-facility totals; repeated balances in the link register are not additive.
+
+COMPARISON FILES
+The separate, reproducible demo scenario is explicitly synthetic: current Monday
+2026-08-31 versus Friday 2026-08-28. It includes 444/417 monitoring records,
+120/120 portfolio facilities, 420/369 events, source controls and dated history.
+Original local source/demo files are preserved. The comparison fixtures are not
+live reporting results or forecasts. Each of the 13 page extracts has current and
+previous versions under demo-comparison/pages/. The complete publication files
+and manifest are under demo-comparison/. Rebuild using tools/build_comparison_demo.py.
+
+Daily changes require the exact previous weekday for each source, the same source
+IDs, coverage and dashboard filters, and reconciled row controls. Missing or invalid
+history disables comparisons without blocking the current report. Monday compares
+with Friday; a missing holiday snapshot is unavailable. Percent = (current-prior)
+/ prior. A zero prior is shown as New or No change. Portfolio period controls compare
+their stated periods; covenant activity compares maker-month windows. Historical
+stock charts show date-by-date balances, never a sum over dates. Source provenance
+shows current and previous source dates/counts for reconciliation.
+
+LOCAL EXCEL / ACCESS WORKFLOW
+1. Populate the existing input workbook using source-specific local mappings.
+   Optional banker_name is now present in Monitoring and Portfolio. Keep IDs as
+   text, dates ISO in published JSON, USD units, coverage and source control counts.
+   Raw insurance/appraisal/authorization extract adapters still require the actual
+   source layouts; fields absent from those inputs cannot be invented downstream.
+2. Import the current three Access VBA modules and run the existing additive schema
+   upgrade/install for older databases. ImportCreditInputs loads the input sheets.
+3. Retain the PRIOR run's exported Credit_Prepared_<release>.xlsx. In a new empty
+   output directory build the current release with the optional third argument:
+
+BuildCreditRelease "C:\CreditMonitoring\releases\20261026-01", "20261026-01", "C:\CreditMonitoring\releases\20261023-01\Credit_Prepared_20261023-01.xlsx"
+
+   The third argument imports prior pub_Monitoring, pub_Portfolio, pub_Activity and
+   pub_Sources sheets. Build validates keys, controls, source/date/domain linkage,
+   then writes credit-previous-<release>.json and manifest.files.previous. All
+   current data and the previous payload use the NEW release bundle_id. The prior
+   workbook itself is not changed. With no third argument, six-file builds remain
+   supported and unavailable comparisons are explicit. Retained covenant_history
+   remains an optional longer-history route documented in Covenants_Risk_Reporting.txt.
+4. Run: python3 tools/validate_release.py <new-release-folder>
+   Only the supplied synthetic example uses --allow-demo. Each attachment must be
+   below 10 MB. A failed build must be retried in a fresh directory and release ID.
+5. Publish the validated six current JSON files plus optional previous/history
+   attachments, then the matching manifest LAST. Preserve the prior release for
+   rollback. No upload, scheduling or production data change has been performed.
+
+AUTHORING AND DEPLOYMENT
+Maintain wcspedia/credit-dashboard.css as the global dashboard stylesheet source.
+The build composes it with WCSpedia base styles. Shared JS modules are bundled by
+build_pages.py into separate page logic files paired with HTMLPage scripts.
+Keep the native Confluence navbar/sidebar. Configure real attachment and native
+page IDs before installation. Do not add the old custom shell or separate CSS.
+
+VERIFICATION AND LIMITS
+See qa/All_Pages_Verification.txt. Windows Access VBA and the real internal
+Confluence host cannot be executed in this macOS environment. The VBA changes
+require a Windows Access dry run and source reconciliation before publication.
+Business-proposed critical thresholds remain proposed-1 until approved. No claim
+of a fully tested production ingestion path or zero bugs is made.
+
+
+PORTFOLIO JOURNEY PILOT — 2026-10-26
+The Portfolio page is a consolidation, not one homogeneous fact table.
+Its local-drill and expanded-analysis controller is credit-portfolio-journey.js.
+Page filters, local chart selections, focused analysis and table filters are separate.
+Chart selection does not change unrelated Portfolio KPIs or add page filter chips.
+Expand retains a local selection. Charts/Data retain the same analysis population.
+Related domains are reached explicitly through exact same-date facility keys.
+Related-domain navigation broadens local status/aging to all supplied statuses;
+shared page filters stay applied. Facility-only attributes do not filter monitoring.
+
+Facility/relationship IDs, region, source record ID and reporting date must be
+retained. Exposure attribution also checks consistent CA IDs and reporting currency.
+Ambiguous joins, conflicting CA IDs, missing keys, missing dates and non-USD matches
+remain source records with an explicit match status; their exposure is unavailable.
+TFA/OSUC are counted once per valid region/relationship/facility snapshot.
+History stays at supplied observation grain and is never added across dates.
+Ratios retain their supplied period; ROTCE is not summed or averaged across entities.
+The UI labels covenant associations separately from distinct relationships/facilities.
+No new historical population or scoped comparison values are synthesized.
+No production data or VBA calculation rules were changed for this pilot.
+This supersedes any earlier Portfolio cross-filter trial notes in this handoff.

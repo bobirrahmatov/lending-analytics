@@ -1,0 +1,28 @@
+ACTION SNAPSHOT AND EXPANDED KPI CARDS — 25 October 2026
+Build b44e5b599306
+
+Expanded chart KPI cards reuse the shared CreditIcons inline SVG component and
+portfolio tile styles (blue, purple, gold and teal). Seven PAL analysis views
+retain their existing metrics. Other chart detail views expose chart-value
+coverage counts with the same tile component. No fabricated change indicators.
+
+The old four-count strip is removed. A full-width Portfolio & monitoring snapshot
+follows Deals Pending Closure, including in saved layouts that predate this widget.
+The left table retains facilities, relationships, expired CAs and expired facilities.
+The right table shows six monitoring categories with action counts, critical counts,
+source dates and functional Review shortcuts. Critical badges open critical scope.
+Shared owner/team/region/product filters carry into linked pages. Portfolio-only
+filters do not apply to monitoring obligations; the card explains the distinction.
+Counts use the same action_required and critical flags as category pages.
+
+Demo check: portfolio 120 / 65 / 24 / 24. Monitoring actions 82 / 24 / 32 / 14 /
+36 / 54; total 242, critical 110. Insurance shortcut opens 36 matching records.
+Portfolio facility shortcut opens 120 source records. No real source was changed.
+
+Checks passed: portfolio fixture including filtered monitoring counts/navigation;
+seven PAL insight metric/icon/lifecycle tests; generic chart metric test;
+shared expanded lifecycle test; package structure check for all 13 pages.
+Fixed missing-portfolio handling for monitoring-only detail pages and verified
+insurance expansion. At 390px tables stack and colored cards form two columns,
+without horizontal page overflow. Desktop spacing and inline SVGs checked in Chrome.
+Local demo only; no live Confluence publication in this turn.

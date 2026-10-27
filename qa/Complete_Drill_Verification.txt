@@ -1,0 +1,28 @@
+Build: 38bc66f40767
+Verified locally on 2026-10-26.
+
+Layout
+- Active Portfolio drill: 1206 px, equal to the full widget grid width.
+- Remaining widgets: complete pairs of 591 px with 24 px gaps; no unused right-hand columns.
+- Portfolio single remaining cards grow to fill the row. Full registers/trends retain full width.
+- Shared drill grids use the same fill behavior; chart reflow runs when active drill classes change.
+- Reset and breadcrumbs retain existing data scopes and restore the original composition.
+
+Terminal detail
+- Actual demo path: Facilities expiring / 2026-10 > APAC > R0004.
+- FA100003: TFA $7,500,000; OSUC $7,500,000; outstanding $3,450,000.
+- Includes relationship, banker, underwriter, team, CA identifier, source date, first approval, origination, maturity and CA expiration.
+- Same-date related Covenants, CA expiration, Insurance and Appraisals are available as independent datasets, with all supplied fields.
+- Related area buttons open Data in the same widget. Selected population remains separate from related-domain datasets.
+- Source records are retained if facility joins fail; ambiguous/date/CA mismatch links are excluded from attributed balances and related monitoring.
+- Facility balances are not multiplied by obligation links. Original selected records remain available.
+
+Validation
+- Portfolio journey tests: 14 chart series plus terminal fixture/dataset checks, missing/ambiguous/date/CA match safeguards, search, pagination, reset and independent charts.
+- Other-page drill tests: 67 chart series across 10 pages.
+- All-page tests: 13 routes / 58 chart expansion actions.
+- Shared table controls tests: search, sorting, filtering, pagination, export populations and semantic pills.
+- Browser: full expiry journey and related Covenants table verified; no console errors.
+- Native page package verifier passed.
+
+Local demo checks do not verify live Confluence or Windows Access execution.

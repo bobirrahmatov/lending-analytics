@@ -1,0 +1,27 @@
+Covenant risk update — 2026-10-25
+Build: 0381240581cd
+
+PASS automated:
+- test_covenants.cjs: original 200/420 fixture parity; five aging bands; seven chart and four KPI expansions; methodology; one detailed table; timeline/attention swap; facility register; correct KPI/chart variance when prior snapshot is supplied; empty scope.
+- test_covenant_risk.cjs: Monday→Friday and month boundary; current/prior source reconciliation; changed coverage, duplicate keys and missing history rejected; zero prior; ETL day-first dates; exact facility joins, duplicate/CA/date/currency/missing-key cases; matched elapsed-day monthly activity comparison.
+- test_covenant_history.py: new immutable output, unchanged input, retained history round-trip, date/count failures and overwrite refusal.
+- test_chart_details.cjs, test_table_controls.cjs, test_portfolio_view.cjs,
+  test_register_columns.cjs, test_pal_analysis.cjs, test_donut.cjs: passed.
+- verify_page_package.py: 13 native fragments, 26 paired scripts, shared CSS and attachment limits.
+
+PASS browser (Chrome, local illustrative preview):
+- Default main severity/product row: 4/12 versus 8/12 width; equal 635px card height at desktop.
+- Main severity plot height and SVG height both 481px. Activity/facility SVG heights follow their available plot containers.
+- Expanded coming-due analysis: What needs attention occupies the former timeline position; timeline follows as a full-width card.
+- Facility risk expansion: 100 composite facility keys, 40 past-due facilities, explicit 0/100 same-date portfolio coverage; no invented exposure.
+- Facility register: 100 rows, 10 per page, numbered/next/previous pagination and shared column controls.
+- Source coverage register: covenant, activity and portfolio reporting dates/counts retained.
+- Methodology drawer for timeline: shared scope, dates, computation, weekday comparisons and activity exception visible.
+- Mobile width390: document scrollWidth390; chart cards352px; SVGs fit. Horizontal data table scrolling is contained.
+- Browser console: no error entries observed during verification.
+
+Limits:
+- Local original covenant fixture is dated November2024; existing portfolio fixture is August2026.
+  Same-date linked exposures and prior weekday covenant comparisons therefore correctly remain unavailable.
+- Positive comparisons, exact joins, ambiguous joins and balances were verified with deterministic isolated tests.
+- No real Confluence deployment, live ETL file change, scheduler installation or production publication performed.

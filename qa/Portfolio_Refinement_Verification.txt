@@ -1,0 +1,46 @@
+PORTFOLIO REFINEMENT — 25 OCTOBER 2026
+Generated page revision: c315a60ff944
+
+Presentation
+- Removed black interaction theme overrides; primary actions use WCSpedia blue #255BE3.
+- Shared WCSpedia text, surface, border, dropdown, modal drawer and data-table components.
+- One summary card with four internal divisions. Counts remain 120 / 65 / 24 / 24 in demo.
+- Four balance KPI cards use soft blue, green, amber and purple SVG icon backgrounds.
+- Deals Pending Closure table is flush with its card edges, with shared table typography.
+- Portfolio facility register removed; all filtered source rows remain downloadable.
+- Eight default portfolio charts each expose Expand and Methodology. Header controls align
+  with title rows and the same right edge; measured within 0.5px at 1512px viewport.
+- Mobile 390px overview and filter drawer visually checked. No duplicate shell/header added.
+
+New deals
+- YTD: 77 facilities / $1,057.5m versus prior 9 / $141.25m.
+- MTD: 11 facilities / $152.5m versus prior 6 / $88.75m.
+- Both charts switch Facilities / TFA, use prepared PAL period flags, and retain current
+  scope. Point selections supply that period's actual rows. Expanded view survives measure change.
+- Methodology explains origination/renewal priority, period boundaries, non-PSE scope,
+  and that prior comparisons use records supplied in the current snapshot.
+
+Browser checks
+- Eight charts, eight expand and eight methodology controls; no facility register.
+- Expanded YTD measure switched to TFA: 141250000 / 1057500000 displayed in Highcharts.
+- Expanded YTD supporting records: 86, paginated 25 per page. Shared methodology drawer works.
+- NAM filter chip applied and removable. Browser CSV has 30 NAM rows, all 60 source columns.
+- Top 5 updates both exposure and ROTCE to five plotted points.
+- Covenant control switches to Coming Due; layout switches to Equal and restores defaults.
+- Widgets drawer lists nine widgets (eight charts plus closure table).
+- Workload regression: shared data table, two charts, no page overflow or console errors.
+- Portfolio desktop has no page overflow or captured console errors.
+
+Automated checks
+- test_portfolio_view.cjs: period counts/TFA, period-specific drill-through, summary structure,
+  shared closure table, scoped downloads without a register, measure rerender, empty scope.
+- test_chart_details.cjs: instance/height restoration, pagination, source escaping, empty
+  search/export, selected-point scope, right drawer, rerender continuity, skip link.
+- test_pal_rules.py: all seven business-rule boundary tests passed.
+- wcspedia/tests/ui-dom.cjs: all 22 shared control tests passed.
+- verify_page_package.py: 13 native page fragments, 26 paired scripts, single global CSS,
+  native ownership and attachment-size checks passed.
+
+Limits
+Local illustrative data and browser previews were tested. This is not a claim of live
+Confluence deployment, instance-specific permissions verification or live data validation.

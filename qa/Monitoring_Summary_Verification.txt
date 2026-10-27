@@ -1,0 +1,52 @@
+MONITORING SUMMARY — 25 October 2026
+Build: 127aceb6b04a
+
+Design review: reviewed all 13 page implementations and opened every preview.
+Portfolio/trends/deep dive measure financial balances and relationship returns;
+workload measures owners; activity measures historical events. The six domain
+pages share obligation/action/critical/coming_due flags. The added companion
+summarizes those operational queues without combining them into an unsupported
+risk score or assuming a complete healthy portfolio denominator.
+
+Reviewed REUI chart catalogue (52 blocks, 10 families), bar/status tracker
+families, dashboard overview, fulfillment/security and DevOps SLO examples;
+Dribbble ERM overview; Mobbin Cloudflare, Xero and Gorgias analytics examples.
+https://reui.io/blocks/chart
+https://reui.io/blocks/chart/bar-chart
+https://reui.io/blocks/application/dashboard
+https://reui.io/blocks/solutions/dev-ops
+https://dribbble.com/shots/25912501-Enterprise-Risk-Management-Dashboard-UI-Design
+https://mobbin.com/screens/e55bcb91-054c-4bd3-8cc6-1333cbf9aa35
+https://mobbin.com/screens/b98d6897-c780-4ca3-bc2b-c27fe80bb43a
+https://mobbin.com/screens/ca781e73-e162-47ba-8e0f-f432040454ba
+Implementation remains Highcharts and shared WCSpedia styles, not a new framework.
+
+Default 1512px viewport: relationship and priorities cards both 705px wide,
+659px high, same row. At 390px they stack at 354px, no page overflow.
+Summary: 242 actionable, including 110 critical; 71 upcoming non-actionable.
+Largest actionable queue: Covenants 82 (33.9%). These match Monitoring overview.
+Source dates 2026-07-13 through 2026-09-01; no common date is fabricated.
+Segments: action_required && critical; action_required && !critical;
+coming_due && !action_required. Each record is counted once at most.
+
+Expanded summary: four SVG KPI tiles, coverage/date table, region and top-owner
+charts, search/pagination and source flags. Critical action filter yields 110
+records in browser. Point selection/export retain exact source subsets.
+Source rules are published prepared flags; proposed-1 thresholds remain documented.
+Shared region/owner/team/product filters apply. Management/PSE/commitment/
+subprogram/facility-type portfolio filters do not apply, explicitly in methodology.
+
+Browser checked all 13 previews: rendered, no error surfaces, no page overflow;
+no captured console errors. Automated tests cover mutually exclusive segments,
+six-category presence, shared filter scope, point sources and expanded exports.
+Local illustrative fixtures only; live Confluence was not deployed or tested.
+
+Paired-chart alignment refinement:
+- Common 65px/75px plot margins, shared responsive canvas height and 16px bars.
+- Top 5/10: both plots 260px high; Top 20: both plots 520px high.
+- Browser-measured plot tops, legend baselines and footer tops match at 1512px.
+- At 1280px, wrapped controls synchronize header/summary/footer region heights.
+- At 1100px and 390px, cards stack and region overrides clear; no page overflow.
+- Both expand/close flows preserve chart sizing; no browser console errors.
+- Portfolio view, shared chart details and production page-package checks pass.
+- Updated screenshot: Portfolio-priorities-pair.png.

@@ -1,0 +1,36 @@
+PAL RESTORATION — 23 OCTOBER 2026, schema 2
+Original source: LPTM-Hub/PAL-dashboard.html (unmodified)
+Presentation: attachments/credit-pal.js; all charts use bundled Highcharts12.4.0.
+Production business preparation: access/CreditHubPAL.bas, called by BuildCreditRelease.
+
+ORIGINAL -> RESTORED
+updateSBLSftFacilityView line10389 -> SFT/non-SFT amount and facility table.
+updateSBLSpreadAnalysis line11081 -> original count and OS tables with region totals, pricing exceptions and weighted mean. Supplemental stacked Highcharts count/OS views. Spread unit corrected in the prior handoff dictionary to bps, as original source lines11125-11150 require.
+createFacilityTrendChart line11737 -> grouped column, three calendar months, CA distinct relationships and facility distinct IDs. CM CA eligibility; EMEA review Yes; facilities include DM.
+createNewFacilitiesApprovedChart line14183 -> donut by product, current/previous month from first approval, NAM/LATAM/EMEA.
+Pipeline filtering around8528 -> original 19 type exclusions, non-PSE NAM/LATAM, approval in current year, missing origination, buckets1-30/31-60/61-90/>90.
+createRelationshipChart line13502 + createROTCEChart line15488 -> linked horizontal bars, same selected exposure ranking, Top5/10/20, 12% target, source return period.
+createCovenantMonitoringChart line9317 -> past-due bands1-45/46-90/>90 and next30-day toggle.
+createCCMRegionalChart line9955 -> stacked regional columns by source CCM_Status, independent of classification.
+Trends -> latest four date columns plus MoM/QoQ/YoY, TFA/OSUC/OS and region/product/PSE/commitment filters; product line chart supplements table.
+Deep dive -> relationship selection, KPI summary, regional presence, facility details, performance/classification and covenants.
+All monitoring domains remain separate native Confluence pages.
+
+EXPLICIT CORRECTIONS / LIMITS
+Month windows start on day1 to avoid JavaScript Date.setMonth overflow for month-end report dates.
+Prior-period cutoffs clamp leap days/month ends. Missing comparisons remain unavailable.
+Relationships keyed by stable IDs rather than merging equal display names.
+Missing ROTCE remains null; actual zero is retained. Source ROTCE period is separate from portfolio date.
+Original source spellings are mapped in Access; PAST_DUE/COMING_DUE/OPEN CCM status must be supplied.
+PAL next30 days is separate from normalized monitoring three-month horizon.
+Global region/owner/team/product filters affect integrated sources; facility-attribute filters affect portfolio facilities only. Both groups live in the shared drawer, with explicit scope descriptions and removable chips.
+Chart expansion now uses attachments/credit-chart-details.js: the existing Highcharts instance moves into a full-page analysis view with searchable, paginated source records and a Close chart action. Methodology uses the shared right-side drawer. Summary/individual-record inspection retains WCSpedia dialogs. Original chart calculations and browser Excel ETL remain separate.
+Actual raw extracts were not supplied. Figures are illustrative and are not screenshot-total reproductions.
+Windows Access and internal Confluence runtime validation remain outstanding.
+
+
+2026-10-26 PORTFOLIO JOURNEY OVERRIDE
+Overview PAL source populations and measures are retained. Portfolio interaction
+now uses explicit local paths and the shared focused workspace. Expand does not
+activate the historical generic chart-details workspace for Portfolio. Other pages
+retain it. See Portfolio_Journey_Verification.txt for paths and acceptance evidence.

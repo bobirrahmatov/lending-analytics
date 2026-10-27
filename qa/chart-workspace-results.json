@@ -1,0 +1,118 @@
+[
+  {
+    "slug": "overview",
+    "charts": 4,
+    "controls": 4,
+    "error": "",
+    "expand": "Expand Action distribution",
+    "overflow": false,
+    "title": "Monitoring overview",
+    "expanded": true
+  },
+  {
+    "slug": "workload",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Workload by owner",
+    "overflow": false,
+    "title": "Underwriter workload",
+    "expanded": true
+  },
+  {
+    "slug": "covenants",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Past due aging",
+    "overflow": false,
+    "title": "Covenants",
+    "expanded": true
+  },
+  {
+    "slug": "ca",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Status distribution",
+    "overflow": false,
+    "title": "CA expiration",
+    "expanded": true
+  },
+  {
+    "slug": "facility",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Past due aging",
+    "overflow": false,
+    "title": "Facility maturity",
+    "expanded": true
+  },
+  {
+    "slug": "ccm",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Classification mix",
+    "overflow": false,
+    "title": "CCM",
+    "expanded": true
+  },
+  {
+    "slug": "insurance",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Status distribution",
+    "overflow": false,
+    "title": "Insurance",
+    "expanded": true
+  },
+  {
+    "slug": "appraisals",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Past due aging",
+    "overflow": false,
+    "title": "Appraisals",
+    "expanded": true
+  },
+  {
+    "slug": "activity",
+    "charts": 2,
+    "controls": 2,
+    "error": "",
+    "expand": "Expand Activity by month",
+    "overflow": false,
+    "title": "Covenant activity",
+    "expanded": true
+  },
+  {
+    "slug": "trends",
+    "charts": 1,
+    "controls": 1,
+    "error": "",
+    "expand": "Expand Historical OSUC",
+    "overflow": false,
+    "title": "Portfolio trends",
+    "expanded": true
+  },
+  {
+    "slug": "deepdive",
+    "charts": 0,
+    "controls": 0,
+    "error": "",
+    "overflow": false,
+    "title": "Relationship deep dive"
+  },
+  {
+    "slug": "sources",
+    "charts": 0,
+    "controls": 0,
+    "error": "",
+    "overflow": false,
+    "title": "Sources & definitions"
+  }
+]

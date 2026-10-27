@@ -1,0 +1,13 @@
+# Lending Analytics project rules
+
+- Read `Lending_Analytics_Deployment.txt` before changing deployment, navigation, data loading or interactions. It supersedes historical feature notes in `INSTALL.txt`.
+- This department uses an existing WCSpedia Confluence space. Do not require a new backend, privileged service account, server access, plugin installation or custom REST endpoint.
+- Keep `{include:wcspedia:navBar}`, the single global stylesheet and native title/sidebar. Enhance native sidebar controls without replacing their handlers, widths or page tree. Production macros are content fragments using settings, logic and matching HTMLPage renderer.
+- Maintain Lending Analytics as the parent of 11 dashboards. `overview.html` is Underwriters Summary; `portfolio.html` is Portfolio. `trends.html` is a compatibility route. Do not recreate the removed Sources page; retain source-control datasets.
+- Edit shared application modules in `attachments/credit-*.js` and shared styling in `source/wcspedia/credit-dashboard.css`. Rebuild generated `*Page.js`, `*HTMLPage.js`, preview pages and Confluence fragments with `npm run build`. Do not manually patch generated bundles.
+- Page filters and local drills have separate scope. Drills fill one widget row and retain the metric and breadcrumb. Expanded analyses use the shared modal, supporting records and state restoration. Preserve search, column controls, sorting, the 10-row default and all-matching export behavior.
+- Keep events, obligations/associations, facilities and historical snapshots at their own grains. Join only exact identifiers with compatible reporting dates and CA context. Do not infer joins from names or owners. Deduplicate facility exposure at the valid snapshot grain. Preserve unmatched records and unavailable values; do not invent comparisons or sum ROTCE ratios.
+- Keep illustrative data separate from production. Production rejects demo manifests. Never overwrite live attachments with starter data. Publish validated immutable payloads first and their manifest last. Every attachment and upload ZIP must remain below 10,000,000 bytes.
+- Run `npm test` for substantive shared logic changes and `npm run package` for releases. Historical generators in `tools/README.txt` are not routine build steps. Review layout in a real browser for visual changes.
+- Preserve `LICENSES.txt` and bundled upstream notices. No broader redistribution rights are asserted for internal assets.
+- Local fixtures do not establish live Confluence access, Windows Access compatibility or live network performance. Report those limits accurately.

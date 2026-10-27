@@ -1,0 +1,1284 @@
+{
+  "localOnly": true,
+  "startedAt": "2026-10-27T11:45:40.610Z",
+  "cases": [
+    {
+      "page": "overview",
+      "width": 390,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 390,
+            "expected": 390
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 390,
+            "viewport": 390
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "ch-register",
+              "width": 354
+            }
+          ]
+        },
+        {
+          "name": "Summary contains four chart widgets",
+          "pass": true
+        },
+        {
+          "name": "Summary charts stack at full width",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 18,
+        "y": 1809.8,
+        "width": 354,
+        "height": 3587.8,
+        "right": 372,
+        "bottom": 5397.5
+      },
+      "cards": [
+        {
+          "id": "mon-overview-chart-0",
+          "x": 18,
+          "y": 1809.8,
+          "width": 354,
+          "height": 826.6
+        },
+        {
+          "id": "mon-overview-chart-1",
+          "x": 18,
+          "y": 2660.3,
+          "width": 354,
+          "height": 548.6
+        },
+        {
+          "id": "mon-overview-chart-2",
+          "x": 18,
+          "y": 3232.9,
+          "width": 354,
+          "height": 722.6
+        },
+        {
+          "id": "mon-overview-chart-3",
+          "x": 18,
+          "y": 3979.5,
+          "width": 354,
+          "height": 533.6
+        },
+        {
+          "id": "ch-register",
+          "x": 18,
+          "y": 4537.1,
+          "width": 354,
+          "height": 860.4
+        }
+      ]
+    },
+    {
+      "page": "overview",
+      "width": 900,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 900,
+            "expected": 900
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 900,
+            "viewport": 900
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "ch-register",
+              "width": 826
+            }
+          ]
+        },
+        {
+          "name": "Summary contains four chart widgets",
+          "pass": true
+        },
+        {
+          "name": "Summary charts stack at full width",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 676.9,
+        "width": 826,
+        "height": 3435.4,
+        "right": 863,
+        "bottom": 4112.3
+      },
+      "cards": [
+        {
+          "id": "mon-overview-chart-0",
+          "x": 37,
+          "y": 676.9,
+          "width": 826,
+          "height": 859
+        },
+        {
+          "id": "mon-overview-chart-1",
+          "x": 37,
+          "y": 1563.9,
+          "width": 826,
+          "height": 489
+        },
+        {
+          "id": "mon-overview-chart-2",
+          "x": 37,
+          "y": 2080.9,
+          "width": 826,
+          "height": 739
+        },
+        {
+          "id": "mon-overview-chart-3",
+          "x": 37,
+          "y": 2847.9,
+          "width": 826,
+          "height": 486
+        },
+        {
+          "id": "ch-register",
+          "x": 37,
+          "y": 3361.9,
+          "width": 826,
+          "height": 750.4
+        }
+      ]
+    },
+    {
+      "page": "overview",
+      "width": 1280,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 1280,
+            "expected": 1280
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 1280,
+            "viewport": 1280
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "ch-register",
+              "width": 1206
+            }
+          ]
+        },
+        {
+          "name": "Summary contains four chart widgets",
+          "pass": true
+        },
+        {
+          "name": "Summary first two charts share row one",
+          "pass": true,
+          "detail": [
+            {
+              "id": "mon-overview-chart-0",
+              "y": 677,
+              "width": 589
+            },
+            {
+              "id": "mon-overview-chart-1",
+              "y": 677,
+              "width": 589
+            }
+          ]
+        },
+        {
+          "name": "Summary last two charts share row two",
+          "pass": true,
+          "detail": [
+            {
+              "id": "mon-overview-chart-2",
+              "y": 1206,
+              "width": 589
+            },
+            {
+              "id": "mon-overview-chart-3",
+              "y": 1206,
+              "width": 589
+            }
+          ]
+        },
+        {
+          "name": "Summary has two distinct chart rows",
+          "pass": true
+        },
+        {
+          "name": "Summary desktop chart cards are not skinny columns",
+          "pass": true,
+          "detail": {
+            "gridWidth": 1206,
+            "widths": [
+              589,
+              589,
+              589,
+              589
+            ]
+          }
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 676.9,
+        "width": 1206,
+        "height": 1793.4,
+        "right": 1243,
+        "bottom": 2470.3
+      },
+      "cards": [
+        {
+          "id": "mon-overview-chart-0",
+          "x": 37,
+          "y": 676.9,
+          "width": 589,
+          "height": 501
+        },
+        {
+          "id": "mon-overview-chart-1",
+          "x": 654,
+          "y": 676.9,
+          "width": 589,
+          "height": 501
+        },
+        {
+          "id": "mon-overview-chart-2",
+          "x": 37,
+          "y": 1205.9,
+          "width": 589,
+          "height": 486
+        },
+        {
+          "id": "mon-overview-chart-3",
+          "x": 654,
+          "y": 1205.9,
+          "width": 589,
+          "height": 486
+        },
+        {
+          "id": "ch-register",
+          "x": 37,
+          "y": 1719.9,
+          "width": 1206,
+          "height": 750.4
+        }
+      ]
+    },
+    {
+      "page": "overview",
+      "width": 1920,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 1920,
+            "expected": 1920
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 1920,
+            "viewport": 1920
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "ch-register",
+              "width": 1846
+            }
+          ]
+        },
+        {
+          "name": "Summary contains four chart widgets",
+          "pass": true
+        },
+        {
+          "name": "Summary first two charts share row one",
+          "pass": true,
+          "detail": [
+            {
+              "id": "mon-overview-chart-0",
+              "y": 677,
+              "width": 909
+            },
+            {
+              "id": "mon-overview-chart-1",
+              "y": 677,
+              "width": 909
+            }
+          ]
+        },
+        {
+          "name": "Summary last two charts share row two",
+          "pass": true,
+          "detail": [
+            {
+              "id": "mon-overview-chart-2",
+              "y": 1206,
+              "width": 909
+            },
+            {
+              "id": "mon-overview-chart-3",
+              "y": 1206,
+              "width": 909
+            }
+          ]
+        },
+        {
+          "name": "Summary has two distinct chart rows",
+          "pass": true
+        },
+        {
+          "name": "Summary desktop chart cards are not skinny columns",
+          "pass": true,
+          "detail": {
+            "gridWidth": 1846,
+            "widths": [
+              909,
+              909,
+              909,
+              909
+            ]
+          }
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 676.9,
+        "width": 1846,
+        "height": 1793.4,
+        "right": 1883,
+        "bottom": 2470.3
+      },
+      "cards": [
+        {
+          "id": "mon-overview-chart-0",
+          "x": 37,
+          "y": 676.9,
+          "width": 909,
+          "height": 501
+        },
+        {
+          "id": "mon-overview-chart-1",
+          "x": 974,
+          "y": 676.9,
+          "width": 909,
+          "height": 501
+        },
+        {
+          "id": "mon-overview-chart-2",
+          "x": 37,
+          "y": 1205.9,
+          "width": 909,
+          "height": 486
+        },
+        {
+          "id": "mon-overview-chart-3",
+          "x": 974,
+          "y": 1205.9,
+          "width": 909,
+          "height": 486
+        },
+        {
+          "id": "ch-register",
+          "x": 37,
+          "y": 1719.9,
+          "width": 1846,
+          "height": 750.4
+        }
+      ]
+    },
+    {
+      "page": "portfolio",
+      "width": 390,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 390,
+            "expected": 390
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 390,
+            "viewport": 390
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "pal-trends",
+              "width": 354
+            }
+          ]
+        },
+        {
+          "name": "Portfolio preserves its published card order",
+          "pass": true,
+          "detail": [
+            "facilityTrendChart",
+            "creditClassificationChart",
+            "pal-snapshot",
+            "newDealsChart",
+            "pal-pipeline",
+            "relationshipChart",
+            "monitoringPriorityChart",
+            "covenantMonitoringChart",
+            "ccmRegionalChart",
+            "pal-trends"
+          ]
+        },
+        {
+          "name": "Coverage table fits without horizontal scrolling",
+          "pass": true
+        },
+        {
+          "name": "Expiry bars form close pairs within each month",
+          "pass": true,
+          "detail": [
+            1,
+            1,
+            2
+          ]
+        },
+        {
+          "name": "Portfolio cards stack at full width",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 18,
+        "y": 928.8,
+        "width": 354,
+        "height": 6395.3,
+        "right": 372,
+        "bottom": 7324.1
+      },
+      "cards": [
+        {
+          "id": "facilityTrendChart",
+          "x": 18,
+          "y": 928.8,
+          "width": 354,
+          "height": 560.8
+        },
+        {
+          "id": "creditClassificationChart",
+          "x": 18,
+          "y": 1513.5,
+          "width": 354,
+          "height": 711.3
+        },
+        {
+          "id": "pal-snapshot",
+          "x": 18,
+          "y": 2248.8,
+          "width": 354,
+          "height": 386.4
+        },
+        {
+          "id": "newDealsChart",
+          "x": 18,
+          "y": 2659.2,
+          "width": 354,
+          "height": 552
+        },
+        {
+          "id": "pal-pipeline",
+          "x": 18,
+          "y": 3235.2,
+          "width": 354,
+          "height": 452.6
+        },
+        {
+          "id": "relationshipChart",
+          "x": 18,
+          "y": 3711.8,
+          "width": 354,
+          "height": 776
+        },
+        {
+          "id": "monitoringPriorityChart",
+          "x": 18,
+          "y": 4511.8,
+          "width": 354,
+          "height": 710
+        },
+        {
+          "id": "covenantMonitoringChart",
+          "x": 18,
+          "y": 5245.8,
+          "width": 354,
+          "height": 815.3
+        },
+        {
+          "id": "ccmRegionalChart",
+          "x": 18,
+          "y": 6085.1,
+          "width": 354,
+          "height": 544.3
+        },
+        {
+          "id": "pal-trends",
+          "x": 18,
+          "y": 6653.3,
+          "width": 354,
+          "height": 670.8
+        }
+      ]
+    },
+    {
+      "page": "portfolio",
+      "width": 900,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 900,
+            "expected": 900
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 900,
+            "viewport": 900
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "pal-trends",
+              "width": 826
+            }
+          ]
+        },
+        {
+          "name": "Portfolio preserves its published card order",
+          "pass": true,
+          "detail": [
+            "facilityTrendChart",
+            "creditClassificationChart",
+            "pal-snapshot",
+            "newDealsChart",
+            "pal-pipeline",
+            "relationshipChart",
+            "monitoringPriorityChart",
+            "covenantMonitoringChart",
+            "ccmRegionalChart",
+            "pal-trends"
+          ]
+        },
+        {
+          "name": "Coverage table fits without horizontal scrolling",
+          "pass": true
+        },
+        {
+          "name": "Expiry bars form close pairs within each month",
+          "pass": true,
+          "detail": [
+            4,
+            4,
+            4
+          ]
+        },
+        {
+          "name": "Portfolio cards stack at full width",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 694,
+        "width": 826,
+        "height": 6070.3,
+        "right": 863,
+        "bottom": 6764.3
+      },
+      "cards": [
+        {
+          "id": "facilityTrendChart",
+          "x": 37,
+          "y": 694,
+          "width": 826,
+          "height": 507.5
+        },
+        {
+          "id": "creditClassificationChart",
+          "x": 37,
+          "y": 1229.5,
+          "width": 826,
+          "height": 710.5
+        },
+        {
+          "id": "pal-snapshot",
+          "x": 37,
+          "y": 1968,
+          "width": 826,
+          "height": 418.4
+        },
+        {
+          "id": "newDealsChart",
+          "x": 37,
+          "y": 2414.4,
+          "width": 826,
+          "height": 510
+        },
+        {
+          "id": "pal-pipeline",
+          "x": 37,
+          "y": 2952.4,
+          "width": 826,
+          "height": 440.4
+        },
+        {
+          "id": "relationshipChart",
+          "x": 37,
+          "y": 3420.8,
+          "width": 826,
+          "height": 658
+        },
+        {
+          "id": "monitoringPriorityChart",
+          "x": 37,
+          "y": 4106.8,
+          "width": 826,
+          "height": 658
+        },
+        {
+          "id": "covenantMonitoringChart",
+          "x": 37,
+          "y": 4792.8,
+          "width": 826,
+          "height": 830.5
+        },
+        {
+          "id": "ccmRegionalChart",
+          "x": 37,
+          "y": 5651.3,
+          "width": 826,
+          "height": 507.5
+        },
+        {
+          "id": "pal-trends",
+          "x": 37,
+          "y": 6186.8,
+          "width": 826,
+          "height": 577.5
+        }
+      ]
+    },
+    {
+      "page": "portfolio",
+      "width": 1280,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 1280,
+            "expected": 1280
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 1280,
+            "viewport": 1280
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "pal-trends",
+              "width": 1206
+            }
+          ]
+        },
+        {
+          "name": "Portfolio preserves its published card order",
+          "pass": true,
+          "detail": [
+            "facilityTrendChart",
+            "creditClassificationChart",
+            "pal-snapshot",
+            "newDealsChart",
+            "pal-pipeline",
+            "relationshipChart",
+            "monitoringPriorityChart",
+            "covenantMonitoringChart",
+            "ccmRegionalChart",
+            "pal-trends"
+          ]
+        },
+        {
+          "name": "Coverage table fits without horizontal scrolling",
+          "pass": true
+        },
+        {
+          "name": "Expiry bars form close pairs within each month",
+          "pass": true,
+          "detail": [
+            2,
+            2,
+            1
+          ]
+        },
+        {
+          "name": "Approvals and Portfolio coverage share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "creditClassificationChart",
+              "y": 514,
+              "width": 386
+            },
+            {
+              "id": "pal-snapshot",
+              "y": 514,
+              "width": 284
+            }
+          ]
+        },
+        {
+          "name": "New deals and Pending Closure share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "newDealsChart",
+              "y": 1100,
+              "width": 591
+            },
+            {
+              "id": "pal-pipeline",
+              "y": 1100,
+              "width": 591
+            }
+          ]
+        },
+        {
+          "name": "Relationships and monitoring priorities share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "relationshipChart",
+              "y": 1634,
+              "width": 591
+            },
+            {
+              "id": "monitoringPriorityChart",
+              "y": 1634,
+              "width": 591
+            }
+          ]
+        },
+        {
+          "name": "Covenants and CCM share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "covenantMonitoringChart",
+              "y": 2335,
+              "width": 591
+            },
+            {
+              "id": "ccmRegionalChart",
+              "y": 2335,
+              "width": 591
+            }
+          ]
+        },
+        {
+          "name": "Desktop starts with expiry, approvals and coverage on one row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "facilityTrendChart",
+              "y": 514,
+              "width": 489
+            },
+            {
+              "id": "creditClassificationChart",
+              "y": 514,
+              "width": 386
+            },
+            {
+              "id": "pal-snapshot",
+              "y": 514,
+              "width": 284
+            }
+          ]
+        },
+        {
+          "name": "Portfolio coverage is narrower than both charts",
+          "pass": true
+        },
+        {
+          "name": "First row fills both grid edges",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 514.1,
+        "width": 1206,
+        "height": 2856.4,
+        "right": 1243,
+        "bottom": 3370.5
+      },
+      "cards": [
+        {
+          "id": "facilityTrendChart",
+          "x": 37,
+          "y": 514.1,
+          "width": 488.5,
+          "height": 561.5
+        },
+        {
+          "id": "creditClassificationChart",
+          "x": 549.5,
+          "y": 514.1,
+          "width": 386,
+          "height": 561.5
+        },
+        {
+          "id": "pal-snapshot",
+          "x": 959.5,
+          "y": 514.1,
+          "width": 283.5,
+          "height": 561.5
+        },
+        {
+          "id": "newDealsChart",
+          "x": 37,
+          "y": 1099.6,
+          "width": 591,
+          "height": 510
+        },
+        {
+          "id": "pal-pipeline",
+          "x": 652,
+          "y": 1099.6,
+          "width": 591,
+          "height": 510
+        },
+        {
+          "id": "relationshipChart",
+          "x": 37,
+          "y": 1633.6,
+          "width": 591,
+          "height": 677
+        },
+        {
+          "id": "monitoringPriorityChart",
+          "x": 652,
+          "y": 1633.6,
+          "width": 591,
+          "height": 677
+        },
+        {
+          "id": "covenantMonitoringChart",
+          "x": 37,
+          "y": 2334.6,
+          "width": 591,
+          "height": 531.5
+        },
+        {
+          "id": "ccmRegionalChart",
+          "x": 652,
+          "y": 2334.6,
+          "width": 591,
+          "height": 531.5
+        },
+        {
+          "id": "pal-trends",
+          "x": 37,
+          "y": 2890.1,
+          "width": 1206,
+          "height": 480.4
+        }
+      ]
+    },
+    {
+      "page": "portfolio",
+      "width": 1920,
+      "pass": true,
+      "build": "10739f0ae710",
+      "checks": [
+        {
+          "name": "Frame viewport matches requested width",
+          "pass": true,
+          "detail": {
+            "actual": 1920,
+            "expected": 1920
+          }
+        },
+        {
+          "name": "No page horizontal overflow",
+          "pass": true,
+          "detail": {
+            "scrollWidth": 1920,
+            "viewport": 1920
+          }
+        },
+        {
+          "name": "Cards remain inside the widget grid",
+          "pass": true
+        },
+        {
+          "name": "Widget cards do not overlap",
+          "pass": true,
+          "detail": []
+        },
+        {
+          "name": "Full-width registers and tables fill the row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "pal-trends",
+              "width": 1846
+            }
+          ]
+        },
+        {
+          "name": "Portfolio preserves its published card order",
+          "pass": true,
+          "detail": [
+            "facilityTrendChart",
+            "creditClassificationChart",
+            "pal-snapshot",
+            "newDealsChart",
+            "pal-pipeline",
+            "relationshipChart",
+            "monitoringPriorityChart",
+            "covenantMonitoringChart",
+            "ccmRegionalChart",
+            "pal-trends"
+          ]
+        },
+        {
+          "name": "Coverage table fits without horizontal scrolling",
+          "pass": true
+        },
+        {
+          "name": "Expiry bars form close pairs within each month",
+          "pass": true,
+          "detail": [
+            3,
+            3,
+            4
+          ]
+        },
+        {
+          "name": "Approvals and Portfolio coverage share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "creditClassificationChart",
+              "y": 478,
+              "width": 599
+            },
+            {
+              "id": "pal-snapshot",
+              "y": 478,
+              "width": 444
+            }
+          ]
+        },
+        {
+          "name": "New deals and Pending Closure share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "newDealsChart",
+              "y": 1009,
+              "width": 911
+            },
+            {
+              "id": "pal-pipeline",
+              "y": 1009,
+              "width": 911
+            }
+          ]
+        },
+        {
+          "name": "Relationships and monitoring priorities share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "relationshipChart",
+              "y": 1543,
+              "width": 911
+            },
+            {
+              "id": "monitoringPriorityChart",
+              "y": 1543,
+              "width": 911
+            }
+          ]
+        },
+        {
+          "name": "Covenants and CCM share a row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "covenantMonitoringChart",
+              "y": 2226,
+              "width": 911
+            },
+            {
+              "id": "ccmRegionalChart",
+              "y": 2226,
+              "width": 911
+            }
+          ]
+        },
+        {
+          "name": "Desktop starts with expiry, approvals and coverage on one row",
+          "pass": true,
+          "detail": [
+            {
+              "id": "facilityTrendChart",
+              "y": 478,
+              "width": 755
+            },
+            {
+              "id": "creditClassificationChart",
+              "y": 478,
+              "width": 599
+            },
+            {
+              "id": "pal-snapshot",
+              "y": 478,
+              "width": 444
+            }
+          ]
+        },
+        {
+          "name": "Portfolio coverage is narrower than both charts",
+          "pass": true
+        },
+        {
+          "name": "First row fills both grid edges",
+          "pass": true
+        }
+      ],
+      "grid": {
+        "x": 37,
+        "y": 477.8,
+        "width": 1846,
+        "height": 2784.4,
+        "right": 1883,
+        "bottom": 3262.2
+      },
+      "cards": [
+        {
+          "id": "facilityTrendChart",
+          "x": 37,
+          "y": 477.8,
+          "width": 755.2,
+          "height": 507.5
+        },
+        {
+          "id": "creditClassificationChart",
+          "x": 816.2,
+          "y": 477.8,
+          "width": 599.3,
+          "height": 507.5
+        },
+        {
+          "id": "pal-snapshot",
+          "x": 1439.5,
+          "y": 477.8,
+          "width": 443.5,
+          "height": 507.5
+        },
+        {
+          "id": "newDealsChart",
+          "x": 37,
+          "y": 1009.3,
+          "width": 911,
+          "height": 510
+        },
+        {
+          "id": "pal-pipeline",
+          "x": 972,
+          "y": 1009.3,
+          "width": 911,
+          "height": 510
+        },
+        {
+          "id": "relationshipChart",
+          "x": 37,
+          "y": 1543.3,
+          "width": 911,
+          "height": 659
+        },
+        {
+          "id": "monitoringPriorityChart",
+          "x": 972,
+          "y": 1543.3,
+          "width": 911,
+          "height": 659
+        },
+        {
+          "id": "covenantMonitoringChart",
+          "x": 37,
+          "y": 2226.3,
+          "width": 911,
+          "height": 531.5
+        },
+        {
+          "id": "ccmRegionalChart",
+          "x": 972,
+          "y": 2226.3,
+          "width": 911,
+          "height": 531.5
+        },
+        {
+          "id": "pal-trends",
+          "x": 37,
+          "y": 2781.8,
+          "width": 1846,
+          "height": 480.4
+        }
+      ]
+    }
+  ],
+  "pass": true,
+  "completedAt": "2026-10-27T11:45:44.113Z"
+}

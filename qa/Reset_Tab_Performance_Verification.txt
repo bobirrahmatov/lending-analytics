@@ -1,0 +1,60 @@
+RESET, TABS AND RELATED-DATA RESPONSIVENESS
+27 October 2026 · build bec4fba610d1
+
+CONFIRMED CAUSES AND FIXES
+1. Render disposed charts before awaiting sources. A newer partial update could
+   cancel that render and leave the first chart destroyed. Pending widget IDs
+   now merge; full updates take precedence; only the latest request commits.
+2. Busy segmented controls discarded subsequent clicks. The latest intent now
+   wins, with ownership of busy cleanup. Covenant/PAL intent updates before
+   scheduling, so an older callback cannot overwrite Reset.
+3. Related-data joins rescanned whole arrays for each historical record/event.
+   Per-cohort indexes preserve exact date/entity/CA/ambiguity semantics.
+4. Inline transitions built the same table multiple times. Only the visible
+   table is built, with the related scope retained across view/dataset switches.
+5. Reset left advanced column filters behind; it now clears complete table state.
+   Unrelated chart updates preserve the register export and download state.
+6. Missing optional enrichment was retried on every render. Its result is now
+   remembered for the loaded release; a page reload retries enrichment.
+
+REGRESSION EVIDENCE
+- test_render_races.cjs: before the render fix, failed on the approval chart
+  surviving a superseding New deals render. Passes now with real bundled
+  Highcharts/accessibility and real WCSpedia UI, including concurrent unrelated
+  tabs, Reset plus partial render, Charts/Data switching, latest Covenant intent,
+  Reset winning over queued tabs, table filter reset and retained register export.
+- test_control_scheduling.cjs: newest intent, independent control groups,
+  stale completion ownership and failure cleanup pass.
+- test_inline_render_counts.cjs: one visible table build per transition,
+  no hidden table rebuild, retained related context and exact exports pass.
+- test_chart_lifecycle_real.cjs: three pages, four drill/table/reset/expand/
+  table/close cycles each; stable live chart counts, no detached chart instances.
+- test_related_scope_performance.cjs: 354 differential fixtures against the
+  previous matching rules pass, including dates, CA keys and duplicate handling.
+  75,000 facilities plus prior snapshots: 962 ms; 75,000 covenant events plus
+  associations: 1,210 ms. These measure model operations only, not page startup,
+  network transfer, rendering, or live Confluence. The old historical scan took
+  approximately 10.8 seconds for 6,000 rows during diagnosis.
+- test_previous_loader.cjs: all eight scenarios pass. Three Resets do not repeat
+  a failed optional attachment request or re-fetch validated primary records.
+- Existing local controls, Portfolio journey, adaptive drill and table drill
+  suites pass; table coverage includes 11 registers and seven Covenant datasets.
+
+FINAL GENERATED PAGES IN LOCAL CHROMIUM
+Reset checked on Portfolio, Underwriters Summary, Workload, Covenants, CA,
+Facility, CCM, Insurance, Appraisals, Activity and populated Relationship Deep
+Dive. All settle with no busy/error state or document overflow. Chart counts
+are preserved; Deep Dive correctly returns to its empty relationship entry.
+Portfolio Charts/Data/Charts restores all seven charts. Covenants Coming due /
+Waived / Activity records / Reset retains all five charts. No console errors.
+See Reset_Tabs_Browser.json and Reset-Tabs-Verified.png.
+
+Eight responsive cases pass: Summary and Portfolio at 390, 900, 1280 and 1920 px.
+See Layout_Regression_Browser.json. Package verification passes all 13 fragments,
+26 paired scripts, shared CSS, native ownership and attachment-size checks.
+
+LIMITS
+These are local illustrative-data, real-library and synthetic model checks.
+They do not establish live Confluence latency, Windows Access export behavior,
+or a five-second end-to-end SLA for 75,000 rows. Deploy matching macro/script
+versions and validate the actual release with normal Confluence viewers.

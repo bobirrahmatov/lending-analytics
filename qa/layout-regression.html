@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard layout regression checks — local QA</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:20px;font:14px/1.5 system-ui,sans-serif;color:#193963;background:#f3f6fa}h1{font-size:22px;margin:0 0 6px}p{margin:6px 0 16px}.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}label{display:grid;gap:4px;font-weight:600}select,button{font:inherit;border:1px solid #b4c3d8;border-radius:7px;padding:9px 12px;background:#fff;color:#193963}button{cursor:pointer;font-weight:600}button.primary{background:#255be3;color:#fff;border-color:#255be3}button:disabled,select:disabled{opacity:.55;cursor:wait}button:focus-visible,select:focus-visible{outline:3px solid #6a93ff;outline-offset:2px}#status{font-weight:600;min-height:24px;margin:16px 0 8px}#status[data-result=pass]{color:#176137}#status[data-result=fail]{color:#9b1c1c}details{background:#fff;border:1px solid #d7e1ed;border-radius:8px;margin-bottom:16px;padding:12px}summary{cursor:pointer;font-weight:600}pre{font:12px/1.5 ui-monospace,monospace;max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:0}.frame-viewport{overflow:auto;max-width:100%;border:1px solid #b4c3d8;background:#dce5ef;padding:8px}iframe{display:block;border:0;background:#fff;height:900px;width:1280px;max-width:none;flex-shrink:0}.caption{font-size:12px;color:#536982}a{color:#1d4fc9}
+</style>
+</head>
+<body>
+<h1>Dashboard layout regression checks</h1>
+<p>Local QA only. This fixture loads the real generated preview pages in a same-origin frame and reads their rendered geometry. It does not change dashboard filters, data or application functions.</p>
+<div class="toolbar">
+  <label>Page<select id="page"><option value="overview">Underwriters Summary</option><option value="portfolio">Portfolio</option></select></label>
+  <label>Frame width<select id="width"><option value="390">390 px</option><option value="900">900 px</option><option value="1280" selected>1280 px</option><option value="1920">1920 px</option></select></label>
+  <button id="show">Show page</button>
+  <button id="check">Check shown page</button>
+  <button id="all" class="primary">Run all 8 layout checks</button>
+</div>
+<p id="status" role="status" aria-live="polite">Loading Summary at 1280 px…</p>
+<details open><summary>Check results</summary><pre id="results">No checks have run yet.</pre></details>
+<p class="caption" id="frame-caption">Preview frame</p>
+<div class="frame-viewport"><iframe id="preview" title="Dashboard layout preview" width="1280" height="900"></iframe></div>
+<script>
+'use strict';
+const frame=document.getElementById('preview'),pageSelect=document.getElementById('page'),widthSelect=document.getElementById('width'),status=document.getElementById('status'),results=document.getElementById('results'),caption=document.getElementById('frame-caption');
+const pages=['overview','portfolio'],widths=[390,900,1280,1920],controls=[...document.querySelectorAll('.toolbar button,.toolbar select')];
+const portfolioOrder=['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends'];
+const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+let shown=null,busy=false;
+function lock(value){busy=value;controls.forEach(control=>control.disabled=value);}
+function progress(message,result=''){status.textContent=message;status.dataset.result=result;}
+function rect(element){const r=element.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom};}
+function compact(r){return Object.fromEntries(Object.entries(r).map(([key,value])=>[key,Math.round(value*10)/10]));}
+function visible(element){const r=element.getBoundingClientRect();return !element.hidden&&r.width>0&&r.height>0;}
+async function painted(){await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(()=>frame.contentWindow.requestAnimationFrame(resolve)));}
+async function waitReady(page){
+  const deadline=Date.now()+20000,expected=page==='overview'?4:7;
+  while(Date.now()<deadline){
+    const doc=frame.contentDocument,content=doc?.getElementById('ch-content'),error=doc?.querySelector('.ch-error');
+    if(error)throw Error(error.textContent.trim());
+    if(content&&!content.hasAttribute('aria-busy')&&doc.querySelectorAll('.cw-widget-grid .highcharts-root').length>=expected){
+      await painted();await delay(250);await painted();return;
+    }
+    await delay(50);
+  }
+  throw Error('Timed out waiting for '+page+' charts to render.');
+}
+async function show(page,width){
+  shown=null;frame.style.width=width+'px';frame.width=width;
+  const url=new URL('../pages/'+page+'.html',location.href);
+  progress('Loading '+page+' at '+width+' px…');
+  caption.textContent=(page==='overview'?'Underwriters Summary':'Portfolio')+' · '+width+' px frame · '+url.pathname;
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{frame.onload=null;frame.onerror=null;reject(Error('Preview frame load timed out.'));},20000);
+    frame.onload=()=>{clearTimeout(timer);frame.onload=null;frame.onerror=null;resolve();};
+    frame.onerror=()=>{clearTimeout(timer);frame.onload=null;frame.onerror=null;reject(Error('Preview frame could not load.'));};
+    frame.src=url.href;
+  });
+  await waitReady(page);shown={page,width};pageSelect.value=page;widthSelect.value=String(width);
+}
+function inspect(page,width){
+  const doc=frame.contentDocument,win=frame.contentWindow,grid=doc.querySelector('.cw-widget-grid');
+  if(!grid)throw Error('No dashboard widget grid was rendered.');
+  const gridBox=rect(grid),cards=[...grid.children].filter(el=>el.matches('.ch-card')&&visible(el)),geometry=cards.map(el=>({id:el.dataset.widget,element:el,...rect(el)})),checks=[];
+  const check=(name,pass,detail)=>checks.push({name,pass:!!pass,...(detail===undefined?{}:{detail})});
+  const byId=id=>geometry.find(card=>card.id===id),near=(a,b)=>Math.abs(a-b)<=2;
+  const full=card=>card&&near(card.x,gridBox.x)&&near(card.width,gridBox.width);
+  const sameRow=(ids,name)=>{const row=ids.map(byId);check(name,row.every(Boolean)&&row.every(card=>near(card.y,row[0].y)),row.map(card=>card?{id:card.id,y:Math.round(card.y),width:Math.round(card.width)}:null));};
+  check('Frame viewport matches requested width',win.innerWidth===width,{actual:win.innerWidth,expected:width});
+  check('No page horizontal overflow',doc.documentElement.scrollWidth<=win.innerWidth+2,{scrollWidth:doc.documentElement.scrollWidth,viewport:win.innerWidth});
+  check('Cards remain inside the widget grid',geometry.every(card=>card.x>=gridBox.x-2&&card.right<=gridBox.right+2));
+  const overlaps=[];
+  for(let i=0;i<geometry.length;i++)for(let j=i+1;j<geometry.length;j++){
+    const a=geometry[i],b=geometry[j];
+    if(Math.min(a.right,b.right)-Math.max(a.x,b.x)>2&&Math.min(a.bottom,b.bottom)-Math.max(a.y,b.y)>2)overlaps.push([a.id,b.id]);
+  }
+  check('Widget cards do not overlap',overlaps.length===0,overlaps);
+  const wide=geometry.filter(card=>card.element.matches('.cw-widget-wide'));
+  check('Full-width registers and tables fill the row',wide.length>0&&wide.every(full),wide.map(card=>({id:card.id,width:Math.round(card.width)})));
+  if(page==='overview'){
+    const chartCards=geometry.filter(card=>/^mon-overview-chart-\d+$/.test(card.id));
+    check('Summary contains four chart widgets',chartCards.length===4);
+    if(width>1000){
+      sameRow(['mon-overview-chart-0','mon-overview-chart-1'],'Summary first two charts share row one');
+      sameRow(['mon-overview-chart-2','mon-overview-chart-3'],'Summary last two charts share row two');
+      check('Summary has two distinct chart rows',chartCards.length===4&&byId('mon-overview-chart-2').y>byId('mon-overview-chart-0').y+2);
+      check('Summary desktop chart cards are not skinny columns',chartCards.every(card=>card.width>=gridBox.width*.4),{gridWidth:Math.round(gridBox.width),widths:chartCards.map(card=>Math.round(card.width))});
+    }else check('Summary charts stack at full width',chartCards.every(full));
+  }else{
+    check('Portfolio preserves its published card order',JSON.stringify(geometry.map(card=>card.id))===JSON.stringify(portfolioOrder),geometry.map(card=>card.id));
+    const coverageScroll=doc.querySelector('#pal-snapshot .wcs-data-table-scroll');
+    check('Coverage table fits without horizontal scrolling',coverageScroll.scrollWidth<=coverageScroll.clientWidth+2);
+    const expirySeries=[...doc.querySelectorAll('#facilityTrendChart .highcharts-series-group>.highcharts-series.highcharts-column-series')].map(series=>[...series.querySelectorAll('.highcharts-point')].map(rect));
+    const pairGaps=expirySeries[0]?.map((bar,i)=>expirySeries[1]?.[i]?.x-bar.right)||[];
+    check('Expiry bars form close pairs within each month',pairGaps.length===3&&pairGaps.every(gap=>gap>=0&&gap<=8),pairGaps.map(gap=>Math.round(gap*10)/10));
+    if(width>900){
+      sameRow(['creditClassificationChart','pal-snapshot'],'Approvals and Portfolio coverage share a row');
+      sameRow(['newDealsChart','pal-pipeline'],'New deals and Pending Closure share a row');
+      sameRow(['relationshipChart','monitoringPriorityChart'],'Relationships and monitoring priorities share a row');
+      sameRow(['covenantMonitoringChart','ccmRegionalChart'],'Covenants and CCM share a row');
+      if(width>=1200){
+        sameRow(['facilityTrendChart','creditClassificationChart','pal-snapshot'],'Desktop starts with expiry, approvals and coverage on one row');
+        check('Portfolio coverage is narrower than both charts',byId('pal-snapshot').width<byId('facilityTrendChart').width&&byId('pal-snapshot').width<byId('creditClassificationChart').width);
+        check('First row fills both grid edges',near(byId('facilityTrendChart').x,gridBox.x)&&near(byId('pal-snapshot').right,gridBox.right));
+      }
+      else check('Expiry fills its own row at medium desktop width',full(byId('facilityTrendChart')));
+    }else check('Portfolio cards stack at full width',geometry.every(full));
+  }
+  return {page,width,pass:checks.every(item=>item.pass),build:new URL([...doc.scripts].find(script=>/credit-(overview|portfolio)Page\.js/.test(script.src)).src).searchParams.get('v'),checks,grid:compact(gridBox),cards:geometry.map(({id,...r})=>({id,...compact({x:r.x,y:r.y,width:r.width,height:r.height})}))};
+}
+async function act(fn){if(busy)return;lock(true);try{await fn();}catch(error){progress(error.message,'fail');results.textContent=JSON.stringify({pass:false,error:error.message},null,2);}finally{lock(false);}}
+document.getElementById('show').onclick=()=>act(async()=>{await show(pageSelect.value,Number(widthSelect.value));progress('Preview ready. Use Check shown page to inspect its layout.');});
+document.getElementById('check').onclick=()=>act(async()=>{
+  if(!shown||shown.page!==pageSelect.value||shown.width!==Number(widthSelect.value))await show(pageSelect.value,Number(widthSelect.value));
+  await waitReady(shown.page);const result=inspect(shown.page,shown.width);results.textContent=JSON.stringify(result,null,2);progress(result.pass?'Layout checks passed.':'Layout checks failed. See results.',result.pass?'pass':'fail');
+});
+document.getElementById('all').onclick=()=>act(async()=>{
+  const report={localOnly:true,startedAt:new Date().toISOString(),cases:[]};
+  for(const page of pages)for(const width of widths){
+    try{await show(page,width);report.cases.push(inspect(page,width));}catch(error){report.cases.push({page,width,pass:false,error:error.message});}
+    report.pass=report.cases.every(item=>item.pass);results.textContent=JSON.stringify(report,null,2);
+  }
+  report.completedAt=new Date().toISOString();report.pass=report.cases.every(item=>item.pass);results.textContent=JSON.stringify(report,null,2);
+  const passed=report.cases.filter(item=>item.pass).length;progress(passed+' / '+report.cases.length+' layout cases passed.',report.pass?'pass':'fail');
+});
+act(async()=>{await show('overview',1280);progress('Preview ready. Use Check shown page or Run all 8 layout checks.');});
+</script>
+</body>
+</html>
