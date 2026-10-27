@@ -19,7 +19,7 @@ ids = {'lendingAnalytics': '100', **{key: str(101 + i) for i, key in enumerate(p
 links = ''.join(
     '<li><div class="plugin_pagetree_childtoggle_container">·</div><div class="plugin_pagetree_children_content"><span class="plugin_pagetree_children_span"><a href="/confluence/pages/viewpage.action?pageId='
     + ids[key] + '"' + (' aria-current="page"' if key.lower() == page else '') + '>'
-    + html.escape(title) + '</a></span></div></li>' for key, title in pages.items()
+    + '<span class="aui-icon aui-iconfont-page-default" aria-hidden="true"></span>' + html.escape(title) + '</a></span></div></li>' for key, title in pages.items()
 )
 sidebar = '''<aside class="acs-side-bar" aria-label="Native Confluence navigation fixture">
 <button class="acs-side-bar-toggle" aria-label="Collapse sidebar" aria-expanded="true">☰</button>
@@ -29,6 +29,12 @@ sidebar = '''<aside class="acs-side-bar" aria-label="Native Confluence navigatio
 <li id="fixture-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Space resources"><span aria-hidden="true">◇</span><span class="fixture-native-label">Space resources</span></a></li>
 </ul></aside>'''
 styles = '''<style>
+/* Deliberately conflicting host rules reproduce Confluence decoration/overrides. */
+.acs-side-bar .plugin_pagetree_children_span::before{content:"•";display:inline-block}
+.acs-side-bar .aui-icon::before{content:"▣"}
+.acs-side-bar svg{width:40px;height:40px;fill:red;stroke:red}
+.acs-side-bar svg path{fill:none;stroke:red}
+.acs-side-bar li::before{content:"•"}
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
 .acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}

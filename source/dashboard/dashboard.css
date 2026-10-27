@@ -1634,3 +1634,22 @@ body.credit-preview[data-color-mode="dark"]{
  #credit-hub .cov-kpi .ch-kpi-value{font-size:29px!important}
  #credit-hub .ct-pagination-nav .ch-btn{font-size:11px!important}
 }
+
+/* Shared page toolbar: breadcrumb first, actions at the far end. */
+#credit-hub .ch-top,#credit-hub[data-view=portfolio] .ch-top{display:flex!important;flex-direction:row!important;align-items:center!important;flex-wrap:wrap!important;gap:16px!important;padding:0!important;margin:0 0 20px!important;width:100%!important}
+#credit-hub .ch-top>.ch-breadcrumbs{flex:1 1 auto;margin:0!important;min-width:0}
+#credit-hub .ch-top>.ch-actions{display:flex;flex:0 1 auto;width:auto!important;justify-content:flex-end;margin-left:auto;gap:8px}
+#credit-hub .ch-top>.ch-page-heading{order:3;flex:1 0 100%}
+#credit-hub .ch-top>.ch-page-heading:has(.ch-native-title){position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#credit-hub .ch-top .ch-page-heading h1{margin:0!important}
+#credit-hub .cw-applied-filters{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:8px!important;padding:0!important;margin:0 0 20px!important}
+#credit-hub .cw-applied-filters[hidden]{display:none!important}
+#credit-hub .cw-applied-filters .cw-filter-caption{color:var(--muted)!important;font-size:12px!important;font-weight:600!important}
+#credit-hub .cw-applied-filters .cw-filter-chip{display:inline-flex!important;align-items:center!important;gap:8px!important;max-width:100%!important;min-height:34px!important;padding:6px 12px!important;border:1px solid var(--line)!important;border-radius:999px!important;background:var(--ds-background-selected,var(--credit-theme-selected,#eaf1ff))!important;color:var(--ink)!important;font:inherit!important;font-size:13px!important;line-height:1.5!important;text-align:left!important;white-space:normal!important;box-shadow:none!important;cursor:pointer!important}
+#credit-hub .cw-applied-filters .cw-filter-chip span{overflow-wrap:anywhere;color:inherit!important}
+#credit-hub .cw-applied-filters .cw-filter-chip strong{font-weight:700!important;color:inherit!important}
+#credit-hub .cw-applied-filters .cw-filter-chip:hover{border-color:var(--blue)!important;background:var(--ds-background-neutral-hovered,var(--credit-theme-subtle,#f0f5f9))!important}
+#credit-hub .cw-applied-filters .cw-filter-chip svg{display:block!important;width:14px!important;height:14px!important;flex:0 0 14px!important;fill:none!important;stroke:currentColor!important;color:inherit!important}
+#credit-hub .cw-applied-filters .cw-filter-chip svg path{fill:none!important;stroke:currentColor!important}
+#credit-hub .cw-applied-filters .cw-clear-filters{border:0!important;background:none!important;color:var(--ds-link,var(--credit-theme-link,#255be3))!important;font-size:13px!important;padding:7px!important;text-decoration:underline!important;cursor:pointer!important}
+#credit-hub .cw-applied-filters button:focus-visible{outline:2px solid var(--blue)!important;outline-offset:3px!important}

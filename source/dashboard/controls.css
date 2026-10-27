@@ -205,3 +205,17 @@
 .credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link][data-credit-native-current=true]{background:var(--ds-background-brand-bold,#255be3)!important;color:var(--ds-text-inverse,#fff)!important}
 .credit-native-sidebar-tooltip{position:fixed;z-index:10000;max-width:min(240px,calc(100vw - 16px));padding:8px 12px;border-radius:8px;background-color:var(--ds-background-neutral-bold,#17385e)!important;color:var(--ds-text-inverse,#fff)!important;box-shadow:0 4px 14px #0002;font:inherit;font-size:13px;line-height:1.4;pointer-events:none}
 @media(prefers-reduced-motion:reduce){.credit-native-navigation a[data-credit-native-page-link]{transition:none}}
+
+/* A single protected icon replaces native page decoration on configured links.
+ * Branch toggle controls and unrelated space links retain native behavior. */
+.credit-native-navigation .credit-native-replaced-icon{display:none!important}
+.credit-native-navigation :is(.credit-native-link-row,.credit-native-tree-row,.credit-native-page-content,.credit-native-page-content>.plugin_pagetree_children_span,a[data-credit-native-page-link],.credit-native-page-label){background-image:none!important;list-style:none!important}
+.credit-native-navigation :is(.credit-native-link-row,.credit-native-tree-row,.credit-native-page-content,.credit-native-page-content>.plugin_pagetree_children_span,a[data-credit-native-page-link],.credit-native-page-label)::before,
+.credit-native-navigation :is(.credit-native-link-row,.credit-native-tree-row,.credit-native-page-content,.credit-native-page-content>.plugin_pagetree_children_span,a[data-credit-native-page-link],.credit-native-page-label)::after{content:none!important;display:none!important}
+.credit-native-navigation .credit-native-tree-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_content{float:none!important;width:auto!important;min-width:0!important;margin:0!important;padding:0!important}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_childtoggle_container{float:none!important;width:auto!important}
+.credit-native-navigation a[data-credit-native-page-link]{display:flex!important;align-items:center!important;gap:10px!important;min-height:36px!important;box-sizing:border-box!important;line-height:1.5!important;white-space:normal!important}
+.credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-icon{display:block!important;position:static!important;box-sizing:border-box!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;padding:0!important;margin:0!important;border:0!important;background:none!important;overflow:visible!important;opacity:1!important;visibility:visible!important;transform:none!important;fill:currentColor!important;stroke:none!important;stroke-width:0!important;color:inherit!important}
+.credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-icon path{fill:currentColor!important;stroke:none!important;stroke-width:0!important;fill-rule:evenodd!important;clip-rule:evenodd!important;opacity:1!important;visibility:visible!important;transform:none!important}
+.credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-label{font:inherit!important;color:inherit!important;line-height:inherit!important}

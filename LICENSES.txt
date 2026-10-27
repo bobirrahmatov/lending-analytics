@@ -38,3 +38,10 @@ Source page: https://www.citigroup.com/global/insights/digital-frontier-collater
 Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/6ac910b13ee8cde8db22754d.jpg
 
 Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030
+
+TailAdmin SVG paths
+Source: user-supplied TailAdmin Pro 2.2.0, src/partials/sidebar.html, header.html,
+metric-group/metric-group-01.html, metric-group-03.html, metric-group-05.html
+and alert/alert-success.html.
+Copyright TailAdmin. Used for the requested internal dashboard deployment;
+subject to the supplied TailAdmin asset license. No broader redistribution rights asserted.

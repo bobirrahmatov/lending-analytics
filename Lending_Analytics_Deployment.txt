@@ -45,6 +45,10 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    Unknown/other spaces and edit/administration views remain unaffected.
    Dashboard macros still work without the space include. The adapter is
    idempotent when both the include and a dashboard bundle load it.
+   Icons use the supplied TailAdmin SVG paths. Scoped rules suppress duplicate
+   native page glyphs, bullets and pseudo-icons only on configured dashboard
+   links/rows, and protect SVG size/fill against host styles. Native branch
+   buttons remain interactive and the original markup restores on teardown.
 3. Upload the application assets from the deployment bundle to 3845862527.
    The single credit-style.css contains only dashboard styles and controls.
    It inherits the space font family and protects scoped dashboard text, tables
@@ -284,3 +288,13 @@ matching logic/renderer pairs together and reload the page after publishing app
 assets; if the host retains older assets, perform a hard reload. The build-pair
 check rejects mismatched logic/renderers. Fixed URLs alone cannot force a host
 cache policy. Financial attachment reads explicitly request HTTP revalidation.
+
+SHARED HEADER AND APPLIED FILTERS
+The dashboard toolbar places the breadcrumb at the left and controls at the
+right on desktop, wrapping at narrow widths. The redundant left-side As of
+subtitle and Internal use/source-retention footer have been removed. Reporting
+dates remain available in Last updated and the source records. Applied filters
+use theme-aware rounded pills with label/value, individual removal and Clear all.
+Upload refreshed credit-style.css, credit-native-sidebar.js and all matching
+page pairs together. Space_Navigation.html is unchanged; retain its existing
+space-header installation. Attaching files alone does not install that include.
