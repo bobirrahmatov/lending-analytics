@@ -1449,8 +1449,33 @@
 #credit-hub .ch-breadcrumbs a:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:3px}
 #credit-hub .ch-breadcrumbs svg{width:12px;height:12px;flex:none}
 #credit-hub .ch-breadcrumbs [aria-current]{font-weight:600;overflow-wrap:anywhere}
+/* Landing owns its full content surface; native header/sidebar keep host styles.
+   Confluence tokens win. Explicit host mode wins over the OS fallback. */
+:where(body.credit-landing-preview,#credit-ui.credit-landing-host){
+  --credit-theme-surface:#fff;--credit-theme-text:#253b54;
+  --credit-theme-muted:#5b6c7e;--credit-theme-link:#255be3;
+  --credit-theme-subtle:#f0f5f9;--credit-theme-border:#dce4ec;
+  color-scheme:light;
+  background:var(--ds-surface,var(--credit-theme-surface))!important;
+  color:var(--ds-text,var(--credit-theme-text));
+}
+:is(html[data-color-mode="dark"],body[data-color-mode="dark"]) :is(body.credit-landing-preview,#credit-ui.credit-landing-host),
+body.credit-landing-preview[data-color-mode="dark"]{
+  --credit-theme-surface:#25282c;--credit-theme-text:#dee4ea;
+  --credit-theme-muted:#aebbc9;--credit-theme-link:#85b8ff;
+  --credit-theme-subtle:#2d3239;--credit-theme-border:#505966;color-scheme:dark;
+}
+@media(prefers-color-scheme:dark){
+  html:not([data-color-mode="light"]):not([data-color-mode="dark"]) body:not([data-color-mode="light"]):not([data-color-mode="dark"]) #credit-ui.credit-landing-host,
+  html:not([data-color-mode="light"]):not([data-color-mode="dark"]) body.credit-landing-preview:not([data-color-mode="light"]):not([data-color-mode="dark"]){
+    --credit-theme-surface:#25282c;--credit-theme-text:#dee4ea;
+    --credit-theme-muted:#aebbc9;--credit-theme-link:#85b8ff;
+    --credit-theme-subtle:#2d3239;--credit-theme-border:#505966;color-scheme:dark;
+  }
+}
+#credit-ui.credit-landing-host #credit-hub{background:var(--page)!important;--blue:var(--ds-link,var(--credit-theme-link));color-scheme:inherit}
 /* Editorial landing, inside the native Lending Analytics shell. */
-#credit-hub .la-landing{max-width:1440px;margin:0 auto;color:var(--ink)}
+#credit-hub .la-landing{max-width:1440px;margin:0 auto;color:var(--ink);background:var(--page)}
 #credit-hub .la-intro{padding:40px 0 44px;max-width:1040px;margin:0 auto;text-align:center}
 #credit-hub .la-eyebrow{font-size:12px!important;line-height:1.5!important;font-weight:700!important;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)!important;margin:0 0 18px}
 #credit-hub .la-intro :is(h1,h2){font-size:clamp(34px,4.5vw,60px)!important;line-height:1.12!important;font-weight:500!important;letter-spacing:-.035em;margin:0 0 24px;color:var(--ink)!important}
