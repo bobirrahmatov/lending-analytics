@@ -38,8 +38,10 @@ protectedValue('table-scroll','overflow-x','auto');
 protectedValue('dialog-scroll','overflow-y','auto');
 assert.equal(matching('dialog','overflow').length,0,'modal shell remains clipped by its existing rule');
 for(const id of ['severity','delta','chart-label','chart-series'])assert.equal(matching(id,'color').length,0,`${id} retains its own semantic colour`);
+const spaceFontFamilies=new Set(['inherit','var(--credit-space-font,var(--credit-resolved-space-font,inherit))']);
 for(const rule of rules){
- if(rule.style.getPropertyValue('font-family'))assert.equal(rule.style.getPropertyValue('font-family'),'inherit','the space owns font families');
+ const family=rule.style.getPropertyValue('font-family');
+ if(family)assert.ok(spaceFontFamilies.has(family.replace(/\s+/g,'')),`the space owns font families; unexpected family: ${family}`);
  if(rule.selectorText.includes('::-webkit-'))continue;
  for(const node of [d.documentElement,d.body,...d.querySelectorAll('#native,#native *')])assert.equal(node.matches(rule.selectorText),false,'rules do not restyle Confluence chrome');
 }

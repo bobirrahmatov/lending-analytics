@@ -323,13 +323,32 @@ local fixtures cover nested rails, shared toggle footers and hostile host CSS.
 
 PAGE AND SIDEBAR SURFACES
 Page shells use a restrained 10 px radius (the shared --credit-page-radius token).
-The native sidebar wrapper, inner panel and footer use the same theme-aware
-surface as the dashboard. Host light/dark tokens remain the default. An optional
---credit-surface-background space CSS variable customizes both surfaces together;
-use theme-specific values if overriding it. Child-page hierarchy is preserved.
+The native sidebar wrapper, inner panel and footer follow the computed background
+of the right-hand native page canvas, including light/dark theme changes. This
+avoids a separate white sidebar block against a grey page. An optional
+--credit-sidebar-background space CSS variable overrides that match. Dashboard
+card surfaces retain their theme tokens. Child-page hierarchy is preserved.
 
 Dashboard shell widths are constrained to the available parent width, with
 border-box sizing and min-width:0 protected from host rules. Wide table wrappers
 retain horizontal scrolling. No body/html overflow suppression or child-page
-hiding is applied. A remaining live-host strip outside the macro requires live
-DOM inspection; the child-page hierarchy itself is not changed by this package.
+hiding is applied.
+
+NATIVE MENUS AND SPACE TYPOGRAPHY
+The supplied inspector screenshot identified a hidden Space tools dropdown that
+had acquired the compact page-tree class. Dashboard destinations inside native
+menus, dropdown layers, dialogs and sidebar footers are now excluded from link
+decoration. Compact-tree CSS also excludes native menu layers. This prevents the
+hidden dropdown from becoming a full-width strip while retaining its native
+open/close behavior. The native expand-collapse-trigger remains usable.
+
+The adapter reads the space content's computed font family and applies it to
+dashboard text, charts and configured sidebar labels. It does not hardcode a
+brand font or override native icon fonts. Theme/style changes refresh the
+resolved presentation values; teardown restores any prior inline values.
+
+Upload credit-native-sidebar.js, credit-style.css and every matching generated
+Page.js/HTMLPage.js pair from this build, then hard reload. Existing header and
+page macro markup are unchanged. Local regression fixtures cover the screenshot's
+menu structure, competing host font rules and light/dark canvas colours; live
+Confluence appearance still depends on the installed host stylesheet.

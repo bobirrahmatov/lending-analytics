@@ -29,6 +29,9 @@ async function mountMacro(page, pageId) {
   const native = d.getElementById('native-header'), unrelated = d.getElementById('native-unrelated');
   const nativeHTML = native.innerHTML, unrelatedHTML = unrelated.outerHTML;
   const toggle = d.getElementById('native-toggle'), sidebar = d.querySelector('aside');
+  const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-sidebar-background']);
+  const nativeStyle = () => Array.from(sidebar.style).filter(name => !ownedPresentation.has(name)).map(name => [name, sidebar.style.getPropertyValue(name), sidebar.style.getPropertyPriority(name)]);
+  const originalNativeStyle = nativeStyle();
   let nativeClicks = 0, overlaysCreated = 0;
   const nativeHandler = () => { nativeClicks++; };
   toggle.onclick = nativeHandler;
@@ -121,7 +124,7 @@ async function mountMacro(page, pageId) {
       assert.equal(native.innerHTML, nativeHTML);
       assert.equal(unrelated.outerHTML, unrelatedHTML);
       assert.equal(toggle.onclick, nativeHandler);
-      assert.equal(sidebar.getAttribute('style'), 'width:286px');
+      assert.deepEqual(nativeStyle(), originalNativeStyle, 'Native geometry and styling stay unchanged; only owned font/background variables are allowed');
       assert.equal(d.querySelectorAll('aside').length, 1);
     };
     checkNative(); toggle.click(); assert.equal(nativeClicks, 1);

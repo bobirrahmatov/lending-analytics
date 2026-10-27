@@ -7,7 +7,8 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   'use strict';
   if (w.CreditSidebar) { w.CreditSidebar.refresh(); return; }
   var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false, revealOwned = false;
-  var decorations = new Map();
+  var decorations = new Map(), presentation = new Map();
+  var systemTheme = w.matchMedia?.('(prefers-color-scheme: dark)');
   var links = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
   // Filled SVG paths from the supplied TailAdmin sidebar (see LICENSES.txt).
   var iconPaths = {
@@ -61,12 +62,42 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   }
   // Only add presentation classes to existing native nodes. Track ownership so
   // rerenders, retargeted links and editor transitions can restore them exactly.
-  var sidebarToggle = '.acs-side-bar-toggle,.ia-toggle-button,[aria-label="Expand sidebar"],[aria-label="Collapse sidebar"],[title="Expand sidebar"],[title="Collapse sidebar"]';
+  var sidebarToggle = '.acs-side-bar-toggle,.ia-toggle-button,.expand-collapse-trigger,[aria-label="Expand sidebar"],[aria-label="Collapse sidebar"],[title="Expand sidebar"],[title="Collapse sidebar"]';
   var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
+  var nativeMenu = 'aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role="menu"],[role="listbox"],[role="dialog"]';
+  function eligibleLink(a) {
+    return !a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') && !a.closest(sidebarFooter + ',' + nativeMenu);
+  }
+  function setPresentation(el, name, value) {
+    if (!el || !value || el.style.getPropertyValue(name) === value) return;
+    if (!presentation.has(el)) presentation.set(el, new Map());
+    var properties = presentation.get(el);
+    if (!properties.has(name)) properties.set(name, [el.style.getPropertyValue(name), el.style.getPropertyPriority(name)]);
+    el.style.setProperty(name, value);
+  }
+  function syncPresentation() {
+    var ui = d.getElementById('credit-ui');
+    // The space content owns typography. Native navigation often has its own
+    // AUI font rules, so inherit the content family rather than a branded guess.
+    var content = ui?.closest('.wiki-content,#main-content') || d.querySelector('.wiki-content') || d.getElementById('main-content') || d.getElementById('main') || d.querySelector('.ia-splitter-right') || ui?.parentElement || d.body;
+    var family = w.getComputedStyle(content).fontFamily;
+    setPresentation(host, '--credit-resolved-space-font', family);
+    setPresentation(ui, '--credit-resolved-space-font', family);
+    // Match the native page canvas behind the dashboard, including transparent
+    // containers. Do not sample a card's white surface or change host geometry.
+    var canvas = d.querySelector('.ia-splitter-right,#main') || ui?.parentElement || d.body;
+    var background = '';
+    for (var el = canvas; el; el = el.parentElement) {
+      var color = w.getComputedStyle(el).backgroundColor;
+      if (color && color !== 'transparent' && !/^rgba\([^)]*,\s*0(?:\.0+)?\)$/.test(color)) { background = color; break; }
+    }
+    setPresentation(host, '--credit-resolved-sidebar-background', background || 'var(--ds-surface, var(--credit-theme-surface, #fff))');
+  }
   function decorateTree() {
     var desired = new Map();
     function mark(el, name) { if (!el) return; if (!desired.has(el)) desired.set(el, new Set()); desired.get(el).add(name); }
     links.forEach(function (_, a) {
+      if (!eligibleLink(a)) return;
       for (var parent = a.parentElement; parent && parent !== host; parent = parent.parentElement) mark(parent, 'credit-native-compact-path');
       mark(a.closest('li'), 'credit-native-link-row');
       // Hide only redundant native decoration, never a native interactive control.
@@ -87,8 +118,9 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     });
     // Confluence themes can put the configuration action beside the native
     // toggle, or use a bottom section instead of the standard footer wrapper.
-    var footers = new Set(host.querySelectorAll(sidebarFooter));
+    var footers = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
     host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
+      if (el.closest(nativeMenu)) return;
       var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
       if (!/^configure sidebar$/i.test(name) || el.matches(sidebarToggle)) return;
       mark(el, 'credit-native-configure');
@@ -132,10 +164,10 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   function enhance() {
     var pages = configuredPages();
     links.forEach(function (record, a) {
-      if (!host.contains(a) || pages.get(pageId(a)) !== record.key || record.icon.parentNode !== a || record.label.parentNode !== a) restoreLink(a, record);
+      if (!host.contains(a) || !eligibleLink(a) || pages.get(pageId(a)) !== record.key || record.icon.parentNode !== a || record.label.parentNode !== a) restoreLink(a, record);
     });
     host.querySelectorAll('a[href]').forEach(function (a) {
-      if (a.matches('[role=button],[aria-expanded],.plugin_pagetree_childtoggle,[data-type=toggle]') || a.closest(sidebarFooter)) return;
+      if (!eligibleLink(a)) return;
       var key = pages.get(pageId(a));
       if (!key) return;
       if (!links.has(a)) {
@@ -163,7 +195,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     if (tooltipLink === a) return;
     hideTooltip();
     tooltip = d.createElement('div'); tooltip.id = 'credit-native-sidebar-tooltip'; tooltip.className = 'credit-native-sidebar-tooltip';
-    tooltip.setAttribute('role', 'tooltip'); tooltip.textContent = a.getAttribute('aria-label') || a.textContent.trim(); d.body.append(tooltip);
+    tooltip.setAttribute('role', 'tooltip'); tooltip.style.fontFamily = w.getComputedStyle(host).fontFamily; tooltip.textContent = a.getAttribute('aria-label') || a.textContent.trim(); d.body.append(tooltip);
     tooltipLink = a; previousDescription = a.getAttribute('aria-describedby');
     a.setAttribute('aria-describedby', [previousDescription, tooltip.id].filter(Boolean).join(' '));
     var box = a.getBoundingClientRect(), tip = tooltip.getBoundingClientRect();
@@ -190,6 +222,10 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     links.forEach(function (record, a) { restoreLink(a, record); });
     decorations.forEach(function (names, el) { names.forEach(function (name) { el.classList.remove(name); }); }); decorations.clear();
     if (revealOwned) { d.body.classList.add('citi-hide-sidebar'); revealOwned = false; }
+    presentation.forEach(function (properties, el) {
+      properties.forEach(function (original, name) { if (original[0]) el.style.setProperty(name, original[0], original[1]); else el.style.removeProperty(name); });
+      if (!el.getAttribute('style')) el.removeAttribute('style');
+    }); presentation.clear();
     host = null; ownsHostClass = false;
   }
   function refresh() {
@@ -204,7 +240,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); var rail = host.querySelector('.acs-side-bar'); if (rail) resizeObserver.observe(rail); }
     }
     if (d.body.classList.contains('citi-hide-sidebar')) { revealOwned = true; d.body.classList.remove('citi-hide-sidebar'); }
-    enhance(); compactState();
+    syncPresentation(); enhance(); compactState();
   }
   function schedule() { if (!queued && !destroyed) { queued = true; Promise.resolve().then(function () { queued = false; refresh(); }); } }
   function start() {
@@ -214,7 +250,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         if (change.type === 'attributes') {
           if (change.target.matches('meta[name="ajs-space-key"],meta[name="confluence-space-key"]')) return true;
           if (change.attributeName === 'class' && (change.oldValue || '') === (change.target.getAttribute('class') || '')) return false;
-          return !!host && (host.contains(change.target) || change.target.contains(host));
+          return !!host && (host.contains(change.target) || change.target.contains(host)) || !!d.getElementById('credit-ui') && change.target.contains(d.getElementById('credit-ui'));
         }
         if (host?.contains(change.target)) return true;
         return Array.from(change.addedNodes).concat(Array.from(change.removedNodes)).some(function (node) {
@@ -222,17 +258,20 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         });
       })) schedule();
     });
-    observer.observe(d.documentElement, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'aria-current', 'href', 'content']});
+    observer.observe(d.documentElement, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'data-color-mode', 'data-theme', 'aria-current', 'href', 'content']});
   }
+  function styleLoaded(event) { if (event.target.matches?.('link[rel="stylesheet"]')) schedule(); }
   function destroy() {
     destroyed = true; observer?.disconnect(); observer = null; reset();
-    d.removeEventListener('DOMContentLoaded', start); w.removeEventListener('hashchange', schedule); w.removeEventListener('resize', compactState);
+    systemTheme?.removeEventListener('change', schedule);
+    d.removeEventListener('load', styleLoaded, true); d.removeEventListener('DOMContentLoaded', start); w.removeEventListener('hashchange', schedule); w.removeEventListener('resize', schedule);
     w.removeEventListener('scroll', hideTooltip, true); d.removeEventListener('keydown', escapeTooltip);
   }
   w.CreditSidebar = {refresh: refresh, destroy: destroy, icon: function (key) {
     return iconPaths[key] ? '<svg class="la-page-icon" viewBox="' + (iconViewBoxes[key] || '0 0 24 24') + '" fill="currentColor" stroke="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="' + iconPaths[key] + '"/></svg>' : '';
   }};
-  d.addEventListener('DOMContentLoaded', start); w.addEventListener('hashchange', schedule); w.addEventListener('resize', compactState);
+  systemTheme?.addEventListener('change', schedule);
+  d.addEventListener('load', styleLoaded, true); d.addEventListener('DOMContentLoaded', start); w.addEventListener('hashchange', schedule); w.addEventListener('resize', schedule);
   w.addEventListener('scroll', hideTooltip, true); d.addEventListener('keydown', escapeTooltip);
   if (d.body) start();
 })(window, document);
@@ -2389,5 +2428,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="a7196710ba6a:INSURANCE";
+window.CREDIT_PAGE_BUILD="1a99285d8bf7:INSURANCE";
 })();

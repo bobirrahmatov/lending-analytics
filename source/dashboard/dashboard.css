@@ -1706,3 +1706,10 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-ui.credit-ui-host #credit-hub,
 #credit-ui #credit-hub :is(.ch-layout,.ch-main,#ch-content){box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
 #credit-ui #credit-hub :is(.credit-data-table-scroll,.ch-table-wrap){box-sizing:border-box!important;min-width:0!important;max-width:100%!important;overflow-x:auto!important}
+
+/* Space typography wins over native AUI text rules, without overriding icon
+   fonts. Chart text inherits the same family even if Highcharts initialized
+   before the host stylesheet finished loading. */
+#credit-ui.credit-ui-host{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
+#credit-ui #credit-hub :is(h1,h2,h3,h4,h5,h6,p,button,input,select,textarea,table,th,td){font-family:inherit!important}
+#credit-ui :is(.highcharts-container,.highcharts-root,.highcharts-text-outline,.highcharts-container text){font-family:inherit!important}

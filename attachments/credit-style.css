@@ -180,11 +180,11 @@
 
 /* Native sidebar skin, installed per dashboard or by the wcs space include.
  * Confluence retains widths, content offsets, tree handlers and permissions. */
-.credit-native-navigation{color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
+.credit-native-navigation{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
 /* Paint nested native panels too: the outer wrapper alone cannot override an
- * opaque host sidebar/content/footer. One optional space token customizes both
- * dashboard and navigation surfaces; native light/dark tokens remain default. */
-.credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.acs-side-bar-footer,.acs-side-bar-bottom){background:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))!important;color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
+ * opaque host sidebar/content/footer. Match the resolved native page canvas;
+ * --credit-sidebar-background remains an optional space override. */
+.credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.acs-side-bar-footer,.acs-side-bar-bottom){background:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important;color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
 .credit-native-navigation :is(ul,ol,li){list-style:none!important}
 .credit-native-navigation li::marker{content:""!important}
 .credit-native-navigation :is(.plugin_pagetree_children_span>a,a[data-credit-native-page-link]){display:inline-flex;align-items:baseline;gap:7px;min-width:0;padding:5px 7px;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;text-decoration:none!important;border-radius:6px;line-height:1.6;font-size:13px!important;transition:background-color .16s,color .16s}
@@ -201,8 +201,8 @@
 .credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_content a[data-credit-native-page-link]{display:flex}
 /* Reveal existing dashboard paths when the native rail hides its page tree.
  * Expanded tree visibility and branch state are never changed. */
-.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path{display:flex!important;flex-direction:column!important;align-items:stretch!important;visibility:visible!important;opacity:1!important;box-sizing:border-box!important;width:100%!important;float:none!important;min-width:0!important;max-width:none!important;padding-inline:0!important;margin-inline:0!important}
-.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path>:not(.credit-native-compact-path):not([data-credit-native-page-link]):not(.acs-side-bar-toggle):not(.ia-toggle-button){display:none!important}
+.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path:not(:is(aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role=menu],[role=listbox],[role=dialog])){display:flex!important;flex-direction:column!important;align-items:stretch!important;visibility:visible!important;opacity:1!important;box-sizing:border-box!important;width:100%!important;float:none!important;min-width:0!important;max-width:none!important;padding-inline:0!important;margin-inline:0!important}
+.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path:not(:is(aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role=menu],[role=listbox],[role=dialog]))>:not(.credit-native-compact-path):not([data-credit-native-page-link]):not(.acs-side-bar-toggle):not(.ia-toggle-button):not(.expand-collapse-trigger){display:none!important}
 .credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]{display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:36px!important;min-height:40px!important;margin-inline:auto!important;padding:8px!important;gap:0!important;border-radius:9px;position:relative}
 .credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]>.credit-native-page-label{display:none!important}
 .credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]>.credit-native-page-icon{display:block!important;width:20px!important;height:20px!important;margin:0!important}
@@ -225,7 +225,7 @@
 .credit-native-navigation .credit-native-tree-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important}
 .credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_content{float:none!important;width:auto!important;min-width:0!important;margin:0!important;padding:0!important}
 .credit-native-navigation .credit-native-tree-row>.plugin_pagetree_childtoggle_container{float:none!important;width:auto!important}
-.credit-native-navigation a[data-credit-native-page-link]{display:flex!important;align-items:center!important;gap:10px!important;min-height:36px!important;box-sizing:border-box!important;line-height:1.5!important;white-space:normal!important}
+.credit-native-navigation a[data-credit-native-page-link]{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;display:flex!important;align-items:center!important;gap:10px!important;min-height:36px!important;box-sizing:border-box!important;line-height:1.5!important;white-space:normal!important}
 .credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-icon{display:block!important;position:static!important;box-sizing:border-box!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;padding:0!important;margin:0!important;border:0!important;background:none!important;overflow:visible!important;opacity:1!important;visibility:visible!important;transform:none!important;fill:currentColor!important;stroke:none!important;stroke-width:0!important;color:inherit!important}
 .credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-icon path{fill:currentColor!important;stroke:none!important;stroke-width:0!important;fill-rule:evenodd!important;clip-rule:evenodd!important;opacity:1!important;visibility:visible!important;transform:none!important}
 .credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-label{font:inherit!important;color:inherit!important;line-height:inherit!important}
@@ -1939,3 +1939,10 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-ui.credit-ui-host #credit-hub,
 #credit-ui #credit-hub :is(.ch-layout,.ch-main,#ch-content){box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
 #credit-ui #credit-hub :is(.credit-data-table-scroll,.ch-table-wrap){box-sizing:border-box!important;min-width:0!important;max-width:100%!important;overflow-x:auto!important}
+
+/* Space typography wins over native AUI text rules, without overriding icon
+   fonts. Chart text inherits the same family even if Highcharts initialized
+   before the host stylesheet finished loading. */
+#credit-ui.credit-ui-host{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
+#credit-ui #credit-hub :is(h1,h2,h3,h4,h5,h6,p,button,input,select,textarea,table,th,td){font-family:inherit!important}
+#credit-ui :is(.highcharts-container,.highcharts-root,.highcharts-text-outline,.highcharts-container text){font-family:inherit!important}

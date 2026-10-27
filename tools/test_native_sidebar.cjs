@@ -1,35 +1,71 @@
 const fs = require('fs'), path = require('path'), assert = require('assert/strict'), {JSDOM} = require('jsdom');
 const source = fs.readFileSync(path.resolve(__dirname, '../attachments/credit-native-sidebar.js'), 'utf8');
-const dom = new JSDOM(`<body class="citi-hide-sidebar"><aside class="acs-side-bar" style="width: 286px">
+const dom = new JSDOM(`<head><style id="native-canvas-theme">#main{background-color:rgb(240,245,249)}</style></head><body class="citi-hide-sidebar"><aside class="acs-side-bar" style="width: 286px;">
 <button id="toggle">Collapse sidebar</button><ul>
 <li class="plugin_pagetree_current"><a id="portfolio" href="/confluence/pages/viewpage.action?pageId=101" aria-current="page" aria-describedby="help">Portfolio · WCS 101</a></li>
 <li><a href="/confluence/pages/viewpage.action?pageId=102">Underwriter Summary</a></li>
 <li><button id="branch" aria-expanded="false">Resources</button><ul id="children" hidden><li><span class="plugin_pagetree_children_span" id="childrenspan103-node"><a href="/confluence/display/wcs/Activity">Covenant activity</a></span></li></ul></li>
 <li id="unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Blogs"><span class="existing-icon"></span>Blogs · WCS 999</a><a href="https://external.test/confluence/pages/viewpage.action?pageId=101">External portfolio</a><a href="/confluence/pages/viewpage.action?pageId=101#section">Section</a><a role="button" href="/confluence/pages/viewpage.action?pageId=101" aria-expanded="false">Native branch</a></li>
-</ul><div class="acs-side-bar-footer"><a href="/confluence/pages/viewpage.action?pageId=101">Footer</a></div></aside><div id="credit-hub"></div></body>`, {
+</ul><div class="acs-side-bar-footer"><button id="space-tools" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="/confluence/pages/viewpage.action?pageId=101">Footer</a><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-expanded="true" aria-label="Sidebar"></a></div>
+<aui-dropdown-menu id="space-tools-menu" class="aui-dropdown2 aui-layer" role="menu" tabindex="-1" hidden><ul><li><a id="menu-portfolio" href="/confluence/pages/viewpage.action?pageId=101">Portfolio settings</a></li><li><a href="#configuration">Configure sidebar</a></li></ul></aui-dropdown-menu>
+</aside><main id="main" class="ia-splitter-right" style="font-family: Arial, sans-serif;"><div class="wiki-content" style="font-family: Georgia, serif;"><div id="credit-ui" style="color: navy;"><div id="credit-hub"></div></div></div></main></body>`, {
   url: 'https://example.test/confluence/pages/viewpage.action?pageId=101', runScripts: 'outside-only', pretendToBeVisual: true
 });
 const w = dom.window, d = w.document;
+const systemTheme = new w.EventTarget(), themeListeners = new Set();
+const addThemeListener = systemTheme.addEventListener.bind(systemTheme), removeThemeListener = systemTheme.removeEventListener.bind(systemTheme);
+systemTheme.media = '(prefers-color-scheme: dark)'; systemTheme.matches = false;
+systemTheme.addEventListener = (type, listener, options) => { if (type === 'change') themeListeners.add(listener); addThemeListener(type, listener, options); };
+systemTheme.removeEventListener = (type, listener, options) => { if (type === 'change') themeListeners.delete(listener); removeThemeListener(type, listener, options); };
+w.matchMedia = query => { assert.equal(query, systemTheme.media); return systemTheme; };
 w.CREDIT_CONFIG = {pageIds: {portfolio: '101', overview: '102', activity: '103'}};
 w.fetch = () => { throw new Error('Sidebar must not request data or permissions.'); };
 const sidebar = d.querySelector('aside'), toggle = d.querySelector('#toggle'), branch = d.querySelector('#branch');
+const nativeToggle = d.querySelector('.expand-collapse-trigger'), spaceTools = d.querySelector('#space-tools'), menu = d.querySelector('#space-tools-menu');
 let calls = 0;
 toggle.onclick = () => { calls++; sidebar.classList.toggle('acs-side-bar-collapsed'); };
+nativeToggle.onclick = event => { event.preventDefault(); const collapsed = sidebar.classList.toggle('acs-side-bar-collapsed'); nativeToggle.setAttribute('aria-expanded', String(!collapsed)); };
+let menuCalls = 0;
+spaceTools.onclick = () => { menuCalls++; menu.hidden = !menu.hidden; spaceTools.setAttribute('aria-expanded', String(!menu.hidden)); };
 branch.onclick = () => { const children = d.querySelector('#children'); children.hidden = !children.hidden; branch.setAttribute('aria-expanded', String(!children.hidden)); };
 const pageKeys = ['lendingAnalytics', 'deepdive', 'workload', 'COVENANTS', 'CA', 'FACILITY', 'CCM', 'INSURANCE', 'APPRAISALS', 'trends'];
 pageKeys.forEach((key, i) => { const id = String(200 + i); w.CREDIT_CONFIG.pageIds[key] = id; const li = d.createElement('li'); li.innerHTML = '<a href="/confluence/pages/viewpage.action?pageId=' + id + '">' + key + '</a>'; sidebar.querySelector('ul').append(li); });
 const toggleFn = toggle.onclick, branchFn = branch.onclick, originalHrefs = [...d.querySelectorAll('a')].map(a => a.getAttribute('href'));
+const nativeToggleFn = nativeToggle.onclick, spaceToolsFn = spaceTools.onclick, menuHTML = menu.outerHTML;
 const originalLabels = [...d.querySelectorAll('a')].map(a => a.textContent), unrelated = d.querySelector('#unrelated'), unrelatedHTML = unrelated.outerHTML;
 const footerHTML = d.querySelector('.acs-side-bar-footer').outerHTML, sidebarStyle = sidebar.getAttribute('style');
+const ui = d.querySelector('#credit-ui'), uiStyle = ui.getAttribute('style');
+const ownedPresentation = new Set(['--credit-resolved-space-font', '--credit-resolved-sidebar-background']);
+const nativeStyle = element => Array.from(element.style).filter(name => !ownedPresentation.has(name)).map(name => [name, element.style.getPropertyValue(name), element.style.getPropertyPriority(name)]);
+const originalNativeStyle = nativeStyle(sidebar), originalUIStyle = nativeStyle(ui);
 w.eval(source);
 const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 (async () => {
   await tick();
   assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn); assert.equal(calls, 0, 'No forced collapse');
   assert.equal(d.querySelectorAll('aside').length, 1); assert.equal(d.body.className, '', 'Native sidebar is revealed through the existing theme class');
-  assert.equal(sidebar.getAttribute('style'), sidebarStyle, 'Native dimensions stay untouched');
+  assert.deepEqual(nativeStyle(sidebar), originalNativeStyle, 'Only owned presentation variables change; native dimensions stay untouched');
+  assert.deepEqual(nativeStyle(ui), originalUIStyle, 'Existing dashboard inline styling stays untouched');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif');
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Dashboard uses the native space content font');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)', 'Sidebar uses the native page canvas colour');
+  assert.equal(themeListeners.size, 1, 'System theme changes have one listener');
+  const nativeCanvasTheme = d.getElementById('native-canvas-theme');
+  // A system-theme stylesheet changes without a root class/data/style attribute.
+  // Replacing the rule text also invalidates JSDOM's computed-style cache.
+  nativeCanvasTheme.textContent = '#main{background-color:rgb(37,42,49)}'; await tick();
+  assert.equal(w.getComputedStyle(d.getElementById('main')).backgroundColor, 'rgb(37, 42, 49)');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)', 'Stylesheet mutation alone does not provide an attribute-based refresh');
+  systemTheme.matches = true; systemTheme.dispatchEvent(new w.Event('change')); await tick();
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(37, 42, 49)', 'Media-query change resolves the new native canvas colour');
+  nativeCanvasTheme.textContent = '#main{background-color:rgb(240,245,249)}';
+  systemTheme.matches = false; systemTheme.dispatchEvent(new w.Event('change')); await tick();
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-sidebar-background'), 'rgb(240, 245, 249)');
   assert.equal(unrelated.outerHTML, unrelatedHTML, 'Unconfigured, external, fragment and branch links are not decorated or rewritten');
   assert.ok(d.querySelector('.acs-side-bar-footer').classList.contains('credit-native-footer'));
+  assert.equal(menu.outerHTML, menuHTML, 'Native dropdown content is never decorated, even when a menu link uses a configured dashboard URL');
+  assert.ok(nativeToggle.classList.contains('credit-native-toggle-path'), 'Actual Confluence expand-collapse trigger stays available in the footer');
+  assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
   const paths = [...d.querySelectorAll('[data-credit-native-page-icon] path')].map(p => p.getAttribute('d'));
   assert.equal(new Set(paths).size, 13, 'Each configured dashboard has its own icon');
@@ -39,6 +75,9 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const existing = w.CreditSidebar; w.eval(source); assert.equal(w.CreditSidebar, existing, 'Repeated bundle loading is idempotent');
   toggle.click(); await tick();
   assert.equal(sidebar.dataset.creditNativeCompact, 'true');
+  assert.equal(menu.classList.contains('credit-native-compact-path'), false, 'Native dropdown must never be forced into the compact rail');
+  assert.equal(menu.hidden, true, 'Collapsing the sidebar does not open the native dropdown');
+  assert.equal(menu.querySelector('[data-credit-native-page-link],.credit-native-compact-path'), null);
   assert.deepEqual([...d.querySelectorAll('[data-credit-native-page-icon] path')].map(p => p.getAttribute('d')), paths, 'Same identities in compact state');
   const first = d.querySelector('#portfolio'); first.dispatchEvent(new w.FocusEvent('focusin', {bubbles: true}));
   assert.equal(d.querySelector('[role=tooltip]').textContent, originalLabels[0]);
@@ -49,6 +88,14 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(d.querySelector('[role=tooltip]'), null, 'Unrelated native links have no dashboard tooltip');
   branch.click(); await tick(); assert.equal(d.querySelector('#children').hidden, false); assert.equal(branch.getAttribute('aria-expanded'), 'true');
   toggle.click(); await tick(); assert.equal(sidebar.dataset.creditNativeCompact, 'false'); assert.equal(calls, 2);
+  spaceTools.click(); await tick();
+  assert.equal(menu.hidden, false, 'Expanded native footer menu opens through its own handler');
+  assert.equal(spaceTools.getAttribute('aria-expanded'), 'true'); assert.equal(menuCalls, 1);
+  assert.equal(menu.querySelector('[data-credit-native-page-link],.credit-native-compact-path'), null, 'Opening the menu cannot turn its entries into sidebar links');
+  spaceTools.click(); await tick(); assert.equal(menu.outerHTML, menuHTML, 'Native menu closes without dashboard markup or display mutations');
+  nativeToggle.click(); await tick(); assert.equal(sidebar.dataset.creditNativeCompact, 'true'); assert.equal(nativeToggle.getAttribute('aria-expanded'), 'false');
+  nativeToggle.click(); await tick(); assert.equal(sidebar.dataset.creditNativeCompact, 'false'); assert.equal(nativeToggle.getAttribute('aria-expanded'), 'true');
+  assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.deepEqual([...d.querySelectorAll('a')].map(a => a.getAttribute('href')), originalHrefs);
   d.querySelector('.plugin_pagetree_current').classList.remove('plugin_pagetree_current'); first.removeAttribute('aria-current');
   d.querySelectorAll('a')[1].setAttribute('aria-current', 'page'); await tick();
@@ -57,6 +104,17 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const retargeted = sidebar.querySelector('a[data-credit-native-page-link="trends"]'); retargeted.setAttribute('href', '/confluence/pages/viewpage.action?pageId=888'); await tick();
   assert.equal(retargeted.hasAttribute('data-credit-native-page-link'), false); assert.equal(retargeted.querySelector('svg'), null); assert.equal(retargeted.textContent, 'trends');
   retargeted.setAttribute('href', '/confluence/pages/viewpage.action?pageId=209'); await tick(); assert.equal(retargeted.dataset.creditNativePageLink, 'trends');
+  // AUI may reparent existing links into a menu without changing their URL.
+  const treeParent = retargeted.parentElement, treeNext = retargeted.nextSibling;
+  menu.querySelector('ul').append(retargeted); await tick();
+  assert.equal(retargeted.hasAttribute('data-credit-native-page-link'), false, 'Moving a decorated tree link into a menu restores the anchor');
+  assert.equal(retargeted.querySelector('svg,.credit-native-page-label'), null);
+  assert.equal(retargeted.textContent, 'trends'); assert.equal(retargeted.hasAttribute('aria-label'), false);
+  assert.equal(menu.classList.contains('credit-native-compact-path'), false);
+  assert.equal(menu.querySelector('.credit-native-compact-path,.credit-native-link-row'), null);
+  treeParent.insertBefore(retargeted, treeNext); await tick();
+  assert.equal(retargeted.dataset.creditNativePageLink, 'trends', 'Returning a link to the tree decorates it again');
+  assert.equal(menu.outerHTML, menuHTML);
   // The legacy Trends route must not create an extra identity for Portfolio.
   w.CREDIT_CONFIG.pageIds.trends = '101'; w.CreditSidebar.refresh();
   assert.equal(first.dataset.creditNativePageLink, 'portfolio'); assert.equal(retargeted.hasAttribute('data-credit-native-page-link'), false);
@@ -75,6 +133,17 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const meta = d.createElement('meta'); meta.name = 'ajs-space-key'; meta.content = 'wcs'; d.head.append(meta); await tick();
   assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Header include skins ordinary space pages');
   assert.ok(sidebar.querySelector('.credit-native-compact-path'));
+  // A dashboard-to-ordinary-page switch keeps the native content font even when
+  // the macro is absent and the ancestor main element has a different family.
+  const spaceContent = ui.parentElement;
+  ui.append(hub); await tick(); ui.remove(); await tick();
+  assert.equal(d.getElementById('credit-ui'), null);
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Ordinary wcs pages prefer .wiki-content over the ancestor #main font');
+  assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Ordinary-page switch keeps the configured native links');
+  spaceContent.append(ui); await tick();
+  assert.equal(ui.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif', 'Returning to a dashboard restores its space typography');
+  assert.equal(sidebar.style.getPropertyValue('--credit-resolved-space-font'), 'Georgia, serif');
+  assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Returning does not duplicate navigation icons');
   meta.content = 'OTHER'; await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null, 'Other spaces stay untouched');
   assert.equal(d.querySelector('.credit-native-compact-path'), null, 'Owned rail paths are restored');
   assert.equal(d.body.className, 'citi-hide-sidebar', 'Host visibility restored outside the scope');
@@ -85,12 +154,12 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   const nativeRow = d.createElement('li');
   nativeRow.innerHTML = '<div class="plugin_pagetree_childtoggle_container"><button id="native-toggle">Expand</button></div><div class="plugin_pagetree_children_content"><span class="plugin_pagetree_children_span"><a href="/confluence/pages/viewpage.action?pageId=101">Portfolio copy</a></span></div>';
   sidebar.querySelector('ul').append(nativeRow); await tick();
-  const nativeToggle = nativeRow.querySelector('#native-toggle'), nativeParent = nativeToggle.parentElement;
+  const nativeBranchToggle = nativeRow.querySelector('#native-toggle'), nativeParent = nativeBranchToggle.parentElement;
   assert.ok(nativeRow.classList.contains('credit-native-tree-row'));
   assert.equal(nativeParent.classList.contains('credit-native-leaf-marker'), false, 'Interactive tree control remains visible');
-  nativeToggle.remove(); await tick(); assert.ok(nativeParent.classList.contains('credit-native-leaf-marker'));
-  nativeParent.append(nativeToggle); await tick(); assert.equal(nativeParent.classList.contains('credit-native-leaf-marker'), false);
-  assert.equal(nativeToggle.parentElement, nativeParent, 'Original tree nodes are never reparented');
+  nativeBranchToggle.remove(); await tick(); assert.ok(nativeParent.classList.contains('credit-native-leaf-marker'));
+  nativeParent.append(nativeBranchToggle); await tick(); assert.equal(nativeParent.classList.contains('credit-native-leaf-marker'), false);
+  assert.equal(nativeBranchToggle.parentElement, nativeParent, 'Original tree nodes are never reparented');
   const decoratedLink = nativeRow.querySelector('a[href]');
   const nativeIcon = d.createElement('span'); nativeIcon.className = 'aui-icon aui-iconfont-page-default';
   decoratedLink.querySelector('.credit-native-page-label').prepend(nativeIcon); await tick();
@@ -116,12 +185,17 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   assert.equal(shell.dataset.creditNativeCompact, 'false');
   bottom.remove(); shell.before(sidebar); shell.remove(); await tick();
   w.CreditSidebar.destroy();
+  assert.equal(themeListeners.size, 0, 'Destroy removes the system-theme listener');
+  systemTheme.dispatchEvent(new w.Event('change')); await tick();
   assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(sidebar.hasAttribute('data-credit-native-compact'), false);
   assert.equal(d.querySelector('.acs-side-bar-footer').outerHTML, footerHTML, 'Footer is fully restored on teardown');
+  assert.equal(menu.outerHTML, menuHTML, 'Native dropdown remains exactly restored on teardown');
+  assert.equal(nativeToggle.onclick, nativeToggleFn); assert.equal(spaceTools.onclick, spaceToolsFn);
   assert.equal(sidebar.className, 'acs-side-bar'); assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn);
   assert.deepEqual([...d.querySelectorAll('a')].map(a => a.getAttribute('href')), originalHrefs);
   assert.deepEqual([...d.querySelectorAll('a')].map(a => a.textContent), originalLabels);
   assert.equal(d.body.className, 'citi-hide-sidebar'); assert.equal(sidebar.getAttribute('style'), sidebarStyle); assert.equal(unrelated.outerHTML, unrelatedHTML);
+  assert.equal(ui.getAttribute('style'), uiStyle, 'Owned typography variables restore exactly on teardown');
   assert.equal(first.getAttribute('aria-describedby'), 'help'); assert.equal(first.hasAttribute('aria-label'), false);
-  console.log('PASS native dashboard navigation: configured links only, native titles/URLs/handlers/dimensions preserved, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
+  console.log('PASS native dashboard navigation: configured tree links only, native menus excluded during relocation, native titles/URLs/handlers/dimensions preserved, footer menu and real collapse trigger, compact icons and accessible tooltip, dynamic retargeting, alias identity, editor/page teardown. Local fixture only.');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => dom.window.close());
