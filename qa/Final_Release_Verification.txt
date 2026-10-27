@@ -47,3 +47,11 @@ compilation/execution remain to be validated in that environment.
 No zero-bug assertion or five-second live end-to-end guarantee is made. Recorded
 local model/processing timings exclude the target network and host environment.
 Retain LICENSES.txt and applicable upstream/internal-asset rights.
+
+GITHUB HOSTED CHECK
+The private repository includes a verification workflow. The initial hosted job
+did not start: GitHub reported failed account payments or a spending limit that
+requires attention. This is not a hosted test pass or an application test failure.
+Local npm test completed all 35 commands successfully. After the account issue is
+resolved, the workflow can be run from Actions > Verify Lending Analytics > Run
+workflow. No account billing or payment settings were changed by this release.
