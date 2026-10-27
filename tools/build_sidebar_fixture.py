@@ -34,8 +34,10 @@ styles = '''<style>
 .acs-side-bar .aui-icon::before{content:"▣"}
 .acs-side-bar svg{width:40px;height:40px;fill:red;stroke:red}
 .acs-side-bar svg path{fill:none;stroke:red}
+#credit-ui .ch-main{width:100vw;min-width:1200px}
 .ch-card{border:12px solid red!important;border-radius:45px!important;background:pink!important;box-shadow:0 0 0 14px pink!important}
 .acs-side-bar li::before{content:"•"}
+.acs-side-bar{background:#eee!important}.acs-side-bar-bottom{background:#ddd!important}
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
 .ia-fixed-sidebar{min-width:0;position:sticky;top:10px;align-self:start}.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}

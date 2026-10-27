@@ -320,3 +320,16 @@ This update replaces credit-native-sidebar.js and credit-style.css plus generate
 page pairs from the same build. The existing Space_Navigation.html header include
 and page macro fragments do not change. Validate against the live host theme;
 local fixtures cover nested rails, shared toggle footers and hostile host CSS.
+
+PAGE AND SIDEBAR SURFACES
+Page shells use a restrained 10 px radius (the shared --credit-page-radius token).
+The native sidebar wrapper, inner panel and footer use the same theme-aware
+surface as the dashboard. Host light/dark tokens remain the default. An optional
+--credit-surface-background space CSS variable customizes both surfaces together;
+use theme-specific values if overriding it. Child-page hierarchy is preserved.
+
+Dashboard shell widths are constrained to the available parent width, with
+border-box sizing and min-width:0 protected from host rules. Wide table wrappers
+retain horizontal scrolling. No body/html overflow suppression or child-page
+hiding is applied. A remaining live-host strip outside the macro requires live
+DOM inspection; the child-page hierarchy itself is not changed by this package.

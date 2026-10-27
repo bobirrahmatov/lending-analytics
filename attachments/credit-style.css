@@ -1,6 +1,6 @@
 /* Lending Analytics controls. Independent of knowledge-management styles.
  * Confluence supplies the font and theme tokens; all UI rules are scoped. */
-#credit-ui{--blue:#255be3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--surface:var(--ds-background-neutral,var(--credit-theme-subtle,#f5f8fa));--white:var(--ds-surface,var(--credit-theme-surface,#fff));--control-radius:6px;--notice-radius:12px;--tag-gap:8px;--section-gap:24px;--credit-page-gutter:48px;--credit-page-radius:24px;--credit-overlay-z-index:4000;font-family:inherit;font-size:16px;line-height:1.6;color:var(--ink);background:var(--ds-surface,var(--credit-theme-surface,#fff));min-height:0;-webkit-font-smoothing:antialiased}
+#credit-ui{--blue:#255be3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--surface:var(--ds-background-neutral,var(--credit-theme-subtle,#f5f8fa));--white:var(--ds-surface,var(--credit-theme-surface,#fff));--control-radius:6px;--notice-radius:12px;--tag-gap:8px;--section-gap:24px;--credit-page-gutter:48px;--credit-page-radius:10px;--credit-overlay-z-index:4000;font-family:inherit;font-size:16px;line-height:1.6;color:var(--ink);background:var(--ds-surface,var(--credit-theme-surface,#fff));min-height:0;-webkit-font-smoothing:antialiased}
 #credit-ui *{box-sizing:border-box}#credit-ui h1,#credit-ui h2,#credit-ui h3,#credit-ui p{margin:0}#credit-ui button,#credit-ui input,#credit-ui select,#credit-ui textarea{font:inherit}#credit-ui button{cursor:pointer}#credit-ui a{text-decoration:none;color:inherit}#credit-ui svg{height:20px;width:20px;flex-shrink:0;vertical-align:middle}#credit-ui button:focus-visible,#credit-ui a:focus-visible,#credit-ui input:focus-visible,#credit-ui select:focus-visible,#credit-ui textarea:focus-visible,#credit-ui summary:focus-visible{outline:3px solid var(--ds-border,var(--credit-theme-border,#5b8ef0));outline-offset:4px}#credit-ui [hidden]{display:none!important}#credit-ui .sr-only{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden}#credit-ui .button{display:inline-flex;gap:8px;align-items:center;justify-content:center;border:1px solid var(--blue);border-radius:var(--control-radius);background:var(--blue);color:white;padding:12px 20px;min-height:48px;font-size:14px;line-height:1.4;white-space:nowrap;text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s,color .15s}#credit-ui .button:hover{background:#174bc5;text-decoration:none}#credit-ui .button.secondary{background:var(--ds-surface,var(--credit-theme-surface,white));border-color:var(--ds-border,var(--credit-theme-border,#c3cfdb));color:var(--navy)}#credit-ui .button.secondary:hover{background:var(--pale);border-color:var(--ds-border,var(--credit-theme-border,#819bb9))}#credit-ui .button.danger{color:var(--ds-text-danger,var(--credit-theme-danger,#a1372b));background:var(--ds-surface,var(--credit-theme-surface,white));border-color:var(--ds-border,var(--credit-theme-border,#d6aea8))}#credit-ui .button.danger:hover{color:var(--ds-text-danger,var(--credit-theme-danger,#8f2921));background:var(--ds-background-danger,var(--credit-theme-dangerBg,#fff3f1));border-color:var(--ds-border,var(--credit-theme-border,#b7655a))}#credit-ui .button.compact{min-height:40px;padding:9px 14px;font-size:13px}#credit-ui .button:disabled{cursor:not-allowed;opacity:.55}#credit-ui .button:disabled:hover{background:var(--pale);border-color:var(--line);color:var(--muted)}#credit-ui .button svg{height:17px;width:17px}#credit-ui .icon-button{display:grid;place-items:center;border:0;border-radius:6px;background:var(--pale);color:var(--navy);width:36px;height:36px;flex-shrink:0}#credit-ui .link svg{width:16px;height:16px}
 
 #credit-ui .link{border:0;background:none;display:inline-flex;gap:9px;align-items:center;padding:0;color:var(--ds-link,var(--credit-theme-link,#255be3));font-size:14px}
@@ -180,7 +180,11 @@
 
 /* Native sidebar skin, installed per dashboard or by the wcs space include.
  * Confluence retains widths, content offsets, tree handlers and permissions. */
-.credit-native-navigation{color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--ds-surface,var(--credit-theme-surface,#fff))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
+.credit-native-navigation{color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
+/* Paint nested native panels too: the outer wrapper alone cannot override an
+ * opaque host sidebar/content/footer. One optional space token customizes both
+ * dashboard and navigation surfaces; native light/dark tokens remain default. */
+.credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.acs-side-bar-footer,.acs-side-bar-bottom){background:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))!important;color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
 .credit-native-navigation :is(ul,ol,li){list-style:none!important}
 .credit-native-navigation li::marker{content:""!important}
 .credit-native-navigation :is(.plugin_pagetree_children_span>a,a[data-credit-native-page-link]){display:inline-flex;align-items:baseline;gap:7px;min-width:0;padding:5px 7px;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;text-decoration:none!important;border-radius:6px;line-height:1.6;font-size:13px!important;transition:background-color .16s,color .16s}
@@ -228,7 +232,7 @@
 
 /* Lending Analytics dashboard components */
 /* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
-#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--credit-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
+#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
 :is(#credit-hub,.credit-ui-surface) * { box-sizing:border-box }
 :is(#credit-hub,.credit-ui-surface) [hidden] { display:none!important }
 :is(#credit-hub,.credit-ui-surface) :is(h1,h2,h3,p) { margin:0 }
@@ -1685,7 +1689,7 @@
   --credit-theme-muted:#5b6c7e;--credit-theme-link:#255be3;
   --credit-theme-subtle:#f0f5f9;--credit-theme-border:#dce4ec;--credit-theme-selected:#eaf1ff;--credit-theme-focus:#255be3;
   color-scheme:light;
-  background-color:var(--ds-surface,var(--credit-theme-surface))!important;
+  background-color:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface)))!important;
   color:var(--ds-text,var(--credit-theme-text));
 }
 :is(html[data-color-mode="dark"],body[data-color-mode="dark"]) :is(body.credit-preview,#credit-ui.credit-ui-host,.credit-native-navigation,.credit-native-sidebar-tooltip),
@@ -1702,10 +1706,10 @@ body.credit-preview[data-color-mode="dark"]{
     --credit-theme-subtle:#2d3239;--credit-theme-border:#505966;--credit-theme-selected:#1c3b60;--credit-theme-focus:#85b8ff;color-scheme:dark;
   }
 }
-#credit-ui.credit-ui-host{border-radius:20px!important}
-#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;border-radius:20px!important;color-scheme:inherit;container-type:inline-size;container-name:credit-dashboard}
+#credit-ui.credit-ui-host{border-radius:var(--credit-page-radius,10px)!important}
+#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;border-radius:var(--credit-page-radius,10px)!important;color-scheme:inherit;container-type:inline-size;container-name:credit-dashboard}
 /* Round each painted surface without clipping menus, focus rings or dialogs. */
-#credit-ui.credit-ui-host #credit-hub :is(.ch-main,.la-landing){background:var(--page)!important;border-radius:20px!important}
+#credit-ui.credit-ui-host #credit-hub :is(.ch-main,.la-landing){background:var(--page)!important;border-radius:var(--credit-page-radius,10px)!important}
 /* Available content width shrinks when the native sidebar expands. */
 @container(max-width:900px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @container(max-width:560px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:minmax(0,1fr)!important}}
@@ -1928,3 +1932,10 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
  #credit-hub .cc-unified-table-head>.cc-table-actions{flex-wrap:wrap}
  #credit-hub .la-area{display:flex}
 }
+
+/* Host themes must not give the embedded dashboard a viewport-wide/min-content
+   shell. Wide data remains scrollable within its own table wrapper. */
+#credit-ui.credit-ui-host,
+#credit-ui.credit-ui-host #credit-hub,
+#credit-ui #credit-hub :is(.ch-layout,.ch-main,#ch-content){box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
+#credit-ui #credit-hub :is(.credit-data-table-scroll,.ch-table-wrap){box-sizing:border-box!important;min-width:0!important;max-width:100%!important;overflow-x:auto!important}

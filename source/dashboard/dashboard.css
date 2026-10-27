@@ -1,5 +1,5 @@
 /* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
-#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--credit-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
+#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
 :is(#credit-hub,.credit-ui-surface) * { box-sizing:border-box }
 :is(#credit-hub,.credit-ui-surface) [hidden] { display:none!important }
 :is(#credit-hub,.credit-ui-surface) :is(h1,h2,h3,p) { margin:0 }
@@ -1456,7 +1456,7 @@
   --credit-theme-muted:#5b6c7e;--credit-theme-link:#255be3;
   --credit-theme-subtle:#f0f5f9;--credit-theme-border:#dce4ec;--credit-theme-selected:#eaf1ff;--credit-theme-focus:#255be3;
   color-scheme:light;
-  background-color:var(--ds-surface,var(--credit-theme-surface))!important;
+  background-color:var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface)))!important;
   color:var(--ds-text,var(--credit-theme-text));
 }
 :is(html[data-color-mode="dark"],body[data-color-mode="dark"]) :is(body.credit-preview,#credit-ui.credit-ui-host,.credit-native-navigation,.credit-native-sidebar-tooltip),
@@ -1473,10 +1473,10 @@ body.credit-preview[data-color-mode="dark"]{
     --credit-theme-subtle:#2d3239;--credit-theme-border:#505966;--credit-theme-selected:#1c3b60;--credit-theme-focus:#85b8ff;color-scheme:dark;
   }
 }
-#credit-ui.credit-ui-host{border-radius:20px!important}
-#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;border-radius:20px!important;color-scheme:inherit;container-type:inline-size;container-name:credit-dashboard}
+#credit-ui.credit-ui-host{border-radius:var(--credit-page-radius,10px)!important}
+#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;border-radius:var(--credit-page-radius,10px)!important;color-scheme:inherit;container-type:inline-size;container-name:credit-dashboard}
 /* Round each painted surface without clipping menus, focus rings or dialogs. */
-#credit-ui.credit-ui-host #credit-hub :is(.ch-main,.la-landing){background:var(--page)!important;border-radius:20px!important}
+#credit-ui.credit-ui-host #credit-hub :is(.ch-main,.la-landing){background:var(--page)!important;border-radius:var(--credit-page-radius,10px)!important}
 /* Available content width shrinks when the native sidebar expands. */
 @container(max-width:900px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @container(max-width:560px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:minmax(0,1fr)!important}}
@@ -1699,3 +1699,10 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
  #credit-hub .cc-unified-table-head>.cc-table-actions{flex-wrap:wrap}
  #credit-hub .la-area{display:flex}
 }
+
+/* Host themes must not give the embedded dashboard a viewport-wide/min-content
+   shell. Wide data remains scrollable within its own table wrapper. */
+#credit-ui.credit-ui-host,
+#credit-ui.credit-ui-host #credit-hub,
+#credit-ui #credit-hub :is(.ch-layout,.ch-main,#ch-content){box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important}
+#credit-ui #credit-hub :is(.credit-data-table-scroll,.ch-table-wrap){box-sizing:border-box!important;min-width:0!important;max-width:100%!important;overflow-x:auto!important}
