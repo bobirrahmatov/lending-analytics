@@ -85,6 +85,10 @@ before pushing any new source data.
 
 Follow [Lending_Analytics_Deployment.txt](Lending_Analytics_Deployment.txt). Each content-only macro loads its own dashboard dependencies from attachment page `3845862527`, using the single `credit-style.css` stylesheet. No WCSpedia navbar or shared portal include is required. The native Confluence title, breadcrumb and sidebar remain in place; only configured dashboard links receive their dashboard icons.
 
+For the space-wide sidebar skin, upload `credit-native-sidebar.js`, `credit-pages.js` and `credit-style.css`, then paste [Space_Navigation.html](Space_Navigation.html) into the existing **wcs space header/include once**. This activates on matching wcs reader pages even without a dashboard macro. It styles the existing tree, supplies distinct dashboard icons and preserves them in the collapsed rail. Native navigation, collapse preferences and permissions remain in charge. Do not simply attach the HTML and expect it to execute. Editors and other spaces are excluded.
+
+All dashboard main containers and the landing share theme-aware backgrounds. Confluence theme tokens take priority; local previews follow the explicit or system theme.
+
 `Space_File_Drop_Guard.html` is an optional independent space-wide include for the requested accidental-drop protection. It does not upload or redirect files and is not required to run a dashboard. Upload deliberately through the attachment host page.
 
 All default script, image and workbook references use exact stable filenames on attachment page `3845862527`, without `?v=` parameters or version/hash suffixes. The global CSS inherits the space font family and protects scoped dashboard typography, tables and scrolling surfaces from host resets.

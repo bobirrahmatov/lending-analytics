@@ -1,11 +1,13 @@
 (function(){
 const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDIT_CONFIG?.page!=="APPRAISALS"){root.textContent='This page needs its matching dashboard settings and scripts.';return;}
 /* Dashboard icons on Confluence's existing navigation. Native URLs, titles,
- * tree controls, visibility, dimensions and collapse preferences stay native. */
+ * tree controls, dimensions and collapse preferences stay native. The optional
+ * space include also styles ordinary reader pages in the configured space. */
 (function (w, d) {
   'use strict';
-  if (w.CreditSidebar) return;
-  var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false;
+  if (w.CreditSidebar) { w.CreditSidebar.refresh(); return; }
+  var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false, revealOwned = false;
+  var decorations = new Map();
   var links = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
   var iconPaths = {
     lendingAnalytics: 'M3 21h18 M4 9l8-6 8 6H4z M6 11v7 M12 11v7 M18 11v7',
@@ -44,6 +46,42 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (url.pathname.includes('/display/')) return (a.closest('.plugin_pagetree_children_span')?.id.match(/^childrenspan([1-9]\d*)-/) || [])[1] || null;
     } catch (_) {}
     return null;
+  }
+  function active() {
+    if (!w.location) return false;
+    if (d.querySelector('#editpageform,#content-editor,body.contenteditor') || /\/(?:admin|spaces\/edit|pages\/(?:edit|create)|login)/.test(w.location.pathname) || /[?&](?:pageVersion=|preview=)/.test(w.location.search)) return false;
+    var configured = String(w.CREDIT_NAV_CONFIG?.spaceKey || w.CREDIT_CONFIG?.spaceKey || 'wcs').toLowerCase();
+    var meta = d.querySelector('meta[name="ajs-space-key"]')?.content || d.querySelector('meta[name="confluence-space-key"]')?.content;
+    var route = (w.location.pathname.match(/\/(?:display|spaces)\/([^/]+)/) || [])[1];
+    var space = String(meta || route || '').toLowerCase();
+    if (space && space !== configured) return false;
+    return !!d.getElementById('credit-hub') || !!(w.CREDIT_NAV_CONFIG?.spaceKey && space === configured);
+  }
+  // Only add presentation classes to existing native nodes. Track ownership so
+  // rerenders, retargeted links and editor transitions can restore them exactly.
+  function decorateTree() {
+    var desired = new Map();
+    function mark(el, name) { if (!el) return; if (!desired.has(el)) desired.set(el, new Set()); desired.get(el).add(name); }
+    links.forEach(function (_, a) {
+      for (var parent = a.parentElement; parent && parent !== host; parent = parent.parentElement) mark(parent, 'credit-native-compact-path');
+      var content = a.closest('.plugin_pagetree_children_content'), row = content?.parentElement;
+      if (!row) return;
+      var toggle = Array.from(row.children).find(function (el) { return el.classList.contains('plugin_pagetree_childtoggle_container'); });
+      if (toggle) {
+        mark(row, 'credit-native-tree-row');
+        if (!toggle.querySelector('a,button,[role=button],[data-type=toggle]')) mark(toggle, 'credit-native-leaf-marker');
+      }
+    });
+    decorations.forEach(function (names, el) {
+      names.forEach(function (name) { if (!desired.get(el)?.has(name)) { el.classList.remove(name); names.delete(name); } });
+      if (!names.size) decorations.delete(el);
+    });
+    desired.forEach(function (names, el) {
+      names.forEach(function (name) {
+        if (el.classList.contains(name)) return;
+        el.classList.add(name); if (!decorations.has(el)) decorations.set(el, new Set()); decorations.get(el).add(name);
+      });
+    });
   }
   function restoreAttribute(element, name, value) {
     if (value === null) element.removeAttribute(name); else element.setAttribute(name, value);
@@ -87,6 +125,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       var selected = a.matches('[aria-current="page"]') || !!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current') || !!row && row.matches('.plugin_pagetree_current');
       if (a.getAttribute('data-credit-native-current') !== String(selected)) a.setAttribute('data-credit-native-current', String(selected));
     });
+    decorateTree();
   }
   function showTooltip(event) {
     var a = event.target.closest?.('a[data-credit-native-page-link]');
@@ -118,11 +157,13 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (ownsHostClass) host.classList.remove('credit-native-navigation');
     }
     links.forEach(function (record, a) { restoreLink(a, record); });
+    decorations.forEach(function (names, el) { names.forEach(function (name) { el.classList.remove(name); }); }); decorations.clear();
+    if (revealOwned) { d.body.classList.add('citi-hide-sidebar'); revealOwned = false; }
     host = null; ownsHostClass = false;
   }
   function refresh() {
     if (destroyed || !d.body) return;
-    if (!d.getElementById('credit-hub') || d.querySelector('#editpageform,#content-editor,body.contenteditor')) { reset(); return; }
+    if (!active()) { reset(); return; }
     var native = d.querySelector('.ia-fixed-sidebar,.acs-side-bar,#sidebar');
     if (!native) { reset(); return; }
     if (host !== native) {
@@ -131,6 +172,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       host.addEventListener('mouseout', leaveTooltip); host.addEventListener('focusout', leaveTooltip);
       if (w.ResizeObserver) { resizeObserver = new w.ResizeObserver(compactState); resizeObserver.observe(host); }
     }
+    if (d.body.classList.contains('citi-hide-sidebar')) { revealOwned = true; d.body.classList.remove('citi-hide-sidebar'); }
     enhance(); compactState();
   }
   function schedule() { if (!queued && !destroyed) { queued = true; Promise.resolve().then(function () { queued = false; refresh(); }); } }
@@ -139,16 +181,17 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     observer = new w.MutationObserver(function (changes) {
       if (changes.some(function (change) {
         if (change.type === 'attributes') {
+          if (change.target.matches('meta[name="ajs-space-key"],meta[name="confluence-space-key"]')) return true;
           if (change.attributeName === 'class' && (change.oldValue || '') === (change.target.getAttribute('class') || '')) return false;
           return !!host && (host.contains(change.target) || change.target.contains(host));
         }
         if (host?.contains(change.target)) return true;
         return Array.from(change.addedNodes).concat(Array.from(change.removedNodes)).some(function (node) {
-          return node.nodeType === 1 && (node === host || node.contains(host) || node.matches('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar') || node.querySelector('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar'));
+          return node.nodeType === 1 && (node === host || node.contains(host) || node.matches('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar,meta[name="ajs-space-key"],meta[name="confluence-space-key"]') || node.querySelector('#credit-hub,#editpageform,#content-editor,.ia-fixed-sidebar,.acs-side-bar,#sidebar,meta[name="ajs-space-key"],meta[name="confluence-space-key"]'));
         });
       })) schedule();
     });
-    observer.observe(d.body, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'aria-current', 'href']});
+    observer.observe(d.documentElement, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'aria-current', 'href', 'content']});
   }
   function destroy() {
     destroyed = true; observer?.disconnect(); observer = null; reset();
@@ -2317,5 +2360,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="fa706bf3f35c:APPRAISALS";
+window.CREDIT_PAGE_BUILD="c8fce535ff91:APPRAISALS";
 })();

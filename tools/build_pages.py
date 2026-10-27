@@ -22,6 +22,7 @@ rev=hashlib.sha256((css+logic+landing+ui+(A/'credit-loading-overlay.js').read_te
 baseurl='/confluence/download/attachments/3845862527/'
 # Optional space-wide upload protection; dashboards do not depend on a navbar include.
 (P/'Space_File_Drop_Guard.html').write_text('<!-- Optional wcs space-wide guard. Prevents accidental drops; uploads nothing. -->\n<script src="'+baseurl+'credit-file-drop-guard.js" data-credit-space-key="wcs"></script>\n')
+(P/'Space_Navigation.html').write_text('<!-- Paste once into the existing wcs space header/include. Uses native navigation and permissions. -->\n<link rel="stylesheet" href="'+baseurl+'credit-style.css">\n<script src="'+baseurl+'credit-pages.js"></script>\n<script>window.CREDIT_NAV_CONFIG={spaceKey:"wcs"};</script>\n<script defer src="'+baseurl+'credit-native-sidebar.js"></script>\n')
 for obsolete in ['Shared_WCSpedia_Include.html','Confluence_With_Header_Macro.html','Confluence_Native_Header_Preview.html']:
  (P/obsolete).unlink(missing_ok=True)
 # Stable native IDs; maintain this file when the page tree changes.
@@ -53,12 +54,12 @@ root.dataset.creditStarted=@@PAGE@@;window.CreditHub.mount(root);
 '''.replace('TITLE',title).replace('@@PAGE@@',json.dumps(key)).replace('BASENAME',baseurl+name).replace('BASE',baseurl).replace('REV',rev)
  if key=='lendingAnalytics':fragment=fragment.replace('class="credit-ui-host"','class="credit-ui-host credit-landing-host"');fragment=re.sub(r'<script src="[^"]*(?:highcharts|xlsx.full.min)[^"]*"></script>\n','',fragment)
  (P/'confluence-pages'/(slug+'.html')).write_text(fragment)
- demo='''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TITLE</title><link rel="stylesheet" href="../attachments/credit-style.css"><style>body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff}#credit-ui{font-family:inherit}@media(max-width:600px){body{padding:12px 6px}}</style></head><body><div id="credit-ui" class="credit-ui-host"><div id="credit-hub" aria-label="TITLE"></div></div><noscript>Enable JavaScript to view this dashboard.</noscript>
+ demo='''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TITLE</title><link rel="stylesheet" href="../attachments/credit-style.css"><style>body{margin:0;padding:24px;font-family:Arial,sans-serif;background:#fff}#credit-ui{font-family:inherit}@media(max-width:600px){body{padding:12px 6px}}</style></head><body class="credit-preview"><div id="credit-ui" class="credit-ui-host"><div id="credit-hub" aria-label="TITLE"></div></div><noscript>Enable JavaScript to view this dashboard.</noscript>
 <script>window.CREDIT_CONFIG={mode:'demo',page:@@PAGE@@,baseUrl:'../attachments/'};</script>
 <script src="../attachments/credit-ui.js"></script><script src="../attachments/credit-loading-overlay.js"></script><script src="../attachments/highcharts.js"></script><script src="../attachments/highcharts-accessibility.js"></script><script src="../attachments/credit-demo-data.js"></script><script src="../attachments/NAMEPage.js"></script><script src="../attachments/NAMEHTMLPage.js"></script></body></html>'''.replace('TITLE',title).replace('@@PAGE@@',json.dumps(key)).replace('NAME',name).replace('REV',rev)
  if key=='COVENANTS':demo=demo.replace('<script src="../attachments/'+name+'Page.js', '<script src="../attachments/credit-covenants-demo.js"></script><script src="../attachments/'+name+'Page.js')
  demo=demo.replace('<script src="../attachments/'+name+'Page.js','<script src="../attachments/credit-comparison-demo.js"></script><script src="../attachments/'+name+'Page.js')
- if key=='lendingAnalytics':demo=demo.replace('<body>','<body class="credit-landing-preview">').replace('class="credit-ui-host"','class="credit-ui-host credit-landing-host"');demo=re.sub(r'<script src="[^"]*(?:highcharts|credit-demo-data|credit-comparison-demo)[^"]*"></script>','',demo)
+ if key=='lendingAnalytics':demo=demo.replace('class="credit-ui-host"','class="credit-ui-host credit-landing-host"');demo=re.sub(r'<script src="[^"]*(?:highcharts|credit-demo-data|credit-comparison-demo)[^"]*"></script>','',demo)
  (P/'pages'/(slug+'.html')).write_text(demo)
 (P/'Confluence_Macro.html').write_text((P/'confluence-pages/portfolio.html').read_text())
 # Retain known preview URLs as redirects; old custom-header variants cannot return.

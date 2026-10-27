@@ -31,20 +31,34 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    permissions provide access; no application login, entitlements, approvals or
    access-request pages are used. Keep the native title, sidebar and page tree.
    There is no dependency on WCSpedia or a navBar include.
-2. Upload the application assets from the deployment bundle to 3845862527.
+2. For the requested space-wide sidebar, paste the complete contents of
+   Space_Navigation.html once into the existing wcs space header/include (the
+   same customization location used for the other space-wide includes). Upload
+   credit-native-sidebar.js, credit-pages.js and credit-style.css to attachment
+   page 3845862527 first. Merely attaching the HTML file does not execute it.
+   This skins Confluence's existing sidebar on wcs reader pages, including pages
+   without a dashboard macro. It adds distinct dashboard icons, active states,
+   right-side native branch controls and compact icons with accessible tooltips.
+   It reveals the native sidebar if the theme's citi-hide-sidebar class hides it,
+   while leaving native widths, collapse preferences, URLs and handlers intact.
+   No links are invented and no permissions or financial records are fetched.
+   Unknown/other spaces and edit/administration views remain unaffected.
+   Dashboard macros still work without the space include. The adapter is
+   idempotent when both the include and a dashboard bundle load it.
+3. Upload the application assets from the deployment bundle to 3845862527.
    The single credit-style.css contains only dashboard styles and controls.
    It inherits the space font family and protects scoped dashboard text, tables
    and scrollbars without changing the host geometry. credit-ui.js and
    credit-loading-overlay.js are dashboard-owned helpers, included by each macro.
-3. Optional: install Space_File_Drop_Guard.html through the site's existing
+4. Optional: install Space_File_Drop_Guard.html through the site's existing
    space customization mechanism for space wcs. It prevents accidental file
    drops from becoming native uploads. It does not redirect/upload files and
    is not a dashboard startup dependency. Use Attachments explicitly to upload.
-4. Install each confluence-pages/ fragment on its matching native page. Each is
+5. Install each confluence-pages/ fragment on its matching native page. Each is
    a content-only macro: settings, shared dependencies, its Page.js logic and
    matching HTMLPage.js renderer. Keep the pair from one build. Do not paste a
    complete preview HTML document into a Confluence HTML macro.
-5. The actual landing is pages/lendinganalytics.html in local preview and the
+6. The actual landing is pages/lendinganalytics.html in local preview and the
    lendinganalytics.html native fragment in Confluence. It explains Lending
    Analytics with an editorial layout, an abstract Citi data hero and three subject cards
    for portfolio, underwriting and monitoring. Each card uses a people-free Citi
@@ -59,7 +73,7 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    records or Highcharts. Upload lending-analytics-hero.jpg, lending-portfolio.jpg,
    lending-underwriting.jpg and lending-monitoring.jpg with the application assets.
    Start_Here.html remains a developer/operator handoff index, not the landing.
-6. Attachment references use their exact stable filenames. Do not append ?v=,
+7. Attachment references use their exact stable filenames. Do not append ?v=,
    version strings, hash suffixes or release IDs to the default asset/workbook
    URLs. The authenticated browser session reads attachments from the configured
    page using same-origin Confluence REST/download requests and revalidation.

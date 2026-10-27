@@ -26,7 +26,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
 (async () => {
   await tick();
   assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn); assert.equal(calls, 0, 'No forced collapse');
-  assert.equal(d.querySelectorAll('aside').length, 1); assert.equal(d.body.className, 'citi-hide-sidebar', 'Native/theme visibility remains unchanged');
+  assert.equal(d.querySelectorAll('aside').length, 1); assert.equal(d.body.className, '', 'Native sidebar is revealed through the existing theme class');
   assert.equal(sidebar.getAttribute('style'), sidebarStyle, 'Native dimensions stay untouched');
   assert.equal(unrelated.outerHTML, unrelatedHTML, 'Unconfigured, external, fragment and branch links are not decorated or rewritten');
   assert.equal(d.querySelector('.acs-side-bar-footer').outerHTML, footerHTML);
@@ -68,6 +68,30 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 0));
   // Removing the dashboard deactivates the adapter on ordinary space pages.
   const hub = d.querySelector('#credit-hub'); hub.remove(); await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null);
   d.body.append(hub); await tick(); assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
+  // Space include runs without a dashboard; space identity must be verified.
+  hub.remove(); await tick();
+  w.CREDIT_NAV_CONFIG = {spaceKey: 'wcs'};
+  w.eval(source); await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null, 'Unknown space stays untouched');
+  const meta = d.createElement('meta'); meta.name = 'ajs-space-key'; meta.content = 'wcs'; d.head.append(meta); await tick();
+  assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13, 'Header include skins ordinary space pages');
+  assert.ok(sidebar.querySelector('.credit-native-compact-path'));
+  meta.content = 'OTHER'; await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null, 'Other spaces stay untouched');
+  assert.equal(d.querySelector('.credit-native-compact-path'), null, 'Owned rail paths are restored');
+  assert.equal(d.body.className, 'citi-hide-sidebar', 'Host visibility restored outside the scope');
+  meta.content = 'WCS'; await tick(); assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
+  d.body.append(editor); await tick(); assert.equal(d.querySelector('.credit-native-page-icon'), null, 'Global include also skips editor');
+  editor.remove(); await tick(); assert.equal(d.querySelectorAll('[data-credit-native-page-link]').length, 13);
+  // Existing native controls move visually only; leaf placeholders can be hidden.
+  const nativeRow = d.createElement('li');
+  nativeRow.innerHTML = '<div class="plugin_pagetree_childtoggle_container"><button id="native-toggle">Expand</button></div><div class="plugin_pagetree_children_content"><span class="plugin_pagetree_children_span"><a href="/confluence/pages/viewpage.action?pageId=101">Portfolio copy</a></span></div>';
+  sidebar.querySelector('ul').append(nativeRow); await tick();
+  const nativeToggle = nativeRow.querySelector('#native-toggle'), nativeParent = nativeToggle.parentElement;
+  assert.ok(nativeRow.classList.contains('credit-native-tree-row'));
+  assert.equal(nativeParent.classList.contains('credit-native-leaf-marker'), false, 'Interactive tree control remains visible');
+  nativeToggle.remove(); await tick(); assert.ok(nativeParent.classList.contains('credit-native-leaf-marker'));
+  nativeParent.append(nativeToggle); await tick(); assert.equal(nativeParent.classList.contains('credit-native-leaf-marker'), false);
+  assert.equal(nativeToggle.parentElement, nativeParent, 'Original tree nodes are never reparented');
+  nativeRow.remove(); await tick();
   w.CreditSidebar.destroy();
   assert.equal(d.querySelector('.credit-native-page-icon'), null); assert.equal(sidebar.hasAttribute('data-credit-native-compact'), false);
   assert.equal(sidebar.className, 'acs-side-bar'); assert.equal(toggle.onclick, toggleFn); assert.equal(branch.onclick, branchFn);

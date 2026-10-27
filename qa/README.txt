@@ -21,3 +21,15 @@ kit remained included. All three ZIPs passed integrity and attachment-size check
 The tracked-file credential-pattern scan found no tokens or private keys. Nine
 legacy workbook fixture rows now use explicit synthetic identifiers and provenance;
 canonical runtime samples and the seeded local fixture branch are unchanged.
+
+27 October 2026 — space navigation and shared theme surfaces
+Space_Navigation.html now loads only the shared CSS, page map and native sidebar
+adapter on ordinary wcs reader pages. Regression checks execute that actual
+include without dashboard code or financial requests, and verify other-space and
+editor exclusion, repeat loading, owned-class cleanup and native tree controls.
+All 41 npm test commands passed. Browser checks verified white and dark main
+surfaces on all 12 application pages, with no page-level horizontal overflow or
+load errors. Expanded/collapsed native-host fixtures retained 12 distinct icons;
+a closed native branch stayed closed after collapsing and reopening the sidebar.
+An ordinary space-page fixture retained navigation after removing the dashboard.
+Real Confluence installation/theme behavior remains to be validated there.

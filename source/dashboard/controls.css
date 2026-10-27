@@ -178,16 +178,30 @@
 #credit-ui .highcharts-tooltip-box { fill:var(--ds-surface-overlay,var(--credit-theme-surface,#fff))!important;stroke:var(--ds-border,var(--credit-theme-border,#dce4ec))!important; }
 #credit-ui .highcharts-grid-line { stroke:var(--ds-border,var(--credit-theme-border,#dce4ec))!important; }
 
-/* Decorate only configured dashboard links in the native Confluence tree.
- * Tree positioning, width, indentation and expand/collapse remain native. */
-.credit-native-navigation a[data-credit-native-page-link]{display:inline-flex;align-items:baseline;gap:7px;min-width:0;color:var(--ds-text,#17385e);text-decoration:none;border-radius:6px;line-height:1.6}
-.credit-native-navigation a[data-credit-native-page-link]:hover{color:var(--ds-link,#255be3);background:var(--ds-background-neutral,#f0f5ff);text-decoration:none}
-.credit-native-navigation a[data-credit-native-page-link][data-credit-native-current=true]{background:var(--ds-background-selected,#eaf1ff);color:var(--ds-link,#174bc5);font-weight:600}
-.credit-native-navigation a[data-credit-native-page-link]:focus-visible{outline:2px solid var(--ds-border-focused,#255be3);outline-offset:2px}
+/* Native sidebar skin, installed per dashboard or by the wcs space include.
+ * Confluence retains widths, content offsets, tree handlers and permissions. */
+.credit-native-navigation{color:var(--ds-text,var(--credit-theme-text,#17385e))!important;background-color:var(--ds-surface,var(--credit-theme-surface,#fff))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
+.credit-native-navigation :is(ul,ol,li){list-style:none!important}
+.credit-native-navigation li::marker{content:""!important}
+.credit-native-navigation :is(.plugin_pagetree_children_span>a,a[data-credit-native-page-link]){display:inline-flex;align-items:baseline;gap:7px;min-width:0;padding:5px 7px;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;text-decoration:none!important;border-radius:6px;line-height:1.6;font-size:13px!important;transition:background-color .16s,color .16s}
+.credit-native-navigation :is(.plugin_pagetree_children_span>a,a[data-credit-native-page-link]):hover{color:var(--ds-link,var(--credit-theme-link,#255be3))!important;background:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5ff))!important}
+.credit-native-navigation :is(.plugin_pagetree_current>a,.plugin_pagetree_current>.plugin_pagetree_children_content a,a[aria-current=page],a[data-credit-native-current=true]){background:var(--ds-background-selected,var(--credit-theme-selected,#eaf1ff))!important;color:var(--ds-link,var(--credit-theme-link,#174bc5))!important;font-weight:600!important}
+.credit-native-navigation :is(a,button):focus-visible{outline:2px solid var(--ds-border-focused,var(--credit-theme-focus,#255be3))!important;outline-offset:2px!important}
 .credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-icon{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.15em;pointer-events:none}
 .credit-native-navigation a[data-credit-native-page-link]>.credit-native-page-label{min-width:0;overflow-wrap:anywhere}
-.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]{display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;width:36px;min-height:40px;margin-inline:auto;padding:8px;gap:0;border-radius:9px;position:relative}
+.credit-native-navigation .credit-native-leaf-marker{visibility:hidden!important}
+.credit-native-navigation .credit-native-tree-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_content{grid-column:1;grid-row:1;float:none;width:auto;min-width:0}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_childtoggle_container{grid-column:2;grid-row:1;float:none;width:auto}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_container{grid-column:1/-1}
+.credit-native-navigation .credit-native-tree-row>.plugin_pagetree_children_content a[data-credit-native-page-link]{display:flex}
+/* Reveal existing dashboard paths when the native rail hides its page tree.
+ * Expanded tree visibility and branch state are never changed. */
+.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path{display:flex!important;flex-direction:column!important;align-items:stretch!important;visibility:visible!important;opacity:1!important;box-sizing:border-box!important;width:100%!important;float:none!important;min-width:0!important;max-width:none!important;padding-inline:0!important;margin-inline:0!important}
+.credit-native-navigation[data-credit-native-compact=true] .credit-native-compact-path>:not(.credit-native-compact-path):not([data-credit-native-page-link]):not(.acs-side-bar-toggle):not(.ia-toggle-button){display:none!important}
+.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]{display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;width:36px!important;min-height:40px!important;margin-inline:auto!important;padding:8px!important;gap:0!important;border-radius:9px;position:relative}
 .credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]>.credit-native-page-label{display:none!important}
-.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]>.credit-native-page-icon{display:block;width:20px;height:20px;margin:0}
-.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link][data-credit-native-current=true]{background:var(--ds-background-brand-bold,#255be3);color:var(--ds-text-inverse,#fff)}
-.credit-native-sidebar-tooltip{position:fixed;z-index:10000;max-width:min(240px,calc(100vw - 16px));padding:8px 12px;border-radius:8px;background:var(--ds-background-neutral-bold,#17385e);color:var(--ds-text-inverse,#fff);box-shadow:0 4px 14px #0002;font:inherit;font-size:13px;line-height:1.4;pointer-events:none}
+.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link]>.credit-native-page-icon{display:block!important;width:20px!important;height:20px!important;margin:0!important}
+.credit-native-navigation[data-credit-native-compact=true] a[data-credit-native-page-link][data-credit-native-current=true]{background:var(--ds-background-brand-bold,#255be3)!important;color:var(--ds-text-inverse,#fff)!important}
+.credit-native-sidebar-tooltip{position:fixed;z-index:10000;max-width:min(240px,calc(100vw - 16px));padding:8px 12px;border-radius:8px;background-color:var(--ds-background-neutral-bold,#17385e)!important;color:var(--ds-text-inverse,#fff)!important;box-shadow:0 4px 14px #0002;font:inherit;font-size:13px;line-height:1.4;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.credit-native-navigation a[data-credit-native-page-link]{transition:none}}
