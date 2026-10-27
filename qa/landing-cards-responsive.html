@@ -3,7 +3,7 @@
 <p id="label"></p><iframe src="../pages/lendinganalytics.html" title="Landing card viewport"></iframe>
 <script>
 const params=new URLSearchParams(location.search),width=Number(params.get('width'))||375;
-const section=params.get('section')==='faq'?'.la-faq':'.la-areas';
+const section={faq:'.la-faq',intro:'.la-intro'}[params.get('section')]||'.la-areas';
 const frame=document.querySelector('iframe');frame.style.width=width+'px';
 document.body.style.width=width+'px';document.getElementById('label').textContent=width+'px landing card viewport';
 frame.onload=()=>{

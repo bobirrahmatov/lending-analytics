@@ -7,8 +7,9 @@ dates and reload; supporting tables and all-matching download scope.
 The question rows reproduce the existing WCSpedia landing FAQ interaction using
 only dashboard-owned markup, CSS and handlers. Each question is independently
 expandable. Native buttons expose aria-expanded/aria-controls. Collapsed panels
-are hidden from accessibility and inert; opening restores the answer. The plus
-icon rotates on expansion, with animations disabled for reduced-motion users.
+are hidden from accessibility and inert; opening restores the answer. A plus
+icon indicates a closed answer; a minus indicates an open answer. Panel animations
+are disabled for reduced-motion users.
 
 Local checks passed:
 - npm run build (13 page pairs, fragments, shared CSS, attachment limits).
@@ -23,3 +24,11 @@ Local checks passed:
 
 Evidence: Landing-FAQs.png and Landing-FAQs-Mobile.png.
 Native Confluence installation was not exercised in this local check.
+
+LANDING HEADER REFINEMENT
+The macro's repeated Lending Analytics breadcrumb, Wealth Credit Services eyebrow
+and duplicate Lending Analytics heading are removed. The existing editorial
+headline and subtitle are centered. Native Confluence page chrome is unchanged.
+The standalone preview uses the headline as h1; the native fragment uses h2 under
+the host page title. Desktop browser confirms correct plus/minus FAQ indicators.
+Evidence: Landing-Centered-Intro.png and updated Landing-FAQs.png.
