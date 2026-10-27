@@ -1473,8 +1473,10 @@ body.credit-preview[data-color-mode="dark"]{
     --credit-theme-subtle:#2d3239;--credit-theme-border:#505966;--credit-theme-selected:#1c3b60;--credit-theme-focus:#85b8ff;color-scheme:dark;
   }
 }
-#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;color-scheme:inherit;container-type:inline-size}
-#credit-ui.credit-ui-host #credit-hub .ch-main{background:var(--page)!important}
+#credit-ui.credit-ui-host{border-radius:20px!important}
+#credit-ui.credit-ui-host #credit-hub{background:var(--page)!important;border-radius:20px!important;color-scheme:inherit;container-type:inline-size}
+/* Round each painted surface without clipping menus, focus rings or dialogs. */
+#credit-ui.credit-ui-host #credit-hub :is(.ch-main,.la-landing){background:var(--page)!important;border-radius:20px!important}
 /* Available content width shrinks when the native sidebar expands. */
 @container(max-width:900px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @container(max-width:560px){#credit-hub :is(.ch-kpis,.pal-metrics){grid-template-columns:minmax(0,1fr)!important}}

@@ -27,7 +27,7 @@ sidebar = '''<aside class="acs-side-bar" aria-label="Native Confluence navigatio
 <div class="plugin_pagetree_childtoggle_container"><button id="native-branch" aria-label="Toggle Lending Analytics pages" aria-expanded="true">⌄</button></div>
 <div class="plugin_pagetree_children_container"><ul id="native-children">''' + links + '''</ul></div></li>
 <li id="fixture-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Space resources"><span aria-hidden="true">◇</span><span class="fixture-native-label">Space resources</span></a></li>
-</ul></aside>'''
+</ul><div class="acs-side-bar-footer"><a href="#configure-sidebar" id="fixture-configure">Configure sidebar</a></div></aside>'''
 styles = '''<style>
 /* Deliberately conflicting host rules reproduce Confluence decoration/overrides. */
 .acs-side-bar .plugin_pagetree_children_span::before{content:"•";display:inline-block}
@@ -38,10 +38,11 @@ styles = '''<style>
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
 .acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}
+.acs-side-bar-footer{padding:12px;border-top:1px solid #dce6ef;white-space:nowrap}
 .acs-side-bar ul{padding:0 10px;list-style:none}.acs-side-bar li{padding:5px 0}
 .acs-side-bar a{display:flex;align-items:center;gap:0;font-size:13px}
 .fixture-shell.collapsed #native-branch span,.fixture-shell.collapsed .fixture-native-label{display:none}
-.fixture-shell.collapsed .plugin_pagetree_children_container{display:none}.fixture-content{min-width:0}.fixture-heading{font:12px Arial;color:#666;margin-bottom:12px}
+.fixture-shell.collapsed .plugin_pagetree_children_container{display:none}.fixture-content{min-width:0;padding:10px;background:var(--credit-theme-subtle,#f0f5f9)}.fixture-heading{font:12px Arial;color:#666;margin-bottom:12px}
 .acs-side-bar-toggle,#native-branch{border:1px solid #dce6ef;border-radius:6px;background:var(--ds-surface,#fff);color:var(--ds-text,#17385e);padding:7px;font:inherit;font-size:12px;max-width:100%}
 #fixture-unrelated a{gap:7px;color:inherit;text-decoration:none}
 </style>'''

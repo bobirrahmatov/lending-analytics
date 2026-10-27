@@ -2369,5 +2369,5 @@ if(overlay)await overlay.wait(initialize(),{timeoutMs:60000});else await initial
 }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="67548111d96e:overview";
+window.CREDIT_PAGE_BUILD="128306578599:overview";
 })();
