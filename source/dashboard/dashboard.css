@@ -1,5 +1,5 @@
 /* Lending Analytics dashboard composition. Bundled with controls.css into credit-style.css. */
-#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--credit-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-shadow:0 1px 3px #17355f0d,0 0 0 5px var(--pale),0 0 0 6px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
+#credit-hub,.credit-ui-surface,.credit-ui-host { --blue:#255BE3;--navy:var(--ds-text,var(--credit-theme-text,#17355f));--ink:var(--ds-text,var(--credit-theme-text,#253b54));--muted:var(--ds-text-subtle,var(--credit-theme-muted,#5b6c7e));--line:var(--ds-border,var(--credit-theme-border,#dce4ec));--border:var(--line);--page:var(--ds-surface,var(--credit-theme-surface,#fff));--tint:#EDF3FD;--pale:var(--ds-background-neutral,var(--credit-theme-subtle,#f0f5f9));--hover:var(--pale);--head:var(--pale);--row-alt:var(--page);--card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));--card-frame-shadow:0 1px 2px #17355f08,0 0 0 2px var(--card-frame-color),0 0 0 3px var(--line);color:var(--ink);font:inherit;font-size:13px;line-height:1.5 }
 :is(#credit-hub,.credit-ui-surface) * { box-sizing:border-box }
 :is(#credit-hub,.credit-ui-surface) [hidden] { display:none!important }
 :is(#credit-hub,.credit-ui-surface) :is(h1,h2,h3,p) { margin:0 }
@@ -401,7 +401,7 @@
 @media(max-width:900px){#credit-hub[data-view=portfolio] .cw-widget-grid[data-preset=balanced]{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:650px){#credit-hub .pal-metric{padding:16px;min-height:205px}#credit-hub .cd-analysis-metric .cw-metric-icon,#credit-hub .pal-metric .cw-metric-icon{top:16px;left:16px;width:38px;height:38px;border-radius:10px}#credit-hub .pal-metric>span.pal-metric-heading{padding-left:47px;font-size:12px;min-height:48px;margin-bottom:20px}#credit-hub .pal-metric-heading small{font-size:10px}#credit-hub .pal-metric-value strong{font-size:24px}#credit-hub .pal-metric .pal-variance{font-size:10px;white-space:normal}#credit-hub .pal-metric .pal-metric-date{font-size:9px}#credit-hub .pal-segments button{padding:7px 8px;font-size:11px}}
 
-/* A common inset frame keeps all chart surfaces in the same visual family.
+/* A restrained frame keeps all chart surfaces in the same visual family.
    No extra wrapper: charts retain their identity during full-page expansion. */
 #credit-hub .cw-framed-card{border:1px solid var(--line);border-radius:16px;background:var(--page);box-shadow:var(--card-frame-shadow)}
 #credit-hub .cw-widget-grid{gap:28px;margin:6px 6px 26px}
@@ -1558,6 +1558,17 @@ body.credit-preview[data-color-mode="dark"]{
 #credit-ui #credit-hub table.credit-data-table .ct-amount-cell,
 #credit-ui #credit-hub table.credit-data-table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink);font-variant-numeric:tabular-nums}
 #credit-ui #credit-hub table.credit-data-table :is(.ct-category-cell,.ct-amount-cell) :is(.ch-row-link,a):is(:hover,:focus-visible){text-decoration:underline;text-underline-offset:3px}
+
+/* Hide native page headings only while a dashboard is present in reader mode.
+   Keep native navigation/actions, chart headings and the landing introduction. */
+body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui.credit-ui-host #credit-hub) #title-heading{display:none!important}
+/* Explicit dimensions prevent host card styles from inflating the frame. Table
+   and drill padding stays with those components so records remain edge-to-edge. */
+#credit-ui #credit-hub :is(.ch-card,.ch-kpi,.pal-metric){box-sizing:border-box!important;border:1px solid var(--line)!important;border-radius:14px!important;background:var(--page)!important}
+#credit-ui #credit-hub :is(.cw-framed-card,.ct-table-card){box-shadow:var(--card-frame-shadow)!important}
+#credit-ui #credit-hub .ch-card:not(.cw-framed-card):not(.ct-table-card),
+#credit-ui #credit-hub :is(.ch-kpi,.pal-metric){box-shadow:0 1px 2px #17355f08!important}
+#credit-ui #credit-hub .ch-kpis{padding:3px!important;border:1px solid var(--line)!important;border-radius:17px!important;background:var(--card-frame-color)!important}
 
 /* Confluence host protection. Preserve the space's font family and theme, while
    keeping dashboard typography and genuine scroll surfaces readable. No host

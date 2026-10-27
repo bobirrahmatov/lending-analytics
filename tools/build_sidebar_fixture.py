@@ -34,6 +34,7 @@ styles = '''<style>
 .acs-side-bar .aui-icon::before{content:"▣"}
 .acs-side-bar svg{width:40px;height:40px;fill:red;stroke:red}
 .acs-side-bar svg path{fill:none;stroke:red}
+.ch-card{border:12px solid red!important;border-radius:45px!important;background:pink!important;box-shadow:0 0 0 14px pink!important}
 .acs-side-bar li::before{content:"•"}
 .fixture-shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:24px}
 .fixture-shell.collapsed{grid-template-columns:64px minmax(0,1fr)}
@@ -71,7 +72,7 @@ document.getElementById('native-branch').onclick=function(){
 </script>'''
 s = (P / ('pages/'+page+'.html')).read_text()
 s = s.replace('</head>', '<meta name="ajs-space-key" content="wcs">' + styles + '</head>', 1)
-s = s.replace('<body class="credit-preview">', '<body class="credit-preview"><button id="fixture-theme">Toggle theme</button> <button id="fixture-space">Ordinary space page</button><p class="fixture-heading">QA fixture only — simulated native host tree; no production sidebar is created</p><div class="fixture-shell">' + sidebar + '<div class="fixture-content">', 1)
+s = s.replace('<body class="credit-preview">', '<body class="credit-preview"><button id="fixture-theme">Toggle theme</button> <button id="fixture-space">Ordinary space page</button><p class="fixture-heading">QA fixture only — simulated native host tree; no production sidebar is created</p><h1 id="title-heading">Native dashboard page title</h1><div class="fixture-shell">' + sidebar + '<div class="fixture-content">', 1)
 s = s.replace('<script>window.CREDIT_CONFIG=', '</div></div>' + handlers + '<script>window.CREDIT_CONFIG=', 1)
 s, replacements = re.subn(r'(page:\s*[\'\"][A-Za-z]+[\'\"],)', lambda match: match.group(1) + 'pageIds:' + json.dumps(ids) + ',', s, count=1)
 if replacements != 1:

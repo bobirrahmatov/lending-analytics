@@ -29,7 +29,9 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
 
 1. Lending Analytics is a standalone dashboard. Native Confluence space/page
    permissions provide access; no application login, entitlements, approvals or
-   access-request pages are used. Keep the native title, sidebar and page tree.
+   access-request pages are used. Keep the native sidebar and page tree. Hide
+   the native page heading only on dashboard reader pages; editors and other
+   space pages retain their headings. Breadcrumbs identify each dashboard.
    There is no dependency on WCSpedia or a navBar include.
 2. For the requested space-wide sidebar, paste the complete contents of
    Space_Navigation.html once into the existing wcs space header/include (the
@@ -68,7 +70,7 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    for portfolio, underwriting and monitoring. Each card uses a people-free Citi
    abstract or architectural attachment image and separate links to its dashboards (11 links in total).
    The centered headline and subtitle open the landing without repeated page
-   labels or a second breadcrumb. Native Confluence retains its page title.
+   labels or a second breadcrumb. The duplicate native Confluence heading is hidden on dashboard reader pages.
    Four expandable FAQs at the bottom explain page choice, drills and filters,
    reporting dates and supporting-record downloads. They use local dashboard
    controls with plus/minus indicators and require no separate FAQ page or portal
@@ -298,3 +300,10 @@ use theme-aware rounded pills with label/value, individual removal and Clear all
 Upload refreshed credit-style.css, credit-native-sidebar.js and all matching
 page pairs together. Space_Navigation.html is unchanged; retain its existing
 space-header installation. Attaching files alone does not install that include.
+
+CARD FRAMES
+Chart and table frames use a 2px theme-aware ring with a 1px outer edge, replacing
+an oversized 6px treatment. Scoped important border, radius, background and
+shadow rules protect these surfaces from Confluence CSS. Internal table/drill
+padding and chart layouts remain component-owned. The hidden dashboard h1
+remains available to assistive technology; chart titles stay visible.
