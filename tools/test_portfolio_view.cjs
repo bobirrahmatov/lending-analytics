@@ -6,7 +6,7 @@ w.Highcharts={chart(el,options){configs[el.id]=options;return{renderTo:el};}};
 w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-data-cache.js'),'utf8'));
 w.eval(fs.readFileSync(path.join(__dirname,'../attachments/credit-pal.js'),'utf8'));
 const row=(id,flags,tfa)=>({facility_id:id,relationship_id:id,relationship_name:id,as_of_date:'2026-08-31',region:'NAM',product:'Real Estate',management_status:'CM',direct_os:100,rotce:.1,tfa,total_os:tfa/2,unused_commitment:tfa/4,unused_uncommitted:tfa/4,...flags});
-const rows=[row('A',{pal_new_ytd:true,pal_new_mtd:true,pal_new_wtd:true,pal_approved_ytd:true,pal_approved_wtd:true},100),row('B',{pal_new_ytd:true,pal_new_qtd:true,pal_prior_mtd:true,pal_pending_ytd:true,pal_pipeline_bucket:'31-60'},300),row('C',{pal_prior_ytd:true,pal_prior_qtd:true,pal_pending_ytd:true,pal_pending_qtd:true,pal_pipeline_bucket:'1-30'},200),row('D',{pal_prior_ytd:true,pal_prior_wtd:true},400),row('E',{management_status:'DM'},800)];
+const rows=[row('A',{pal_new_ytd:true,pal_new_mtd:true,pal_new_wtd:true,pal_approved_ytd:true,pal_approved_wtd:true,pal_ca_expired:true},100),row('B',{pal_new_ytd:true,pal_new_qtd:true,pal_prior_mtd:true,pal_pending_ytd:true,pal_pipeline_bucket:'31-60',pal_facility_expired:true},300),row('C',{pal_prior_ytd:true,pal_prior_qtd:true,pal_pending_ytd:true,pal_pending_qtd:true,pal_pipeline_bucket:'1-30'},200),row('D',{pal_prior_ytd:true,pal_prior_wtd:true},400),row('E',{management_status:'DM'},800)];
 const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 const pal=w.CreditPAL({root,esc,num:String,money:n=>'$'+n,pct:String,sum:(rs,k)=>rs.reduce((a,r)=>a+(Number(r[k])||0),0),unique:(rs,k)=>new Set(rs.map(r=>r[k])).size,filtered:r=>r.filter(r=>!scope||r.region===scope),register(){throw Error('Portfolio must not render a register');},showRows(){},state:()=>({}),data:()=>({portfolio:rows,history,monitoring}),addChart(){},navigatePage(...args){navigated=args;},openChart(...args){clicked=args;},render(){pal.overview(rows);}});
 const values=()=>Array.from(configs.newDealsChart.series,s=>s.data.reduce((sum,p)=>sum+p.y,0));
@@ -18,7 +18,9 @@ assert.equal(d.querySelector('#ch-content').children[0].className,'pal-metrics')
 assert.equal(d.querySelector('#newDealsChart').closest('.ch-card').nextElementSibling.id,'pal-pipeline','New deals and Pending Closure remain adjacent');
 assert.equal(root._exportRows.length,5);assert.equal(d.querySelector('#ch-download').disabled,false);assert.equal(d.querySelectorAll('#pal-snapshot [data-pal-rows]').length,4);
 assert.ok(d.querySelector('#pal-pipeline > .credit-data-table-scroll > .credit-data-table'));
-assert.equal(d.querySelectorAll('#pal-snapshot tbody tr').length,4);assert.equal(d.querySelectorAll('[data-pal-navigate]').length,0);assert.equal(pal.getRows('pal-pipeline').length,2);
+assert.equal(d.querySelectorAll('#pal-snapshot .pal-coverage-stat').length,4);
+for(const [key,expected,count] of [['facilities',rows,5],['relationships',rows,5],['caexpired',[rows[0]],1],['expired',[rows[1]],1]]){const stat=d.querySelector('#pal-snapshot [data-pal-rows="'+key+'"]');assert.equal(Number(stat.querySelector('strong').textContent),count);stat.click();assert.equal(clicked[0],key);assert.deepEqual(clicked[1],expected,key+' keeps the exact source cohort');assert.equal(clicked[3],stat,'Coverage opens from its own card');}
+assert.equal(d.querySelectorAll('[data-pal-navigate]').length,0);assert.equal(pal.getRows('pal-pipeline').length,2);
 assert.deepEqual([...d.querySelectorAll('#ch-content section.ch-card')].map(el=>el.querySelector('.ch-chart')?.id||el.id),['facilityTrendChart','creditClassificationChart','pal-snapshot','newDealsChart','pal-pipeline','relationshipChart','monitoringPriorityChart','covenantMonitoringChart','ccmRegionalChart','pal-trends']);
 assert.equal(d.querySelector('#relationshipChart').previousElementSibling.querySelector('strong').textContent,'$500');
 assert.equal(d.querySelector('#rotceChart'),null);assert.equal(configs.relationshipChart.series[1].type,'scatter');assert.equal(configs.relationshipChart.series[1].yAxis,1);assert.equal(configs.relationshipChart.yAxis[1].plotLines[0].value,.12);assert.equal(configs.newDealsChart.chart.type,'bar');
@@ -41,7 +43,7 @@ scope='LATAM';pal.overview([]);assert.match(d.querySelector('.pal-variance').tex
 rows.forEach(r=>r.as_of_date='2026-09-01');history.forEach(r=>r.as_of_date='2026-08-31');pal.overview(rows);assert.match(d.querySelector('.pal-variance').title,/2026-08-31/);
 rows[0].as_of_date='2026-08-31';pal.overview(rows);assert.match(d.querySelector('.pal-variance').textContent,/Comparable date unavailable/);
 pal.settings.management='NO_MATCH';pal.overview(rows);assert.equal(root._exportRows.length,0);assert.equal(d.querySelector('#ch-download').disabled,true);assert.match(d.querySelector('#newDealsChart').textContent,/No eligible records/);assert.equal(pal.getRows('newDealsChart').length,0);assert.equal(d.querySelector('#relationshipChart').previousElementSibling.querySelector('strong').textContent,'$0');assert.doesNotMatch(d.querySelector('#ch-content').textContent,/NaN|Infinity/);
-console.log('PASS: four periods, pending and approval cohorts, count-only new deals, approval labels, combined exposure/ROTCE axes, covenant segments, point drill-through, compact snapshot order and actionable navigation, shared table, export/empty state, Monday/Tuesday comparisons, filtered balances, missing/incomplete/zero/negative and mixed-date history.');
+console.log('PASS: four periods, pending and approval cohorts, count-only new deals, approval labels, combined exposure/ROTCE axes, covenant segments, point drill-through, compact coverage stats and exact cohorts, shared pipeline table, export/empty state, Monday/Tuesday comparisons, filtered balances, missing/incomplete/zero/negative and mixed-date history.');
 
 const monitorOnly=w.CreditPAL({root,filtered:r=>r,data:()=>({monitoring})});assert.equal(monitorOnly.getAnalysis().portfolio.length,0);assert.equal(monitorOnly.getAnalysis().monitoring.length,3);
 
@@ -56,12 +58,12 @@ const newPoint=configs.newDealsChart.series[0].data[0];configs.newDealsChart.plo
 monitoring[0].coming_due=true;monitoring[1].coming_due=true;monitoring[2].action_required=true;
 pal.overview(rows);
 const summary=configs.monitoringPriorityChart;
-assert.equal(summary.chart.type,'bar');assert.equal(summary.plotOptions.series.stacking,'normal');assert.equal(summary.xAxis.categories.length,6);
+assert.equal(summary.chart.type,'bar');assert.equal(summary.plotOptions.series.stacking,undefined);assert.equal(summary.plotOptions.bar.dataLabels.enabled,true);assert.equal(summary.plotOptions.bar.dataLabels.formatter.call({y:3}),'3');assert.equal(configs.relationshipChart.plotOptions.bar.dataLabels.enabled,false,'Mixed financial relationship chart does not inherit count labels');assert.equal(summary.xAxis.categories.length,6);
 assert.deepEqual(Array.from(summary.series,s=>s.data.reduce((n,p)=>n+p.y,0)),[1,1,1]);
 assert.equal(pal.getRows('monitoringPriorityChart').length,3);
 const item=summary.series[0].data.find(p=>p.y);summary.plotOptions.series.point.events.click.call({options:item,index:summary.series[0].data.indexOf(item),series:{name:'Critical actions'}});assert.equal(clicked[0],'monitoringPriorityChart');assert.equal(clicked[1].length,1);
 scope='NAM';pal.overview(rows);assert.equal(pal.getRows('monitoringPriorityChart').length,2);scope='';
-console.log('PASS: six-domain priority summary, exclusive segments, shared filters and point records.');
+console.log('PASS: grouped and labeled six-domain priority summary, exclusive segments, shared filters and point records.');
 
 // Five exact aging bands, authoritative file categories and safe legacy fallbacks.
 const aging=w.CreditCovenantAging;

@@ -46,8 +46,45 @@ global.CreditDonut=function(chart,{esc,format,label='Total',onSelect}={}){
 };
 // Lightweight segmented selection and consistent table toolbar placement.
 global.CreditControls=(()=>{
- const selector='.pal-segments,.cov-segments,.pal-subtabs',pending=new Map(),runs=new WeakMap();
- function key(group){return [...group.querySelectorAll('button')].map(b=>JSON.stringify(b.dataset)+b.textContent).join('|');}
+ const selector='.pal-segments,.cov-segments,.pal-subtabs',pending=new Map(),runs=new WeakMap(),dropdowns=new WeakMap();
+ let restoreDropdownFocus=null;
+ const choices=group=>[...group.children].filter(el=>el.matches('button')&&!el.hidden);
+ function key(group){return (group.getAttribute('aria-label')||'')+'|'+choices(group).map(b=>JSON.stringify(b.dataset)+b.textContent).join('|');}
+ function adapt(group){
+  const buttons=choices(group);if(!buttons.length)return;
+  let record=dropdowns.get(group);
+  // Measure the original choices with the replacement hidden. Two short choices
+  // keep their segmented presentation; long/overflowing choices use one select.
+  const previousFocus=document.activeElement,hadFocus=group.contains(previousFocus);
+  if(buttons.length<=3){if(record)record.host.hidden=true;group.classList.remove('cc-select-mode');}
+  const overflowing=buttons.length<=3&&group.clientWidth>0&&group.scrollWidth>group.clientWidth+2;
+  const compact=buttons.length>3||overflowing;
+  if(!compact){if(record){if(record.originalRole===null)group.removeAttribute('role');else group.setAttribute('role',record.originalRole);if(hadFocus&&record.host.contains(previousFocus))buttons.find(b=>b.matches('[aria-pressed=true],[aria-selected=true]'))?.focus({preventScroll:true});}return;}
+  if(!record){
+   const host=document.createElement('span'),field=document.createElement('select');host.className='cc-segment-select';
+   field.setAttribute('aria-label',group.getAttribute('aria-label')||'View');field.setAttribute('data-searchable','');host.append(field);group.append(host);
+   record={host,field,signature:'',originalRole:group.getAttribute('role')};dropdowns.set(group,record);
+   field.addEventListener('change',()=>{
+    const button=choices(group)[Number(field.value)];if(!button||button.disabled)return;
+    if(button.matches('[aria-pressed=true],[aria-selected=true]'))return;
+    restoreDropdownFocus={group,key:key(group)};
+    // Dispatch only a user-requested selection through the existing action path.
+    // It retains the original scheduling, drill scope and table reset behavior.
+    button.click();
+   });
+  }
+  const signature=buttons.map(b=>b.textContent.trim()+'|'+b.disabled).join('\n');
+  if(record.signature!==signature){record.field.replaceChildren(...buttons.map((b,i)=>{const option=document.createElement('option');option.value=String(i);option.textContent=b.textContent.trim();option.disabled=b.disabled;return option;}));record.signature=signature;}
+  const selected=buttons.findIndex(b=>b.matches('[aria-pressed=true],[aria-selected=true]'));
+  record.field.value=String(Math.max(0,selected));record.field.disabled=buttons.every(b=>b.disabled);record.host.hidden=false;
+  group.classList.add('cc-select-mode');group.setAttribute('role','group');
+  global.CreditUI?.enhance(record.host);
+  if(hadFocus&&!group.contains(document.activeElement))record.host.querySelector('button')?.focus({preventScroll:true});
+  if(restoreDropdownFocus&&!restoreDropdownFocus.group.isConnected&&restoreDropdownFocus.key===key(group)){
+   record.host.querySelector('button')?.focus({preventScroll:true});restoreDropdownFocus=null;
+  }
+ }
+
  function position(group,button,animate=false){
   if(!button)return;group.classList.add('cc-segmented');let marker=group.querySelector(':scope>.cc-segment-marker');
   if(!marker){marker=document.createElement('span');marker.className='cc-segment-marker';marker.setAttribute('aria-hidden','true');group.prepend(marker);}
@@ -58,12 +95,12 @@ global.CreditControls=(()=>{
   global.CreditUI?.enhance(root);
   root.querySelectorAll(selector).forEach(g=>{
    const button=g.querySelector('button[aria-pressed=true],button[aria-selected=true]'),saved=pending.get(key(g));
-   position(g,button);
+   adapt(g);position(g,button);
    if(saved){const marker=g.querySelector('.cc-segment-marker');if(marker){Object.assign(marker.style,saved);marker.getBoundingClientRect();position(g,button,true);}pending.delete(key(g));}
   });
   if(root.dataset.ccBound)return;root.dataset.ccBound='true';
-  root.addEventListener('click',e=>{const button=e.target.closest('button'),group=button?.closest(selector);if(group&&!button.disabled&&button.matches('[aria-pressed=true],[aria-selected=true]'))position(group,button,true);});
-  if(global.ResizeObserver){let width;const observer=new ResizeObserver(entries=>{const next=entries[0].contentRect.width;if(next===width)return;width=next;root.querySelectorAll(selector).forEach(g=>position(g,g.querySelector('button[aria-pressed=true],button[aria-selected=true]')));});observer.observe(root);}
+  root.addEventListener('click',e=>{const button=e.target.closest('button'),group=button?.closest(selector);if(group&&!button.disabled&&button.matches('[aria-pressed=true],[aria-selected=true]')){adapt(group);position(group,button,true);}});
+  if(global.ResizeObserver){let width;const observer=new ResizeObserver(entries=>{if(!root.isConnected){observer.disconnect();return;}const next=entries[0].contentRect.width;if(next===width)return;width=next;root.querySelectorAll(selector).forEach(g=>{adapt(g);position(g,g.querySelector('button[aria-pressed=true],button[aria-selected=true]'));});});observer.observe(root);}
  }
  function run(button,fn){
   const group=button.closest(selector),request={};let markerState,groupKey;
@@ -85,6 +122,7 @@ global.CreditControls=(()=>{
    head.classList.add('cc-unified-table-head');
    own('.ch-register-controls,.cd-record-toolbar').forEach(el=>el.classList.toggle('cc-empty-controls',!el.querySelector('button,input,select')));
    head.querySelectorAll(':scope>.ch-actions').forEach(el=>{if(!el.children.length)el.remove();});
+   groups?.querySelectorAll(selector).forEach(adapt);
   }
  }
 
@@ -125,7 +163,7 @@ global.CreditWorkspace=function({root,nav,esc,reflow:reflowCharts,filters}){
  function openFilters(){
   if(filterDrawer)return;
   const fields=filters.fields(),draft=Object.fromEntries(fields.map(f=>[f.key,f.value]));
-  const fieldHTML=f=>'<div class="form-group"><label for="cw-filter-'+f.key+'">'+esc(f.label)+'</label><select id="cw-filter-'+f.key+'" data-filter-key="'+f.key+'" aria-label="'+esc(f.label)+'" '+(f.disabled?'disabled':'')+'>'+f.options.map(([v,t])=>'<option value="'+esc(v)+'" '+(v===f.value?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>'+(f.disabled?'<small class="cw-field-note">Not supplied in this snapshot.</small>':'')+'</div>';
+  const fieldHTML=f=>'<div class="form-group"><label for="cw-filter-'+f.key+'">'+esc(f.label)+'</label><select id="cw-filter-'+f.key+'" data-filter-key="'+f.key+'" data-searchable aria-label="'+esc(f.label)+'" '+(f.disabled?'disabled':'')+'>'+f.options.map(([v,t])=>'<option value="'+esc(v)+'" '+(v===f.value?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>'+(f.disabled?'<small class="cw-field-note">Not supplied in this snapshot.</small>':'')+'</div>';
   const groups=[['shared',tab==='portfolio'?'Portfolio scope':'Dashboard scope',tab==='portfolio'?'Applies to portfolio and monitoring charts.':'Applies to this dashboard’s metrics, charts and records.'],['portfolio','Facility attributes','Applies to facility metrics, charts and downloads. Monitoring cards keep their own source population.']];
   filterButton.setAttribute('aria-expanded','true');
   filterDrawer=UI.dialog({placement:'right',title:tab==='portfolio'?'Portfolio filters':'Dashboard filters',description:'Refine your view. Changes take effect when you apply.',closeLabel:'Close filters',body:'<div class="credit-ui-drawer-scroll">'+groups.filter(([key])=>fields.some(f=>f.group===key)).map(([key,title,note])=>'<section class="cw-filter-section"><h3>'+title+'</h3><p>'+note+'</p>'+fields.filter(f=>f.group===key).map(fieldHTML).join('')+'</section>').join('')+'</div><div class="cw-filter-preview" role="status" aria-live="polite"></div><div class="credit-ui-drawer-footer"><button class="button secondary" data-filter-reset>Reset</button><div class="cw-filter-actions"><button class="button secondary" data-filter-cancel>Cancel</button><button class="button" data-filter-apply>Apply filters</button></div></div>',onClose:()=>{filterDrawer=null;filterButton.setAttribute('aria-expanded','false');}});

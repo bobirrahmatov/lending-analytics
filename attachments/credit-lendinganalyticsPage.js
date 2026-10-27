@@ -9,7 +9,8 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var host = null, observer = null, resizeObserver = null, queued = false, destroyed = false, ownsHostClass = false, revealOwned = false;
   var decorations = new Map(), createdClassAttributes = new Set(), presentation = new Map(), nativeFooters = new Set();
   var systemTheme = w.matchMedia?.('(prefers-color-scheme: dark)');
-  var links = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
+  var links = new Map(), toggles = new Map(), tooltip = null, tooltipLink = null, previousDescription = null;
+  var requestedFonts = new Set(), chartFonts = new WeakMap(), fontGeneration = 0;
   // Filled SVG paths from the supplied TailAdmin sidebar (see LICENSES.txt).
   var iconPaths = {
     "lendingAnalytics": "M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z",
@@ -66,6 +67,35 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
   var sidebarFooter = '.acs-side-bar-footer,.acs-side-bar-bottom';
   var spaceToolsTrigger = '[aria-controls="space-tools-menu"],[aria-owns="space-tools-menu"],#space-tools-menu-trigger';
   var nativeMenu = 'aui-dropdown-menu,.aui-dropdown2,.aui-layer,[role="menu"],[role="listbox"],[role="dialog"]';
+  function isSpaceTools(control) {
+    if (control.matches(sidebarToggle) || control.closest(nativeMenu)) return false;
+    var name = (control.getAttribute('aria-label') || control.getAttribute('title') || control.textContent).trim().replace(/\s+/g, ' ');
+    return control.matches(spaceToolsTrigger) || /^space tools$/i.test(name);
+  }
+  function restoreToggle(control, record) {
+    record.icon.remove();
+    if (control.getAttribute('aria-label') === record.generatedLabel) restoreAttribute(control, 'aria-label', record.ariaLabel);
+    toggles.delete(control);
+  }
+  function enhanceToggles() {
+    toggles.forEach(function (record, control) {
+      if (!host.contains(control) || !control.matches(sidebarToggle) || control.closest(nativeMenu)) restoreToggle(control, record);
+    });
+    host.querySelectorAll(sidebarToggle).forEach(function (control) {
+      if (control.closest(nativeMenu)) return;
+      var record = toggles.get(control);
+      if (!record) {
+        var icon = d.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('viewBox', '0 0 24 24'); icon.setAttribute('width', '20'); icon.setAttribute('height', '20');
+        icon.setAttribute('aria-hidden', 'true'); icon.setAttribute('focusable', 'false'); icon.setAttribute('class', 'credit-native-toggle-icon');
+        var path = d.createElementNS(icon.namespaceURI, 'path'); path.setAttribute('d', 'M14.25 5.25 7.5 12l6.75 6.75'); icon.append(path);
+        record = {icon: icon, ariaLabel: control.getAttribute('aria-label'), generatedLabel: null}; toggles.set(control, record);
+      }
+      // Native handlers sometimes replace inner text when state changes. Restore
+      // only our glyph; keep the original control, listeners and hit target.
+      if (record.icon.parentElement !== control) control.append(record.icon);
+    });
+  }
   function findFooters() {
     nativeFooters = new Set(Array.from(host.querySelectorAll(sidebarFooter)).filter(function (el) { return !el.closest(nativeMenu); }));
     var controls = Array.from(host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger)).filter(function (el) { return !el.closest(nativeMenu); });
@@ -93,22 +123,51 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     if (!properties.has(name)) properties.set(name, [el.style.getPropertyValue(name), el.style.getPropertyPriority(name)]);
     el.style.setProperty(name, value);
   }
+  function registeredFont(role) {
+    var found = '';
+    if (d.fonts?.forEach) d.fonts.forEach(function (face) {
+      var name = face.family.replace(/["']/g, '');
+      if (new RegExp('^citi[ -]sans[ -]' + role + '$', 'i').test(name)) found = name;
+    });
+    return found;
+  }
+  function requestSpaceFont(name) {
+    if (!name || !d.fonts?.load) return;
+    ['400', '700'].forEach(function (weight) {
+      var descriptor = weight + ' 16px ' + JSON.stringify(name);
+      if (requestedFonts.has(descriptor)) return;
+      requestedFonts.add(descriptor);
+      // The space owns the @font-face URLs. Request only its existing regular
+      // and bold faces, without blocking the dashboard or inventing font assets.
+      d.fonts.load(descriptor).then(fontsSettled, function () {});
+    });
+  }
+  function fontsSettled() { if (!destroyed) { fontGeneration++; schedule(); } }
+  function syncChartFonts(ui, family) {
+    if (!ui || !family) return;
+    var key = family + ':' + fontGeneration;
+    (w.Highcharts?.charts || []).forEach(function (chart) {
+      if (!chart?.renderTo || !ui.contains(chart.renderTo) || chartFonts.get(chart) === key) return;
+      chartFonts.set(chart, key);
+      // A font arriving after the first SVG layout changes text measurements.
+      // Re-layout only dashboard charts through Highcharts' public update API.
+      if (typeof chart.update === 'function') chart.update({chart: {style: {fontFamily: family}}}, true, false, false);
+    });
+  }
   function syncPresentation() {
     var ui = d.getElementById('credit-ui');
-    // The supplied space stylesheet assigns its text stack to body/p. Sampling
-    // .wiki-content would copy Confluence's competing AUI font instead.
-    var family = w.getComputedStyle(d.body).fontFamily;
+    // Confluence can override even body typography. Prefer the Citi faces
+    // already registered by the space and keep the body stack as its fallback.
+    var bodyFamily = w.getComputedStyle(d.body).fontFamily;
+    var textName = registeredFont('text'), displayName = registeredFont('display');
+    var family = textName ? JSON.stringify(textName) + ', ' + bodyFamily : bodyFamily;
     setPresentation(host, '--credit-resolved-space-font', family);
     setPresentation(ui, '--credit-resolved-space-font', family);
     var nativeTitle = Array.from(d.querySelectorAll('h1,.font-display')).find(function (el) { return !el.closest('#credit-ui,.credit-native-navigation'); });
-    var displayFamily = nativeTitle ? w.getComputedStyle(nativeTitle).fontFamily : family;
-    // Reuse the Display face already registered by the space; never copy font
-    // files or attachment URLs. A native title supplies the generic fallback.
-    if (d.fonts?.forEach) d.fonts.forEach(function (face) {
-      var name = face.family.replace(/["']/g, '');
-      if (/^citi[ -]sans[ -]display$/i.test(name)) displayFamily = JSON.stringify(name) + ', ' + family;
-    });
+    var displayFamily = displayName ? JSON.stringify(displayName) + ', ' + family : nativeTitle ? w.getComputedStyle(nativeTitle).fontFamily : family;
     setPresentation(ui, '--credit-resolved-space-display-font', displayFamily);
+    requestSpaceFont(textName); requestSpaceFont(displayName);
+    syncChartFonts(ui, w.getComputedStyle(ui || d.body).fontFamily || family);
     // Match the main dashboard panel, with the native canvas as the fallback
     // on ordinary space pages. The entire rail/footer uses this one surface.
     var canvas = ui || d.querySelector('.ia-splitter-right,#main') || d.body;
@@ -150,6 +209,8 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     host.querySelectorAll(sidebarToggle + ',' + spaceToolsTrigger).forEach(function (control) {
       if (control.closest(nativeMenu)) return;
       mark(control, 'credit-native-toolbar-control');
+      if (control.matches(sidebarToggle)) mark(control, 'credit-native-sidebar-toggle');
+      if (isSpaceTools(control)) mark(control, 'credit-native-space-tools');
       for (var parent = control.parentElement; parent && parent !== host && !parent.querySelector('[data-credit-native-page-link]'); parent = parent.parentElement) {
         if (parent.matches(nativeMenu)) break;
         footers.add(parent);
@@ -158,6 +219,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     });
     host.querySelectorAll('a,button,[role="button"]').forEach(function (el) {
       if (el.closest(nativeMenu)) return;
+      if (isSpaceTools(el)) mark(el, 'credit-native-space-tools');
       var name = (el.getAttribute('aria-label') || el.getAttribute('title') || el.textContent).trim().replace(/\s+/g, ' ');
       if (!/^configure sidebar$/i.test(name) || el.matches(sidebarToggle)) return;
       mark(el, 'credit-native-configure');
@@ -225,7 +287,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       var selected = a.matches('[aria-current="page"]') || !!a.closest('.plugin_pagetree_children_span.plugin_pagetree_current') || !!row && row.matches('.plugin_pagetree_current');
       if (a.getAttribute('data-credit-native-current') !== String(selected)) a.setAttribute('data-credit-native-current', String(selected));
     });
-    decorateTree();
+    enhanceToggles(); decorateTree();
   }
   function showTooltip(event) {
     var a = event.target.closest?.('a[data-credit-native-page-link]');
@@ -248,6 +310,13 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     var width = rail.getBoundingClientRect().width;
     var compact = host.matches('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || !!host.closest('.ia-splitter-left-collapsed') || !!host.querySelector('.ia-splitter-left-collapsed,.acs-side-bar-collapsed') || (width > 0 && width <= 96);
     if (host.getAttribute('data-credit-native-compact') !== String(compact)) { host.setAttribute('data-credit-native-compact', String(compact)); hideTooltip(); }
+    toggles.forEach(function (record, control) {
+      var label = compact ? 'Expand sidebar' : 'Collapse sidebar';
+      if (record.ariaLabel === null || /^(?:sidebar|expand sidebar|collapse sidebar)$/i.test(record.ariaLabel)) {
+        if (control.getAttribute('aria-label') !== label) control.setAttribute('aria-label', label);
+        record.generatedLabel = label;
+      }
+    });
   }
   function reset() {
     hideTooltip(); resizeObserver?.disconnect(); resizeObserver = null;
@@ -258,6 +327,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
       if (ownsHostClass) host.classList.remove('credit-native-navigation');
     }
     links.forEach(function (record, a) { restoreLink(a, record); });
+    toggles.forEach(function (record, control) { restoreToggle(control, record); });
     decorations.forEach(function (names, el) { names.forEach(function (name) { el.classList.remove(name); }); restoreClassAttribute(el); }); decorations.clear();
     if (revealOwned) { d.body.classList.add('citi-hide-sidebar'); revealOwned = false; }
     presentation.forEach(function (properties, el) {
@@ -296,12 +366,13 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
         });
       })) schedule();
     });
-    observer.observe(d.documentElement, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'data-color-mode', 'data-theme', 'aria-current', 'href', 'content']});
+    observer.observe(d.documentElement, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['class', 'style', 'data-color-mode', 'data-theme', 'aria-current', 'aria-expanded', 'href', 'content']});
   }
   function styleLoaded(event) { if (event.target.matches?.('link[rel="stylesheet"]')) schedule(); }
   function destroy() {
     destroyed = true; observer?.disconnect(); observer = null; reset();
     systemTheme?.removeEventListener('change', schedule);
+    d.fonts?.removeEventListener?.('loadingdone', fontsSettled);
     d.removeEventListener('load', styleLoaded, true); d.removeEventListener('DOMContentLoaded', start); w.removeEventListener('hashchange', schedule); w.removeEventListener('resize', schedule);
     w.removeEventListener('scroll', hideTooltip, true); d.removeEventListener('keydown', escapeTooltip);
   }
@@ -309,6 +380,7 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     return iconPaths[key] ? '<svg class="la-page-icon" viewBox="' + (iconViewBoxes[key] || '0 0 24 24') + '" fill="currentColor" stroke="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="' + iconPaths[key] + '"/></svg>' : '';
   }};
   systemTheme?.addEventListener('change', schedule);
+  d.fonts?.addEventListener?.('loadingdone', fontsSettled);
   d.addEventListener('load', styleLoaded, true); d.addEventListener('DOMContentLoaded', start); w.addEventListener('hashchange', schedule); w.addEventListener('resize', schedule);
   w.addEventListener('scroll', hideTooltip, true); d.addEventListener('keydown', escapeTooltip);
   if (d.body) start();
@@ -333,19 +405,20 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  ];
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function destination(key,c){if(c.mode==='demo')return './'+key.toLowerCase()+'.html';const id=String(c.pageIds?.[key]||'');return /^[1-9]\d*$/.test(id)?(c.contextPath||'/confluence').replace(/\/$/,'')+'/pages/viewpage.action?pageId='+id:null;}
+ function picture(assets,name,alt,width,height,hero=false){return '<picture><source type="image/webp" srcset="'+esc(assets+name+'.webp')+'"><img src="'+esc(assets+name+'.jpg')+'" alt="'+esc(alt)+'" width="'+width+'" height="'+height+'" loading="'+(hero?'eager':'lazy')+'" decoding="async" fetchpriority="'+(hero?'high':'low')+'"></picture>'; }
  const arrow='<svg class="la-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>';
  function link([key,title],c){const href=destination(key,c);return '<li>'+(href?'<a class="la-page-link" href="'+esc(href)+'"><span>'+esc(title)+'</span>'+arrow+'</a>':'<span class="la-page-label">'+esc(title)+'</span>')+'</li>';}
  function faqSection(){return '<section class="la-faq" aria-labelledby="la-faq-title"><h2 id="la-faq-title">Frequently asked questions</h2><div class="la-faq-list">'+faqs.map(([question,answer],i)=>'<div class="la-faq-item"><h3><button type="button" id="la-faq-question-'+i+'" aria-expanded="false" aria-controls="la-faq-answer-'+i+'"><span>'+esc(question)+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path class="la-faq-vertical" d="M12 5v14"/></svg></button></h3><div class="la-faq-answer" id="la-faq-answer-'+i+'" role="region" aria-labelledby="la-faq-question-'+i+'" aria-hidden="true" inert><div><p>'+esc(answer)+'</p></div></div></div>').join('')+'</div></section>';}
  w.CreditHub={async mount(root){const config=w.CREDIT_CONFIG||{},loading=w.CreditLoadingOverlay?.create({target:root});
   try{loading?.show('Loading Lending Analytics…');await loading?.paint?.();
-   const assets=(config.baseUrl||'../attachments/').replace(/\/?$/,'/'),image=assets+'lending-analytics-hero.jpg',heading=config.mode==='demo'?'h1':'h2';
+   const assets=(config.baseUrl||'../attachments/').replace(/\/?$/,'/'),heading=config.mode==='demo'?'h1':'h2';
    root.innerHTML='<main class="la-landing">'+
-    '<div class="la-intro"><'+heading+'>From portfolio insight<br>to the next action.</'+heading+'><p>A connected view of lending exposure, underwriting priorities and credit monitoring. Start with the bigger picture, explore what needs attention and follow each result to its supporting records.</p></div>'+
-    '<figure class="la-hero"><img src="'+esc(image)+'" alt="Abstract data streams connecting a city skyline" width="1916" height="1080" decoding="async" fetchpriority="high"></figure>'+
+    '<div class="la-intro"><'+heading+' class="font-display">From portfolio insight<br>to the next action.</'+heading+'><p>A connected view of lending exposure, underwriting priorities and credit monitoring. Start with the bigger picture, explore what needs attention and follow each result to its supporting records.</p></div>'+
+    '<figure class="la-hero">'+picture(assets,'lending-analytics-hero','Abstract data streams connecting a city skyline',1916,1080,true)+'</figure>'+
     '<section class="la-purpose" aria-labelledby="la-purpose-title"><h2 id="la-purpose-title">One place to understand<br>the lending picture.</h2><div><p>Lending Analytics brings facility, covenant and CCM information together for portfolio oversight and day-to-day credit work. It connects financial exposure with the obligations and people responsible for monitoring it.</p><p>Use the sidebar to move between views. Each page answers a specific question; the records behind a result retain their own source, reporting date and business context.</p></div></section>'+
-    '<section class="la-areas" aria-label="Explore Lending Analytics">'+areas.map(([key,category,title,description,links])=>'<article class="la-area" aria-labelledby="la-area-'+key+'"><figure class="la-area-media"><img src="'+esc(assets+'lending-'+key+'.jpg')+'" alt="" width="640" height="480" loading="lazy" decoding="async"></figure><div class="la-area-copy"><p class="la-category">'+esc(category)+'</p><h2 id="la-area-'+key+'">'+esc(title)+'</h2><p class="la-area-description">'+esc(description)+'</p><ul class="la-links" aria-label="'+esc(category)+' dashboards">'+links.map(item=>link(item,config)).join('')+'</ul></div></article>').join('')+'</section>'+
+    '<section class="la-areas" aria-label="Explore Lending Analytics">'+areas.map(([key,category,title,description,links])=>'<article class="la-area" aria-labelledby="la-area-'+key+'"><figure class="la-area-media">'+picture(assets,'lending-'+key,'',640,480)+'</figure><div class="la-area-copy"><p class="la-category">'+esc(category)+'</p><h2 id="la-area-'+key+'">'+esc(title)+'</h2><p class="la-area-description">'+esc(description)+'</p><ul class="la-links" aria-label="'+esc(category)+' dashboards">'+links.map(item=>link(item,config)).join('')+'</ul></div></article>').join('')+'</section>'+
     '<section class="la-journey" aria-labelledby="la-journey-title"><div><p class="la-eyebrow">From summary to detail</p><h2 id="la-journey-title">Explore without losing<br>your place.</h2></div><ol><li><strong>Set your scope</strong><span>Choose the available region, product or owner filters. Applied filters remain visible on the page.</span></li><li><strong>Follow a result</strong><span>Select a chart segment or table row to explore its detail. Use the breadcrumb to step back through your selection.</span></li><li><strong>See the supporting records</strong><span>Expand a chart for a focused analysis, then inspect its detailed table. Close returns you to the dashboard.</span></li></ol></section>'+faqSection()+'</main>';
-   root.querySelectorAll('.la-hero img,.la-area-media img').forEach(img=>img.addEventListener('error',()=>{img.closest('figure').hidden=true;},{once:true}));
+   root.querySelectorAll('.la-hero img,.la-area-media img').forEach(img=>img.addEventListener('error',()=>{const source=img.closest('picture')?.querySelector('source');if(source){source.remove();return;}img.closest('figure').hidden=true;}));
    root.querySelectorAll('.la-faq-item button').forEach(button=>button.addEventListener('click',()=>{
     const expanded=button.getAttribute('aria-expanded')!=='true',answer=root.querySelector('#'+button.getAttribute('aria-controls'));
     button.setAttribute('aria-expanded',String(expanded));answer.setAttribute('aria-hidden',String(!expanded));answer.inert=!expanded;
@@ -356,5 +429,5 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="a4288f80c65e:lendingAnalytics";
+window.CREDIT_PAGE_BUILD="4e2a364a7234:lendingAnalytics";
 })();

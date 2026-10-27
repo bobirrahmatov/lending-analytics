@@ -1,0 +1,39 @@
+Lending Analytics dashboard refinement — 27 October 2026
+
+Local validation only; the live Confluence instance was not changed or inspected.
+The host fixture uses local font stand-ins registered under the Citi family names.
+Actual intranet font downloads and production glyphs still require a host check.
+
+Automated checks
+44 regression commands passed, including exact source cohorts/exports, native
+sidebar setup/teardown, asynchronous filter/reset scheduling, searchable selects,
+image fallback, day/month labels, 11-product age-band filtering, Top 10/All owners,
+and repeated chart drill/expand/close/reset cycles using real Highcharts.
+After final chart changes, Portfolio view, summary table drill, PortfolioJourney,
+monitoring presentation and bento expansion checks also passed.
+
+Browser checks
+- Native sidebar: collapsed SVG expand control visible; expansion changes content
+  width without document overflow. Space tools hidden. Dark sidebar/footer and
+  main dashboard resolve to the same background. Labels use Citi Text stack.
+- Portfolio: three first-row cards retained; four clickable coverage statistics.
+- Activity: owner and regional cards both 589 px at a 1280 px browser viewport.
+- CCM: date area and queue both 589 px; automatic date ticks avoid label overlap.
+- Insurances: region and workload both 589 px; All specialists selects correctly
+  and Reset returns to Top 10. Fewer than ten owners are shown when appropriate.
+- Appraisals: horizontal product bars, aging-band selection, date-based deadlines.
+- Filter drawer: spaced fields, owner search, selection, apply and Reset.
+- Covenant detail selector: searchable dropdown, no horizontal tab scrollbar;
+  Facility level changes table columns and records through the original handler.
+- Landing: WebP sources load, hero reserves a 2.8 aspect ratio on desktop;
+  cards remain readable at 390 px. All links and FAQ controls are retained.
+
+Media
+The four preferred WebP images total 340,584 bytes versus 1,572,611 bytes for
+the JPEG fallbacks (78.3% less transfer). Hero preloading requires replacing the
+landing macro fragment. First-load network latency remains host-dependent.
+
+Deployment
+See Lending_Analytics_Deployment.txt. Upload complete application attachments
+and matching Page.js/HTMLPage.js pairs to page 3845862527. Replace the landing
+macro for the preload; retain other page macros and the existing space include.

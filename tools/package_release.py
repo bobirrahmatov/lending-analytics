@@ -4,6 +4,7 @@ from zipfile import ZipFile,ZIP_DEFLATED
 import hashlib
 P=Path(__file__).resolve().parents[1]
 assets=['credit-style.css','credit-ui.js','credit-pages.js','credit-loading-overlay.js','highcharts.js','highcharts-accessibility.js','xlsx.full.min.js','SheetJS-LICENSE.txt','credit-file-drop-guard.js','credit-native-sidebar.js','lending-analytics-hero.jpg','lending-portfolio.jpg','lending-underwriting.jpg','lending-monitoring.jpg']
+assets += ['lending-analytics-hero.webp','lending-portfolio.webp','lending-underwriting.webp','lending-monitoring.webp']
 assets += [f.name for f in sorted((P/'attachments').glob('credit-*Page.js'))]
 instructions=(P/'Lending_Analytics_Deployment.txt').read_text()
 (P/'INSTALL.txt').write_text(instructions)
@@ -14,6 +15,7 @@ with ZipFile(P/'Confluence_Deployment.zip','w',ZIP_DEFLATED) as z:
  for name in ['Space_Navigation.html','Space_File_Drop_Guard.html','INSTALL.txt','LICENSES.txt','Covenants_Field_Parity.txt','Covenants_Risk_Reporting.txt','All_Pages_Data_Handoff.txt','Lending_Analytics_Deployment.txt']:z.write(P/name,name)
 # Keep only current validation evidence and maintained browser fixtures.
 keep_qa = {
+ 'Dashboard_Refinement_Verification.txt',
  'Data_Linkage_Verification.json',
  'Landing-Centered-Intro.png',
  'Landing-FAQs-Mobile.png',

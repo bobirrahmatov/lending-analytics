@@ -18,24 +18,27 @@ All four files are saved unchanged for the requested internal Citi deployment.
 Citi retains rights to the assets; no broader redistribution rights are asserted.
 
 Hero — abstract data streams and city skyline
-File: attachments/lending-analytics-hero.jpg
+Files: attachments/lending-analytics-hero.jpg and .webp
 Source page: https://www.citigroup.com/global/insights/the-digital-transformation-of-the-global-economy
 Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/66bdee13ac552b7ebafcf1d3.jpg
 
 Portfolio — illustrated globe and currency flows
-File: attachments/lending-portfolio.jpg
+Files: attachments/lending-portfolio.jpg and .webp
 Source page: https://www.citigroup.com/global/insights/real-time-24-7-finance-in-an-always-on-world
 Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/68542052b53dd44b6fcfd38a.jpg
 
 Underwriting — geometric architectural atrium
-File: attachments/lending-underwriting.jpg
+Files: attachments/lending-underwriting.jpg and .webp
 Source page: https://www.citigroup.com/global/insights/connective-tissue-digital-finance-interoperability-programmability-path-to-institutional-scale
 Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/6ab139b5c1d879abe8be105c.jpg
 
 Monitoring — abstract network connections
-File: attachments/lending-monitoring.jpg
+Files: attachments/lending-monitoring.jpg and .webp
 Source page: https://www.citigroup.com/global/insights/digital-frontier-collateral-tokenized-world
 Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/6ac910b13ee8cde8db22754d.jpg
+
+WebP copies are optimized encodings of the same supplied images; card copies
+are scaled to 960 pixels wide. Original JPEGs remain browser fallbacks.
 
 Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030
 

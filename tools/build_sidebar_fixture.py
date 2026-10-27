@@ -27,13 +27,15 @@ sidebar = '''<div class="ia-fixed-sidebar"><aside class="acs-side-bar" aria-labe
 <div class="plugin_pagetree_childtoggle_container"><button id="native-branch" aria-label="Toggle Lending Analytics pages" aria-expanded="true">⌄</button></div>
 <div class="plugin_pagetree_children_container"><ul id="native-children">''' + links + '''</ul></div></li>
 <li id="fixture-unrelated"><a href="/confluence/pages/viewpage.action?pageId=999" aria-label="Space resources"><span aria-hidden="true">◇</span><span class="fixture-native-label">Space resources</span></a></li>
-</ul></aside><div id="fixture-native-footer" class="fixture-native-toolbar-shell"><div class="fixture-native-toolbar-surface"><button id="fixture-space-tools" class="aui-dropdown2-trigger" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-label="Sidebar" aria-expanded="true" data-tooltip="Collapse sidebar">«</a></div></div>
+</ul></aside><div id="fixture-native-footer" class="fixture-native-toolbar-shell"><div class="fixture-native-toolbar-surface"><button id="fixture-space-tools" class="aui-dropdown2-trigger" aria-controls="space-tools-menu" aria-expanded="false">Space tools</button><a href="#" role="button" class="expand-collapse-trigger aui-icon aui-icon-small aui-iconfont-chevron-double-left" aria-label="Sidebar" aria-expanded="true" data-tooltip="Collapse sidebar"></a></div></div>
 <aui-dropdown-menu id="space-tools-menu" class="aui-dropdown2 aui-layer" role="menu" tabindex="-1" hidden><ul><li><a href="#configure-sidebar" id="fixture-configure">Configure sidebar</a></li><li><a href="/confluence/pages/viewpage.action?pageId=101">Portfolio settings</a></li></ul></aui-dropdown-menu></div>'''
 styles = '''<style>
 /* Fixture-only aliases exercise the space's Citi family names without bundling
    or claiming access to the actual proprietary fonts. */
 @font-face{font-family:"Citi-Sans-Text";src:local("Arial");font-style:normal;font-weight:400}
 @font-face{font-family:"Citi-Sans-Display";src:local("Georgia");font-style:normal;font-weight:400}
+@font-face{font-family:"Citi-Sans-Text";src:local("Arial Bold");font-style:normal;font-weight:700}
+@font-face{font-family:"Citi-Sans-Display";src:local("Georgia Bold");font-style:normal;font-weight:700}
 body,p{font-family:"Citi Sans Text","Citi-Sans-Text",Arial,sans-serif}
 h1,.font-display{font-family:"Citi Sans Display","Citi-Sans-Display",Georgia,serif}
 /* Deliberately conflicting host rules reproduce Confluence decoration/overrides. */
@@ -54,6 +56,11 @@ html[data-color-mode="dark"] .ia-splitter-right{background-color:#252a31}
 .ia-fixed-sidebar{min-width:0;position:sticky;top:10px;align-self:start}.acs-side-bar{border:1px solid #dce6ef;min-width:0;position:sticky;top:10px;height:90vh;overflow:auto}
 .fixture-native-toolbar-shell{min-width:240px!important;border-top:1px solid #dce6ef;white-space:nowrap}
 .fixture-native-toolbar-surface{display:flex!important;justify-content:space-between;padding:12px!important}
+/* Actual Confluence toggle is an empty icon-font anchor. Native compact styles
+   can hide its wrapper and glyph; the skin must reveal only its control path. */
+.expand-collapse-trigger::before{content:""!important}
+.fixture-shell.collapsed .fixture-native-toolbar-surface{visibility:hidden;opacity:0}
+.fixture-shell.collapsed .expand-collapse-trigger{display:none;visibility:hidden;opacity:0}
 /* Native AUI menus are separate layers, not part of the compact page-tree rail.
    This viewport-wide layer reproduces the bottom strip if rail CSS forces flex. */
 .aui-dropdown2{display:none;position:fixed;inset:auto 0 12px;z-index:50;box-sizing:border-box;width:100vw;padding:10px 20px;background:var(--ds-surface,#fff);border:1px solid #dce6ef;box-shadow:0 4px 12px #17355f22}
@@ -85,7 +92,7 @@ document.querySelector('.expand-collapse-trigger').onclick=function(event){
   this.setAttribute('data-tooltip',collapsed?'Expand sidebar':'Collapse sidebar');
   this.classList.toggle('aui-iconfont-chevron-double-right',collapsed);
   this.classList.toggle('aui-iconfont-chevron-double-left',!collapsed);
-  this.textContent=collapsed?'»':'«';
+  this.replaceChildren();
 };
 document.getElementById('fixture-space-tools').onclick=function(){
   const menu=document.getElementById('space-tools-menu');menu.hidden=!menu.hidden;

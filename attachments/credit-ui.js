@@ -180,29 +180,37 @@
     return Array.from(field.labels || []).map(label => (label.querySelector('span') || label).textContent.trim()).join(' ') || field.name || 'Choose an option';
   }
   function announceValue(field) { field.dispatchEvent(new Event('input', {bubbles:true})); field.dispatchEvent(new Event('change', {bubbles:true})); }
-  // Opt-in searchable dropdown; existing selects retain their original behavior.
+  // Native selects retain the form value; search only narrows the displayed options.
   function searchableSelectControl(field) {
     const originalHidden=field.hidden,id=uid(),wrapper=doc.createElement('span'),trigger=doc.createElement('button');
-    wrapper.className='credit-ui-select';trigger.type='button';trigger.className='credit-ui-select-trigger';trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label',nameFor(field));
+    wrapper.className='credit-ui-select';trigger.type='button';trigger.id=id;trigger.className='credit-ui-select-trigger';trigger.setAttribute('role','combobox');trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label',nameFor(field));
     trigger.innerHTML='<span class="credit-ui-select-value"></span>'+icon('down');field.after(wrapper);wrapper.append(trigger);field.hidden=true;field.dataset.creditUi='select';
-    let popup=null,active=0;const abort=new AbortController(),signal=abort.signal;
-    function sync(){trigger.disabled=field.disabled;trigger.querySelector('span').textContent=field.selectedOptions[0]?.textContent||'Search and select';if(popup&&field.disabled)popup.close('disabled');}
-    function open(){if(popup||field.disabled)return;active=0;
-      popup=popover({anchor:trigger,role:'dialog',label:nameFor(field),matchWidth:true,className:'credit-searchable-select',body:'<input type="search" role="combobox" aria-label="Search relationships" aria-autocomplete="list" aria-expanded="true" aria-controls="'+id+'-options" placeholder="Search ID or name…"><div id="'+id+'-options" role="listbox" aria-label="Matching relationships"></div><p role="status"></p>',onClose(){popup=null;trigger.setAttribute('aria-expanded','false');}});
+    let popup=null,active=0,paintOptions=null;const abort=new AbortController(),signal=abort.signal;
+    const enabled=option=>!option.disabled&&!option.closest('optgroup[disabled]');
+    function sync(){
+      trigger.disabled=field.disabled;trigger.setAttribute('aria-required',String(field.required));trigger.setAttribute('aria-invalid',field.getAttribute('aria-invalid')||'false');
+      trigger.querySelector('span').textContent=field.selectedOptions[0]?.textContent||'Choose an option';
+      if(popup&&field.disabled)popup.close('disabled');else paintOptions?.();
+    }
+    function open(){if(popup||field.disabled)return;active=0;const label=nameFor(field),searchLabel='Search '+label.toLocaleLowerCase();
+      popup=popover({anchor:trigger,role:'dialog',label,matchWidth:true,className:'credit-searchable-select',body:'<input type="search" role="combobox" aria-label="'+escape(searchLabel)+'" aria-autocomplete="list" aria-expanded="true" aria-controls="'+id+'-options" placeholder="'+escape(field.dataset.searchPlaceholder||searchLabel+'…')+'"><div id="'+id+'-options" role="listbox" aria-label="'+escape(label+' options')+'"></div><p role="status"></p>',onClose(){popup=null;paintOptions=null;trigger.setAttribute('aria-expanded','false');}});
       trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',popup.element.id);
       const input=popup.element.querySelector('input'),list=popup.element.querySelector('[role=listbox]'),status=popup.element.querySelector('[role=status]');let found=[];
-      const choose=index=>{const option=found[index];if(!option)return;field.value=option.value;sync();popup.close('select');announceValue(field);};
-      function paint(){const query=input.value.trim().toLocaleLowerCase();found=Array.from(field.options).filter(o=>!o.disabled&&(!query||o.textContent.toLocaleLowerCase().includes(query)));active=Math.min(active,Math.max(0,found.length-1));list.innerHTML=found.map((o,i)=>'<div role="option" id="'+id+'-result-'+i+'" data-result="'+i+'" aria-selected="'+(o.value===field.value)+'" class="credit-ui-option'+(i===active?' is-active':'')+'"><span>'+escape(o.textContent)+'</span>'+(o.value===field.value?icon('check'):'')+'</div>').join('');status.textContent=found.length?found.length+' matching '+(found.length===1?'option':'options'):'No matching relationships. Try another ID or name.';if(found.length)input.setAttribute('aria-activedescendant',id+'-result-'+active);else input.removeAttribute('aria-activedescendant');}
+      const choose=index=>{const option=found[index];if(!option||!enabled(option))return;field.value=option.value;sync();popup.close('select');announceValue(field);queueMicrotask(()=>{if(field.isConnected)sync();});};
+      function paint(){const query=input.value.trim().toLocaleLowerCase();found=Array.from(field.options).filter(o=>enabled(o)&&(!query||o.textContent.toLocaleLowerCase().includes(query)));active=Math.min(active,Math.max(0,found.length-1));list.innerHTML=found.map((o,i)=>'<div role="option" id="'+id+'-result-'+i+'" data-result="'+i+'" aria-selected="'+(o.value===field.value)+'" class="credit-ui-option'+(i===active?' is-active':'')+'"><span>'+escape(o.textContent)+'</span>'+(o.value===field.value?icon('check'):'')+'</div>').join('');status.textContent=found.length?found.length+' matching '+(found.length===1?'option':'options'):'No matching options. Try another search.';if(found.length)input.setAttribute('aria-activedescendant',id+'-result-'+active);else input.removeAttribute('aria-activedescendant');}
+      paintOptions=paint;
       input.oninput=()=>{active=0;paint();};input.onkeydown=e=>{if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){e.preventDefault();active=e.key==='Home'?0:e.key==='End'?found.length-1:Math.max(0,Math.min(found.length-1,active+(e.key==='ArrowDown'?1:-1)));paint();list.querySelector('.is-active')?.scrollIntoView({block:'nearest'});}else if(e.key==='Enter'){e.preventDefault();choose(active);}};
       list.onpointerdown=e=>e.preventDefault();list.onclick=e=>{const item=e.target.closest('[data-result]');if(item)choose(Number(item.dataset.result));};paint();focusElement(input);
     }
-    trigger.addEventListener('click',()=>popup?popup.close('toggle'):open(),{signal});trigger.addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();open();}},{signal});field.addEventListener('change',sync,{signal});
+    trigger.addEventListener('click',()=>popup?popup.close('toggle'):open(),{signal});trigger.addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();open();}},{signal});field.addEventListener('change',sync,{signal});field.addEventListener('input',sync,{signal});
+    field.form?.addEventListener('reset',()=>queueMicrotask(sync),{signal});
+    for(const label of field.labels||[])label.addEventListener('click',event=>{if(event.target===label||event.target.tagName==='SPAN'&&!wrapper.contains(event.target))focusElement(trigger);},{signal});
     const observer=new MutationObserver(sync);observer.observe(field,{attributes:true,childList:true,subtree:true,characterData:true});
     enhanced.set(field,{field,wrapper,sync,destroy(){popup?.close('destroy');observer.disconnect();abort.abort();wrapper.remove();field.hidden=originalHidden;delete field.dataset.creditUi;}});sync();
   }
   function selectControl(field) {
-    if(field.hasAttribute('data-searchable'))return searchableSelectControl(field);
     if (field.multiple || Number(field.size) > 1) return;
+    if(field.hasAttribute('data-searchable'))return searchableSelectControl(field);
     const originalHidden = field.hidden, id = uid(), wrapper = doc.createElement('span'), trigger = doc.createElement('button');
     wrapper.className = 'credit-ui-select'; trigger.type = 'button'; trigger.className = 'credit-ui-select-trigger'; trigger.id = id;
     trigger.setAttribute('role', 'combobox'); trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');

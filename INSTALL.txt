@@ -47,6 +47,9 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    Unknown/other spaces and edit/administration views remain unaffected.
    Dashboard macros still work without the space include. The adapter is
    idempotent when both the include and a dashboard bundle load it.
+   The native collapse/expand control receives a visible SVG chevron while keeping
+   its original click handler. Space tools is hidden in both expanded and collapsed
+   reader states; editor/administration views and native permissions are unchanged.
    Icons use the supplied TailAdmin SVG paths. Scoped rules suppress duplicate
    native page glyphs, bullets and pseudo-icons only on configured dashboard
    links/rows, and protect SVG size/fill against host styles. Native branch
@@ -76,8 +79,12 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    controls with plus/minus indicators and require no separate FAQ page or portal
    dependency.
    The existing sidebar remains available. The landing downloads no financial
-   records or Highcharts. Upload lending-analytics-hero.jpg, lending-portfolio.jpg,
-   lending-underwriting.jpg and lending-monitoring.jpg with the application assets.
+   records or Highcharts. Upload lending-analytics-hero.webp, lending-portfolio.webp,
+   lending-underwriting.webp and lending-monitoring.webp, plus their matching .jpg
+   fallback files, with the application assets. The hero is preloaded at high
+   priority; subject-card images load lazily. Intrinsic image dimensions reserve
+   layout space, and media size follows the available content column. Smaller
+   optimized files reduce transfer work; instant live loading is not guaranteed.
    Start_Here.html remains a developer/operator handoff index, not the landing.
 7. Attachment references use their exact stable filenames. Do not append ?v=,
    version strings, hash suffixes or release IDs to the default asset/workbook
@@ -86,13 +93,18 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    No API token, privileged service account or new backend is required.
 
 UPGRADING FROM THE PREVIOUS PACKAGE
-Replace all installed dashboard fragments with the matching fragments from this
-build, and upload the new credit-style.css, credit-ui.js and
-credit-loading-overlay.js alongside the matching page pairs. The earlier shared
-portal include is no longer a dashboard prerequisite. Remove old dashboard-only
-includes from its setup; do not alter another application's space configuration.
-Replace page pairs together and reload. No page permissions are changed by this
-package; everyone already permitted by the space can use the dashboards.
+Upload the complete application attachments from this build, including
+credit-style.css, credit-ui.js, credit-native-sidebar.js and every matching
+Page.js/HTMLPage.js logic/renderer pair. Keep the four optimized WebP images and
+their JPEG fallbacks together. Do not change filenames or append cache versions.
+
+Replace only the Lending Analytics landing fragment with the contents of
+confluence-pages/lendinganalytics.html on page 3782729579: it now includes the
+hero-image preload. The other page macro fragments and Space_Navigation.html
+header include are unchanged in this release. Existing dashboard macros remain
+independent of any WCSpedia or other portal include. No page permissions change.
+After uploading, hard reload to avoid mixing cached application assets. Sample
+workbooks and their manifest are separate from this application-only update.
 
 DEFAULT DATA PATH — SIX EXCEL ATTACHMENTS
 The supplied excel/runtime/ files are the direct runtime inputs, with typed
@@ -149,14 +161,15 @@ No retained financial cache bypasses a permission error or sign-in response.
 
 PUBLISHED DASHBOARD LAYOUT
 Underwriters Summary uses two equal-width chart pairs and a full-width action
-register. Portfolio pairs New Facilities Approved with Portfolio coverage,
-New deals with Pending Closure, Relationships with Monitoring priorities, and
-Covenants with CCM. At desktop widths of 1200 px and above, the first row contains
-CAs & Facilities Expiring, New Facilities Approved and smaller Portfolio coverage
+register. Portfolio pairs New deals with Pending Closure, Relationships with
+Monitoring priorities, and Covenants with CCM. At desktop widths of 1200 px and
+above, the first row contains CAs & Facilities Expiring, New Facilities Approved
+and smaller Portfolio coverage
 in 5/4/3 column proportions. Expiry columns form close pairs within each month;
-the compact coverage table fits its card. Narrower screens wrap and stack.
-Inline drilling temporarily fills a row; Reset restores
-the normal arrangement. Expanded charts retain their modal dialogs.
+Portfolio coverage uses four compact, clickable statistics in its smaller card,
+retaining the same exact source cohorts and drill actions. Narrower screens wrap
+and stack. Inline drilling temporarily fills a row; Reset restores the normal
+arrangement. Expanded charts retain their modal dialogs.
 
 SHARED TABLE AND CHART DRILLING
 The redundant three-part insight strip has been removed from Underwriters
@@ -313,21 +326,24 @@ Page breadcrumbs follow the Citi reference: blue parent links, a plain slash
 separator and a normal-weight, theme-aware current-page label in the space font.
 All dashboard pages share this component; the landing retains its centered
 introduction without an extra breadcrumb. Local chart drill paths retain their
-existing controls. Upload credit-style.css and matching generated page pairs;
-the space header and content macro fragments do not require changes.
+existing controls. These frame and breadcrumb changes are in credit-style.css
+and the matching generated page pairs. The current release also changes the
+landing fragment for image preloading; see UPGRADING FROM THE PREVIOUS PACKAGE.
 
 NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
 The shared native-sidebar adapter recognizes collapsed inner rails inside a
 fixed sidebar wrapper. It marks both footer/bottom structures and the native
 Configure sidebar action. In compact mode the configuration chrome disappears;
-a native expand control in that same footer remains usable. Expanded mode and
-adapter teardown restore the native configuration action.
+the native expand control in that same footer receives a visible SVG chevron
+and an Expand sidebar/Collapse sidebar accessible label. The original control
+and handler remain in place. Space tools is hidden in both reader states without
+hiding the toggle. Teardown restores all dashboard-owned classes and glyphs.
 Dashboard grids use the actual available content width, so opening the native
 sidebar reflows cards and charts without changing Confluence widths or offsets.
-This update replaces credit-native-sidebar.js and credit-style.css plus generated
-page pairs from the same build. The existing Space_Navigation.html header include
-and page macro fragments do not change. Validate against the live host theme;
-local fixtures cover nested rails, shared toggle footers and hostile host CSS.
+The existing Space_Navigation.html header include remains unchanged; only the
+landing page fragment gains an image preload in this release. Validate against
+the live host theme; local fixtures cover nested rails, an empty native AUI
+icon-font anchor, shared toggle footers and competing host CSS.
 
 PAGE AND SIDEBAR SURFACES
 Page shells use a restrained 10 px radius (the shared --credit-page-radius token).
@@ -352,11 +368,14 @@ open/close behavior. The native expand-collapse-trigger remains usable.
 
 The space stylesheet shown for this deployment assigns Citi Sans Text /
 Citi-Sans-Text to body and paragraphs, and Citi Sans Display / Citi-Sans-Display
-to h1 and .font-display. The adapter reads the body's computed text stack, not
-the inner .wiki-content container where Confluence may specify Arial. Dashboard
-text, charts and sidebar labels share that body stack. Display titles separately
-reuse the existing registered Citi Display face or the native title's family.
-No font files, private attachment URLs or new @font-face declarations are shipped.
+to h1 and .font-display. The adapter prefers those existing registered Citi Text
+and Display families even if Confluence overrides the body or .wiki-content
+font. The body's computed stack and native title family remain the fallbacks.
+Dashboard text, charts and sidebar labels use the text role; display titles use
+the separate display role. FontFaceSet requests the registered regular and bold
+faces without blocking page startup, and dashboard charts remeasure their labels
+after fonts finish loading. No font files, private attachment URLs or new
+@font-face declarations are shipped.
 Typography also resolves when no native sidebar is present. Native icon fonts
 are preserved. Optional --credit-space-font and --credit-space-display-font
 variables can override the two roles. Theme/style changes refresh the resolved
@@ -365,12 +384,37 @@ presentation values; teardown restores any prior inline values.
 The adapter discovers footer wrappers from the existing Space tools and collapse
 controls, including themes without the standard footer class. All structural
 footer layers share the dashboard surface; idle toolbar backgrounds are clear.
-Native hover/focus, menu visibility, handlers and sidebar geometry are preserved.
+Native handlers, hover/focus and sidebar geometry are preserved. The Space tools
+trigger is hidden in reader mode; its menu layer is never turned into tree content.
 The browser fixture deliberately uses local font stand-ins under the Citi names
 to verify CSS roles; it does not validate intranet font downloads or Citi glyphs.
 
-Upload credit-native-sidebar.js, credit-style.css and every matching generated
-Page.js/HTMLPage.js pair from this build, then hard reload. Existing header and
-page macro markup are unchanged. Local regression fixtures cover the screenshot's
-menu structure, competing host font rules and light/dark canvas colours; live
-Confluence appearance still depends on the installed host stylesheet.
+Local regression fixtures cover the screenshot's menu structure, competing host
+font rules and light/dark canvas colours. Actual Citi font downloads on the
+intranet, glyph rendering and live Confluence network timings remain unverified.
+Upload instructions for this release are in UPGRADING FROM THE PREVIOUS PACKAGE;
+the landing fragment is the only page macro change.
+
+CURRENT CHART AND CONTROL PRESENTATION
+The filter drawer separates fields with consistent spacing and provides
+searchable selects. Long or overflowing segmented chart/table choices become a labeled
+searchable dropdown, while short choices retain their compact presentation.
+Selection continues through the existing action path, preserving drill scope,
+register state and Reset behavior.
+
+Covenant Activity's owner and regional-month charts use equal-width cards.
+Grouped bars/columns replace stacked comparisons in monitoring charts, with
+numeric labels at bar ends. CCM's approval due calendar uses a gradient-filled
+area chart by actual due date alongside an equal-width underwriter queue.
+Insurance's regional exceptions and specialist workload are equal-width;
+workload ranks exact specialist IDs and shows the top ten by default, with All
+specialists available. Appraisal product aging uses horizontal bars for all
+products and an aging-band selector. Upcoming appraisal deadlines use a line
+chart with proportional calendar spacing. Undated records stay available in
+supporting records and explicit undated drill controls.
+
+Chart axes format actual dates as dd-Mon-yy (for example 10-Jan-26). Monthly
+aggregates use Mon-yy (for example Jan-26); they do not invent a day for a month.
+Formatting changes the displayed label, preserving the original date/group keys
+and their selected source records. Charts and expanded views retain their shared
+supporting tables, downloads and drills.

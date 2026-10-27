@@ -15,7 +15,7 @@ async function mount(page){
 async function settled(root){for(let i=0;i<100;i++){await pause(10);if(!root.querySelector('#ch-content[aria-busy]'))return;}assert.fail('Dashboard render did not settle');}
 function visible(el){return el&&!el.closest('[hidden]');}
 (async()=>{
- for(const page of ['portfolio','overview','COVENANTS']){
+ for(const page of ['portfolio','overview','COVENANTS','CCM','INSURANCE','APPRAISALS','activity']){
   const e=await mount(page),{root,w}=e;assert.equal(root.querySelector('.ch-error'),null);const base=e.live().length;assert.ok(base>0);
   for(let cycle=0;cycle<4;cycle++){
    const chart=e.live().find(c=>c.series.some(s=>s.points.some(p=>p.options.custom?.rows?.length))),point=chart.series.flatMap(s=>s.points).find(p=>p.options.custom?.rows?.length);point.firePointEvent('click');
@@ -33,7 +33,8 @@ function visible(el){return el&&!el.closest('[hidden]');}
    if(page==='portfolio')for(const mode of ['data','charts']){root.querySelector('[data-portfolio-view='+mode+']').click();await settled(root);assert.ok(e.live().every(c=>c.renderTo.isConnected));}
    if(page==='portfolio')assert.equal(e.live().length,base,'Charts tab restores every portfolio chart');
   }
+  const localSetting=root.querySelector('[data-monitor-setting]');if(localSetting){const key=localSetting.dataset.monitorSetting;localSetting.value=page==='INSURANCE'?'all':'31–45';localSetting.dispatchEvent(new w.Event('change'));await settled(root);assert.equal(root.querySelector('[data-monitor-setting="'+key+'"]').value,page==='INSURANCE'?'all':'31–45');assert.ok(e.live().every(c=>c.renderTo.isConnected));root.querySelector('#ch-reset').click();await settled(root);assert.equal(root.querySelector('[data-monitor-setting="'+key+'"]').value,page==='INSURANCE'?'10':'all');assert.equal(e.live().length,base,'Local chart settings reset cleanly');}
   assert.deepEqual(e.errors,[],page+' has no DOM event errors');e.dom.window.close();
  }
- console.log('PASS real Highcharts lifecycle: 3 pages × 4 drill/reset/expand/close cycles, real dashboard controls, nested table frames, Portfolio view tabs, stable live chart counts and no detached charts.');
+ console.log('PASS real Highcharts lifecycle: 7 pages × 4 drill/reset/expand/close cycles, real dashboard controls, nested table frames, Portfolio view tabs, product-aging and specialist selectors, stable live chart counts and no detached charts.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

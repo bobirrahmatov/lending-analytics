@@ -24,17 +24,29 @@ const expectedNativeIds=['3977008171','3977008237','3977008198','3977008221','39
   else{
    const cards=[...root.querySelectorAll('article.la-area')],hrefs=[...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href'));
    assert.equal(cards.length,3,'three subject cards');
+   const hero=root.querySelector('.la-hero img');assert.equal(hero.getAttribute('loading'),'eager','the first-view hero is requested immediately');assert.equal(hero.getAttribute('fetchpriority'),'high','the hero takes priority over off-screen cards');
+   const expectedImages=['lending-analytics-hero','lending-portfolio','lending-underwriting','lending-monitoring'];
+   assert.deepEqual([...root.querySelectorAll('picture')].map((picture,index)=>{
+    const img=picture.querySelector('img'),source=picture.querySelector('source'),jpg=new URL(img.src),webp=new URL(source.getAttribute('srcset'),w.location.href);
+    assert.equal(source.getAttribute('type'),'image/webp');assert.equal(jpg.pathname,'/confluence/download/attachments/3845862527/'+expectedImages[index]+'.jpg');assert.equal(webp.pathname,'/confluence/download/attachments/3845862527/'+expectedImages[index]+'.webp');
+    for(const url of [jpg,webp]){assert.equal(url.search,'','image attachments use stable filenames without version queries');assert.equal(url.hash,'');}
+    assert.ok(Number(img.width)>0&&Number(img.height)>0,'image dimensions reserve layout space before loading');return expectedImages[index];
+   }),expectedImages);
    for(const card of cards){
     assert.equal(card.closest('a,button,[role=link]'),null,'the card shell does not compete with its contained links');
     const images=card.querySelectorAll('.la-area-media img');assert.equal(images.length,1,'one image per subject card');
     const img=images[0],figure=img.closest('figure');assert.ok(figure?.classList.contains('la-area-media'));assert.equal(img.getAttribute('loading'),'lazy');
     assert.ok(new URL(img.src).pathname.startsWith('/confluence/download/attachments/3845862527/'));assert.equal(new URL(img.src).search,'','card images use fixed attachment filenames');
+    const fallback=img.getAttribute('src');img.dispatchEvent(new w.Event('error'));
+    assert.equal(figure.querySelector('source'),null,'a failed WebP source is removed so the JPEG can be retried');assert.equal(img.getAttribute('src'),fallback,'the original fixed JPEG is the fallback');assert.equal(figure.hidden,false,'the first format failure does not discard a usable JPEG');
     img.dispatchEvent(new w.Event('error'));
-    assert.equal(figure.hidden,true,'failed image hides its own media figure');assert.equal(card.closest('[hidden]'),null,'failed image does not hide its card');
+    assert.equal(figure.hidden,true,'only failure of both formats hides its own media figure');assert.equal(card.closest('[hidden]'),null,'failed image does not hide its card');
     for(const link of card.querySelectorAll('a.la-page-link'))assert.equal(link.closest('[hidden],a a'),null,'dashboard links remain available after an image fails');
    }
    assert.deepEqual([...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href')),hrefs,'image failures retain all dashboard destinations');
    assert.equal(root.querySelector('.la-hero').hidden,false,'card image errors leave the hero unchanged');
+   hero.dispatchEvent(new w.Event('error'));assert.equal(hero.closest('picture').querySelector('source'),null);assert.equal(hero.closest('figure').hidden,false,'hero also retries the JPEG before hiding');hero.dispatchEvent(new w.Event('error'));assert.equal(hero.closest('figure').hidden,true);
+   assert.deepEqual([...root.querySelectorAll('a.la-page-link')].map(a=>a.getAttribute('href')),hrefs,'even failure of every image retains all destinations');
   }
   if(scenario==='configured'){w.eval(read('credit-lendinganalyticsHTMLPage.js'));assert.match(root.textContent,/Load the matching dashboard logic/);assert.equal(d.querySelector('.credit-loading-overlay'),null);}
   console.log('PASS landing:',scenario);dom.window.close();
