@@ -12,20 +12,28 @@ SheetJS Community Edition 0.20.3 (Apache License 2.0)
 Official distribution: https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
 License retained in attachments/SheetJS-LICENSE.txt. Upstream notice remains in the bundle.
 
-Lending Analytics hero photograph (Citi Wealth / Citigold interior)
-Source page: https://www.citigroup.com/global/businesses/wealth
-Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/63adb4559bf1d21809b0f414.jpg
-Saved unchanged as attachments/lending-analytics-hero.jpg for the requested internal Citi deployment.
-Citi retains rights to the photograph. No broader redistribution rights are asserted.
-Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030
+Lending Analytics people-free editorial imagery (official Citi Insights assets)
+All four files are saved unchanged for the requested internal Citi deployment.
+Citi retains rights to the assets; no broader redistribution rights are asserted.
 
-Lending Analytics subject-card photographs (Citi Wealth)
-Source page: https://www.citigroup.com/global/businesses/wealth
-Portfolio: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/63adacdc79ffe46e5c8f4d99.jpg
-Saved unchanged as attachments/lending-portfolio.jpg.
-Underwriting: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/65b27ce7cfbaba088dd324b1.jpg
-Saved unchanged as attachments/lending-underwriting.jpg.
-Monitoring: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/65c64f7e493dd1658485e037.jpg
-Saved unchanged as attachments/lending-monitoring.jpg.
-Citi retains rights to these photographs. Included for the requested internal
-Citi deployment; no broader redistribution rights are asserted.
+Hero — abstract data streams and city skyline
+File: attachments/lending-analytics-hero.jpg
+Source page: https://www.citigroup.com/global/insights/the-digital-transformation-of-the-global-economy
+Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/66bdee13ac552b7ebafcf1d3.jpg
+
+Portfolio — illustrated globe and currency flows
+File: attachments/lending-portfolio.jpg
+Source page: https://www.citigroup.com/global/insights/real-time-24-7-finance-in-an-always-on-world
+Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/68542052b53dd44b6fcfd38a.jpg
+
+Underwriting — geometric architectural atrium
+File: attachments/lending-underwriting.jpg
+Source page: https://www.citigroup.com/global/insights/connective-tissue-digital-finance-interoperability-programmability-path-to-institutional-scale
+Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/6ab139b5c1d879abe8be105c.jpg
+
+Monitoring — abstract network connections
+File: attachments/lending-monitoring.jpg
+Source page: https://www.citigroup.com/global/insights/digital-frontier-collateral-tokenized-world
+Source asset: https://www.citigroup.com/rcs/v1/siteIds/citigpa/asset/6ac910b13ee8cde8db22754d.jpg
+
+Editorial reference: https://www.citigroup.com/global/insights/stablecoins-2030
