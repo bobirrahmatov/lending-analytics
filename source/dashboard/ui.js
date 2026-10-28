@@ -40,7 +40,7 @@
   }
   const uid = () => 'credit-ui-' + (++sequence);
   const escape = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const icon = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + ({down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/>',check:'<path d="m5 12 4 4L19 6"/>'}[name] || '') + '</svg>';
+  const icon = name => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">' + ({search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',down:'<path d="m6 9 6 6 6-6"/>',close:'<path d="m6 6 12 12M18 6 6 18"/>',left:'<path d="m15 6-6 6 6 6"/>',right:'<path d="m9 6 6 6-6 6"/>',calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/>',check:'<path d="m5 12 4 4L19 6"/>'}[name] || '') + '</svg>';
   function root() { return doc.getElementById('credit-ui'); }
   function layer() {
     const host = root();
@@ -348,12 +348,26 @@
   // Search uses the same close SVG as dialogs; native browser cancel icons are hidden.
   function searchControl(field) {
     const wrapper=doc.createElement('span'),button=doc.createElement('button'),abort=new AbortController();
+    const searchLabel=field.closest('.ch-register-search,.ct-global-search,.cd-search-label');
+    const existingIcon=searchLabel?.querySelector(':scope > svg'),iconClass=existingIcon?.getAttribute('class'),iconFocusable=existingIcon?.getAttribute('focusable');
     wrapper.className='credit-ui-search-field';field.before(wrapper);wrapper.append(field);
+    // Keep the magnifier inside the positioned input wrapper: a sibling icon can
+    // be painted over by the input. Some drill searches have no icon to reuse.
+    if(searchLabel){
+      let leadingIcon=existingIcon;
+      if(!leadingIcon){const template=doc.createElement('span');template.innerHTML=icon('search');leadingIcon=template.firstElementChild;}
+      leadingIcon.classList.add('credit-ui-search-icon');leadingIcon.setAttribute('focusable','false');
+      wrapper.classList.add('credit-ui-search-with-icon');wrapper.prepend(leadingIcon);
+    }
     button.type='button';button.className='credit-ui-search-clear';button.setAttribute('aria-label','Clear '+nameFor(field));button.innerHTML=icon('close');wrapper.append(button);
     const sync=()=>{button.hidden=!field.value;button.disabled=field.disabled||field.readOnly;};
     field.addEventListener('input',sync,{signal:abort.signal});field.addEventListener('change',sync,{signal:abort.signal});
     button.addEventListener('click',event=>{event.preventDefault();field.value='';sync();announceValue(field);if(field.isConnected)field.focus({preventScroll:true});},{signal:abort.signal});
-    enhanced.set(field,{field,wrapper,sync,destroy(){abort.abort();wrapper.before(field);wrapper.remove();}});sync();
+    enhanced.set(field,{field,wrapper,sync,destroy(){
+      abort.abort();wrapper.before(field);
+      if(existingIcon){field.before(existingIcon);if(iconClass===null)existingIcon.removeAttribute('class');else existingIcon.setAttribute('class',iconClass);if(iconFocusable===null)existingIcon.removeAttribute('focusable');else existingIcon.setAttribute('focusable',iconFocusable);}
+      wrapper.remove();
+    }});sync();
   }
   function enhance(container) {
     if (!container || !container.querySelectorAll || !container.closest?.('#credit-ui,.credit-ui-surface')) return;

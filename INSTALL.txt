@@ -1,5 +1,5 @@
 LENDING ANALYTICS — PARENT PAGE, STARTUP AND LARGE DATASETS
-27 October 2026
+28 October 2026
 
 CURRENT INSTALLATION — CONFIRMED WCS PAGE MAP
 This contract supersedes earlier placeholder-ID, version-query and JSON-only
@@ -98,11 +98,10 @@ credit-style.css, credit-ui.js, credit-native-sidebar.js and every matching
 Page.js/HTMLPage.js logic/renderer pair. Keep the four optimized WebP images and
 their JPEG fallbacks together. Do not change filenames or append cache versions.
 
-Replace only the Lending Analytics landing fragment with the contents of
-confluence-pages/lendinganalytics.html on page 3782729579: it now includes the
-hero-image preload. The other page macro fragments and Space_Navigation.html
-header include are unchanged in this release. Existing dashboard macros remain
-independent of any WCSpedia or other portal include. No page permissions change.
+This table-style and search-icon update does not change any page macro fragment
+or the Space_Navigation.html header include. Retain their existing installations.
+Existing dashboard macros remain independent of any WCSpedia or other portal
+include. No page permissions change.
 After uploading, hard reload to avoid mixing cached application assets. Sample
 workbooks and their manifest are separate from this application-only update.
 
@@ -241,6 +240,21 @@ columns and mixed count/amount comparisons. Status and variance colours remain.
 The shared treatment covers summary tables, registers and expanded/drill tables.
 See qa/Table_Typography_Verification.txt.
 
+TABLE PALETTE AND SEARCH ICONS — 28 OCTOBER 2026
+All dashboard table surfaces use the dashboard's light/dark palette rather than
+Confluence's generic neutral colors. Light tables retain pale-blue headings,
+white and subtly striped rows, navy text and light dividers. Scoped cell rules
+protect headers, body rows, row headings, totals and sticky cells from native
+table CSS. Space fonts and semantic status/change colors remain intact; native
+tables outside the dashboard are not restyled.
+
+The shared search helper places each advanced-table magnifier inside its input
+wrapper, above the input background, and adds it where drill searches omitted it.
+This covers page registers, summary-table searches and expanded/inline records.
+Search, clear, sorting, column filtering, paging and record drills retain their
+existing behavior. Compact per-column searches keep their existing layout.
+See qa/Table_Confluence_Style_Verification.txt for local evidence and limits.
+
 RESET AND TAB RESPONSIVENESS
 Pending chart updates merge their affected widgets. A full Reset takes priority
 over partial updates, and only the latest request may replace the rendered view.
@@ -369,8 +383,8 @@ separator and a normal-weight, theme-aware current-page label in the space font.
 All dashboard pages share this component; the landing retains its centered
 introduction without an extra breadcrumb. Local chart drill paths retain their
 existing controls. These frame and breadcrumb changes are in credit-style.css
-and the matching generated page pairs. The current release also changes the
-landing fragment for image preloading; see UPGRADING FROM THE PREVIOUS PACKAGE.
+and the matching generated page pairs. The supplied landing fragment includes
+image preloading; this table update does not require replacing that fragment.
 
 NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
 The shared native-sidebar adapter recognizes collapsed inner rails inside a

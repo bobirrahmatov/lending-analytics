@@ -40,11 +40,13 @@ keep_qa = {
  'Table_Drill_Adaptive_Verification.txt',
  'Table_Typography_Browser.json',
  'Table_Typography_Verification.txt',
+ 'Table_Confluence_Style_Verification.txt',
  'excel-runtime.html',
  'landing-cards-responsive.html',
  'layout-regression.html',
  'native-sidebar-fixture.html',
  'performance-75000.html',
+ 'table-style-regression.html',
 }
 # A complete source archive must not sweep up unrelated local exports or backups.
 package_dirs={'attachments','confluence-pages','pages','source','tools','excel','demo-comparison','Data_Integration_Kit','.github','qa'}

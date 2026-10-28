@@ -14,12 +14,12 @@ const dom=new JSDOM(`<!doctype html><html><head><style>${css}</style></head><bod
   <h1 id="page-title">Lending Analytics</h1><div class="font-display" id="display-text">Wealth Credit Services</div>
   <span class="aui-icon" id="native-glyph" style="font-family:'Atlassian Icons'">Icon</span>
   <section class="ch-card"><header class="ch-card-head"><h2 id="title">Facilities</h2><p class="ch-card-sub" id="subtitle">Current portfolio</p></header>
-   <strong class="ch-kpi-value" id="kpi">120</strong><div class="credit-data-table-scroll" id="table-scroll"><table class="credit-data-table"><thead><tr><th id="heading">Category</th></tr></thead><tbody><tr>
+   <strong class="ch-kpi-value" id="kpi">120</strong><div class="credit-data-table-scroll" id="table-scroll"><table class="credit-data-table" id="data-table"><thead><tr><th id="heading">Category</th></tr></thead><tbody><tr>
     <td class="ct-category-cell" id="category"><button class="ch-row-link">Aircraft Finance</button></td>
     <td class="ct-amount-cell" id="amount"><button class="ch-row-link" id="amount-link">$1m</button></td>
     <td id="plain">2026-08-31</td><td><span id="severity" class="ct-status-pill ct-tone-red">Past due</span><span id="delta" class="ct-number-pill ct-tone-green">+5%</span></td>
-   </tr></tbody></table></div>
-   <div class="ct-global-search"><input type="search" id="search"></div>
+   </tr><tr><th id="row-heading">Second record</th><td id="alternate-cell">2</td></tr></tbody><tfoot><tr><th id="total-heading">Total</th><td id="total-cell">2</td></tr></tfoot></table></div>
+   <label class="ct-global-search" id="search-label"><span class="credit-ui-search-field credit-ui-search-with-icon" id="search-field"><svg id="search-icon" class="credit-ui-search-icon" aria-hidden="true"><path id="search-path" d="M1 1L2 2"></path></svg><input type="search" id="search"><button class="credit-ui-search-clear" id="clear-search" aria-label="Clear search"><svg id="clear-icon"><path id="clear-path" d="M1 1L2 2"></path></svg></button></span></label>
    <svg><text id="chart-label">120</text><path id="chart-series"></path></svg>
   </section>
   <dialog class="ca-overlay" id="dialog"><div class="ca-overlay-body" id="dialog-scroll"></div></dialog>
@@ -40,6 +40,40 @@ protectedValue('table-scroll','overflow-x','auto');
 protectedValue('dialog-scroll','overflow-y','auto');
 assert.equal(matching('dialog','overflow').length,0,'modal shell remains clipped by its existing rule');
 for(const id of ['severity','delta','chart-label','chart-series'])assert.equal(matching(id,'color').length,0,`${id} retains its own semantic colour`);
+// Host neutral tokens must not leak into table boundaries. These CSSOM checks
+// cover priority/scope; qa/table-style-regression.html compares actual browser
+// paint against the local page under conflicting host CSS in both modes.
+for(const id of ['data-table','table-scroll','search-label']){
+ for(const [property,value] of Object.entries({'--ink':'var(--credit-theme-text,#253b54)','--muted':'var(--credit-theme-muted,#5b6c7e)','--page':'var(--credit-theme-surface,#fff)','--pale':'var(--credit-theme-subtle,#f0f5f9)','--line':'var(--credit-theme-border,#dce4ec)'})){
+  const declarations=matching(id,property);
+  assert.ok(declarations.some(rule=>rule.style.getPropertyValue(property)===value),`${id}: ${property} resolves through the dashboard theme`);
+  assert.ok(declarations.every(rule=>!rule.style.getPropertyValue(property).includes('--ds-')),`${id}: ${property} does not reintroduce host neutral colors`);
+ }
+}
+protectedValue('data-table','border','0');
+protectedValue('data-table','border-spacing','0');
+protectedValue('data-table','border-collapse','collapse');
+protectedValue('heading','background','var(--head)');
+protectedValue('plain','background','var(--page)');
+for(const id of ['row-heading','alternate-cell'])protectedValue(id,'background','var(--row-alt)');
+for(const id of ['total-heading','total-cell'])protectedValue(id,'background','var(--head)');
+for(const id of ['plain','heading','alternate-cell','total-cell']){
+ protectedValue(id,'border','0');
+ protectedValue(id,'border-bottom','1px solid var(--line)');
+}
+protectedValue('search','padding','8px 34px 8px 36px');
+protectedValue('search','background','transparent');
+protectedValue('search-icon','width','18px');
+protectedValue('search-icon','height','18px');
+protectedValue('search-icon','display','block');
+protectedValue('search-icon','visibility','visible');
+protectedValue('clear-icon','display','block');
+const hiddenSearch=d.createElement('label');hiddenSearch.id='hidden-search';hiddenSearch.className='ct-global-search';hiddenSearch.hidden=true;d.querySelector('#credit-hub').append(hiddenSearch);
+protectedValue('hidden-search','display','none');
+for(const id of ['search-icon','search-path','clear-icon','clear-path']){
+ protectedValue(id,'fill','none');
+ protectedValue(id,'stroke','currentColor');
+}
 const textFamily='var(--credit-space-font,var(--credit-resolved-space-font,inherit))';
 const displayFamily='var(--credit-space-display-font,var(--credit-resolved-space-display-font,inherit))';
 const spaceFontFamilies=new Set(['inherit',textFamily,displayFamily]);

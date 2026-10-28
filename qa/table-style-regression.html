@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Confluence table style comparison — local QA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:20px;font:14px/1.5 system-ui,sans-serif;color:#193963;background:#f3f6fa}h1{font-size:22px;margin:0 0 6px}p{margin:6px 0 16px}.toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap}label{display:grid;gap:4px;font-weight:600}select,button{font:inherit;border:1px solid #b4c3d8;border-radius:7px;padding:9px 12px;background:white;color:#193963}button{cursor:pointer;font-weight:600}button.primary{background:#255be3;color:white}button:disabled,select:disabled{opacity:.55;cursor:wait}#status{font-weight:600;min-height:24px;margin:16px 0 8px}#status[data-result=pass]{color:#176137}#status[data-result=fail]{color:#9b1c1c}details{background:white;border:1px solid #d7e1ed;border-radius:8px;margin-bottom:16px;padding:12px}summary{cursor:pointer;font-weight:600}pre{font:12px/1.5 ui-monospace,monospace;max-height:340px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}.frame-viewport{overflow:auto;max-width:100%;border:1px solid #b4c3d8;padding:8px;background:#dce5ef}iframe{display:block;border:0;background:white;height:900px;width:1280px;max-width:none}.reference{position:absolute;left:-10000px;top:0;visibility:hidden}.caption{font-size:12px;color:#536982}
+</style>
+</head>
+<body>
+<h1>Confluence table style comparison</h1>
+<p>Local QA only. Each check compares a real generated page with the same page under simulated Confluence colors, table resets and SVG overrides. This is not a live Confluence test. Font aliases below stand in for space fonts; no proprietary font files are bundled.</p>
+<div class="toolbar">
+<label>Page<select id="page"><option value="overview">Underwriter Summary</option><option value="portfolio">Portfolio</option><option value="workload">Underwriter Workload</option><option value="deepdive">Relationship Deep Dive</option><option value="covenants">Covenants</option><option value="activity">Covenant Activity</option><option value="ccm">CCM</option><option value="ca">CA Expiration</option><option value="facility">Facility Maturity</option><option value="insurance">Insurances</option><option value="appraisals">Appraisals</option></select></label>
+<label>Theme<select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+<button id="show">Show page</button><button id="check">Check shown page</button><button id="all" class="primary">Run all 22 comparisons</button>
+</div>
+<p id="status" role="status" aria-live="polite">Loading…</p>
+<details open><summary>Comparison results</summary><pre id="results">No comparisons run yet.</pre></details>
+<p class="caption">Shown below: page with simulated host CSS. The reference page is rendered at the same 1280 px width.</p>
+<div class="frame-viewport"><iframe id="hosted" title="Dashboard with simulated Confluence CSS" width="1280" height="900"></iframe></div>
+<iframe id="reference" class="reference" title="Unmodified dashboard reference" width="1280" height="900" aria-hidden="true" tabindex="-1"></iframe>
+<script>
+'use strict';
+const frames=[document.getElementById('reference'),document.getElementById('hosted')],pageSelect=document.getElementById('page'),themeSelect=document.getElementById('theme'),status=document.getElementById('status'),results=document.getElementById('results'),controls=[...document.querySelectorAll('.toolbar button,.toolbar select')];
+const pages=[...pageSelect.options].map(option=>option.value),delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const fontCSS='@font-face{font-family:"Citi-Sans-Text";src:local("Arial");font-weight:400}@font-face{font-family:"Citi-Sans-Text";src:local("Arial Bold");font-weight:700}body,p{font-family:"Citi Sans Text","Citi-Sans-Text",Arial,sans-serif}';
+const hostCSS=`
+:root{--ds-text:#101214;--ds-text-subtle:#62676f;--ds-border:#80858c;--ds-background-neutral:#dddfe2;--ds-surface:#eeeef0}
+:root[data-color-mode=dark]{--ds-text:#fff;--ds-text-subtle:#aaa;--ds-border:#777;--ds-background-neutral:#444;--ds-surface:#111}
+.wiki-content table{border:3px solid #777!important;border-spacing:5px!important;color:#111!important;background:#ddd!important}
+.wiki-content table :is(thead,tbody,tfoot,tr){background:#d6d6d6!important}
+.wiki-content table :is(th,td){background:#ccc!important;color:#080808!important;border:2px solid #999!important;font-family:Georgia,serif!important;font-size:18px!important}
+.wiki-content table :is(th,td) a{color:#080808!important}
+.wiki-content input{background:#ddd!important;color:#080808!important;border-color:#888!important;font-family:Georgia,serif!important}
+.wiki-content label svg{width:32px!important;height:32px!important;display:none;fill:#888;stroke:none}
+.wiki-content label svg :is(path,circle){fill:#888!important;stroke:none!important}
+`;
+let busy=false,shown=null;
+function lock(value){busy=value;controls.forEach(control=>control.disabled=value);}
+function progress(message,result=''){status.textContent=message;status.dataset.result=result;}
+async function painted(frame){await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(()=>frame.contentWindow.requestAnimationFrame(resolve)));}
+function load(frame,page){return new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(Error(page+' frame timed out')),20000);frame.onload=()=>{clearTimeout(timeout);resolve();};frame.onerror=()=>{clearTimeout(timeout);reject(Error('Could not load '+page));};frame.src=new URL('../pages/'+page+'.html',location.href).href;});}
+async function ready(frame,page){
+ const limit=Date.now()+20000;
+ while(Date.now()<limit){const doc=frame.contentDocument,hub=doc?.getElementById('credit-hub');if(doc?.querySelector('.ch-error'))throw Error(doc.querySelector('.ch-error').textContent);if(hub?.querySelector('#ch-content')&&!hub.querySelector('#ch-content').hasAttribute('aria-busy')&&(hub.querySelector('table tbody td')||page==='deepdive')){await painted(frame);return;}await delay(50);}
+ throw Error('Timed out waiting for '+page+' tables');
+}
+function setup(frame,theme,hosted){
+ const doc=frame.contentDocument;doc.documentElement.dataset.colorMode=theme;
+ const style=doc.createElement('style');style.dataset.tableFixture='';style.textContent=fontCSS+(hosted?hostCSS:'');doc.head.append(style);
+ doc.body.classList.add('wiki-content');
+ const native=doc.createElement('table');native.id='qa-native-table';native.innerHTML='<tbody><tr><td>Native host table control</td></tr></tbody>';doc.body.append(native);
+}
+async function show(page,theme){
+ shown=null;progress('Loading '+page+' · '+theme+'…');await Promise.all(frames.map(frame=>load(frame,page)));frames.forEach((frame,i)=>setup(frame,theme,i===1));await Promise.all(frames.map(frame=>ready(frame,page)));
+ if(page==='deepdive')for(const frame of frames){const select=frame.contentDocument.querySelector('[data-pal-setting="relationship"]');if(select?.options[1]){select.value=select.options[1].value;select.dispatchEvent(new frame.contentWindow.Event('change',{bubbles:true}));}}
+ await delay(350);await Promise.all(frames.map(painted));shown={page,theme};pageSelect.value=page;themeSelect.value=theme;
+}
+function visible(element){const box=element.getBoundingClientRect(),style=element.ownerDocument.defaultView.getComputedStyle(element);return box.width>0&&box.height>0&&style.display!=='none'&&style.visibility!=='hidden';}
+function styles(element,props){const style=element.ownerDocument.defaultView.getComputedStyle(element);return Object.fromEntries(props.map(prop=>[prop,style[prop]]));}
+function inspect(scope='page'){
+ const docs=frames.map(frame=>frame.contentDocument),checks=[];
+ const check=(name,pass,details)=>checks.push({name,pass:!!pass,...(details===undefined?{}:{details})});
+ const sample=(selector,props)=>{
+  const nodes=docs.map(doc=>[...doc.querySelectorAll('#credit-hub '+selector)].filter(visible));
+  check(scope+': '+selector+' element count',nodes[0].length===nodes[1].length,{reference:nodes[0].length,hosted:nodes[1].length});
+  const differences=[];
+  for(let i=0;i<Math.min(nodes[0].length,nodes[1].length);i++){
+   const before=styles(nodes[0][i],props),after=styles(nodes[1][i],props),changed=props.filter(prop=>before[prop]!==after[prop]);
+   if(changed.length)differences.push({index:i,text:nodes[1][i].textContent.trim().slice(0,60),changes:Object.fromEntries(changed.map(prop=>[prop,{reference:before[prop],hosted:after[prop]}]))});
+  }
+  check(scope+': '+selector+' matches local rendering',differences.length===0,differences.slice(0,10));
+  return nodes[1];
+ };
+ const tables=sample('table',['backgroundColor','color','borderCollapse','borderSpacing','borderTopWidth']);
+ sample('table :is(thead,tbody,tfoot)>tr>:is(th,td)',['backgroundColor','color','borderTopColor','borderBottomColor','borderTopWidth','borderBottomWidth','borderLeftWidth','borderRightWidth','fontFamily','fontSize','fontWeight','lineHeight']);
+ sample(':is(.ct-global-search,.cd-search-label,.ch-register-search)',['backgroundColor','borderTopColor']);
+ sample(':is(.ct-search-row,.ct-global-search,.cd-search-label,.ch-register-search) input',['backgroundColor','color','borderTopColor','fontFamily','fontSize']);
+ sample(':is(.ct-number-pill,.ct-status-pill,.ch-badge)',['backgroundColor','color','borderTopColor']);
+ sample(':is(.ct-global-search,.cd-search-label,.ch-register-search) svg',['width','height','display','fill','stroke','color']);
+ check(scope+': actual tables were checked',tables.length>0,{tables:tables.length});
+ const searches=[...docs[1].querySelectorAll('#credit-hub .ct-global-search,#credit-hub .cd-search-label,#credit-hub .ch-register-search')].filter(visible);
+ const badSearches=searches.flatMap((search,i)=>{
+  const svg=search.querySelector('svg'),input=search.querySelector('input'),path=svg?.querySelector('path,circle'),svgStyle=svg&&styles(svg,['stroke','fill','opacity']),pathStyle=path&&styles(path,['stroke','fill']);
+  if(!svg||!visible(svg)||!path||!pathStyle||pathStyle.stroke==='none'||svgStyle.opacity==='0')return [{index:i,error:'No visible stroked magnifier'}];
+  const box=svg.getBoundingClientRect(),field=input?.getBoundingClientRect(),inputStyle=input&&input.ownerDocument.defaultView.getComputedStyle(input),textStart=field&&field.left+parseFloat(inputStyle.paddingLeft||0);
+  return !field||box.right>textStart+1||box.top<search.getBoundingClientRect().top-1?[{index:i,error:'Magnifier is clipped or overlaps input text'}]:[];
+ });
+ check(scope+': every advanced search has a visible magnifier',badSearches.length===0,{searches:searches.length,failures:badSearches});
+ const native=docs.map(doc=>styles(doc.querySelector('#qa-native-table td'),['backgroundColor','color']));
+ check(scope+': native host table remains outside dashboard protection',native[1].backgroundColor==='rgb(204, 204, 204)'&&native[1].color==='rgb(8, 8, 8)',native[1]);
+ const header=docs[1].querySelector('#credit-hub table thead th'),cell=docs[1].querySelector('#credit-hub table tbody td');
+ return {scope,pass:checks.every(item=>item.pass),tables:tables.length,searches:searches.length,palette:{header:header&&styles(header,['backgroundColor','color']),cell:cell&&styles(cell,['backgroundColor','color'])},checks};
+}
+async function expand(){
+ const buttons=frames.map(frame=>frame.contentDocument.querySelector('[data-chart-expand]'));
+ if(buttons.some(button=>!button))return false;
+ buttons.forEach(button=>button.click());await delay(250);await Promise.all(frames.map(painted));return true;
+}
+async function runCase(page,theme){
+ await show(page,theme);const scopes=[inspect()];
+ if(await expand())scopes.push(inspect('expanded analysis'));
+ return {page,theme,pass:scopes.every(scope=>scope.pass),scopes};
+}
+async function act(fn){if(busy)return;lock(true);try{await fn();}catch(error){progress(error.message,'fail');results.textContent=JSON.stringify({pass:false,error:error.message},null,2);}finally{lock(false);}}
+document.getElementById('show').onclick=()=>act(async()=>{await show(pageSelect.value,themeSelect.value);progress('Host preview ready.');});
+document.getElementById('check').onclick=()=>act(async()=>{const report=await runCase(pageSelect.value,themeSelect.value);results.textContent=JSON.stringify(report,null,2);progress(report.pass?'Table comparisons passed.':'Table comparisons failed. See results.',report.pass?'pass':'fail');});
+document.getElementById('all').onclick=()=>act(async()=>{
+ const report={localOnly:true,startedAt:new Date().toISOString(),cases:[]};
+ for(const page of pages)for(const theme of ['light','dark']){
+  try{report.cases.push(await runCase(page,theme));}catch(error){report.cases.push({page,theme,pass:false,error:error.message});}
+  report.pass=report.cases.every(item=>item.pass);results.textContent=JSON.stringify(report,null,2);
+ }
+ report.completedAt=new Date().toISOString();results.textContent=JSON.stringify(report,null,2);const passed=report.cases.filter(item=>item.pass).length;progress(passed+' / '+report.cases.length+' table comparisons passed.',report.pass?'pass':'fail');
+});
+act(async()=>{await show('overview','light');progress('Host preview ready. Choose Check shown page or Run all 22 comparisons.');});
+</script>
+</body>
+</html>

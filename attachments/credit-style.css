@@ -485,7 +485,7 @@
 }
 #credit-hub .ch-register-controls { display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--page,#fff);border:1px solid var(--border);border-bottom:0;border-radius:12px 12px 0 0;padding:16px 18px }
 #credit-hub .ch-register-search { position:relative;display:block;width:300px;max-width:100% }
-#credit-hub .ch-register-search svg { position:absolute;left:11px;top:10px;width:17px;height:17px;color:#808896 }
+#credit-hub .ch-register-search>svg { position:absolute;left:11px;top:10px;width:17px;height:17px;color:#808896 }
 #credit-hub .ch-register-search input { padding-left:36px;min-height:38px }
 #credit-hub #ch-register-count { color:var(--muted);font-size:11px }
 #credit-hub #ch-register .ch-table-wrap { border-top-left-radius:0;border-top-right-radius:0 }
@@ -1896,21 +1896,60 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button{font-size:14px!important;font-weight:600!important;line-height:1.5!important}
 #credit-hub :is(.pj-local-nav,.cd-inline-toolbar nav) button[aria-current]{font-weight:700!important;color:var(--ink)!important}
 
-/* Table sizes apply at the cell, where Confluence's resets otherwise win.
-   Only neutral values inherit this colour; existing badges retain their tones. */
-:is(#credit-hub,.credit-ui-surface) table{font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important;width:100%!important}
-:is(#credit-hub,.credit-ui-surface) table :is(th,td){font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important}
-:is(#credit-hub,.credit-ui-surface) table thead th{font-size:12px!important;font-weight:600!important;background:var(--pale)!important}
-:is(#credit-hub,.credit-ui-surface) table :is(tbody,tfoot)>tr>.ct-category-cell{font-size:14px!important;font-weight:600!important;color:var(--ink)!important}
-:is(#credit-hub,.credit-ui-surface) table .ct-category-cell :is(.ch-row-link,a,.pal-snapshot-label){font-size:inherit!important;font-weight:inherit!important;color:inherit!important}
-:is(#credit-hub,.credit-ui-surface) table .ct-amount-cell,
-:is(#credit-hub,.credit-ui-surface) table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink)!important;font-variant-numeric:tabular-nums!important}
-:is(#credit-hub,.credit-ui-surface) table tfoot :is(th,td){font-weight:600!important}
-:is(#credit-hub,.credit-ui-surface) .ct-heading button{font-size:inherit!important;font-weight:600!important;line-height:inherit!important}
-:is(#credit-hub,.credit-ui-surface) :is(.ct-search-row input,.ct-global-search input,.cd-search-label input){font-size:12px!important;line-height:1.5!important;color:var(--ink)!important}
-:is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label){background:var(--page)!important}
-:is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label) input{background:transparent!important}
-:is(#credit-hub,.credit-ui-surface) .ct-search-row input{background:var(--page)!important}
+/* Tables keep the dashboard palette in both preview and Confluence. Host
+   neutral tokens can be gray/black even in light mode; only the resolved mode
+   selects these surfaces. Space fonts and semantic status colours still apply.
+   Set aliases at each table boundary so existing controls and sticky cells use
+   the same palette, including supporting records outside a table card. */
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-table-card,.cd-records,.credit-data-table-scroll,.ch-table-wrap,table,.ct-global-search,.ch-register-search,.cd-search-label,.ch-pagination){
+ --ink:var(--credit-theme-text,#253b54);--navy:var(--ink);
+ --muted:var(--credit-theme-muted,#5b6c7e);--line:var(--credit-theme-border,#dce4ec);--border:var(--line);
+ --page:var(--credit-theme-surface,#fff);--pale:var(--credit-theme-subtle,#f0f5f9);
+ --head:var(--pale);--hover:var(--pale);--row-alt:color-mix(in srgb,var(--pale) 30%,var(--page));
+ --card-frame-color:color-mix(in srgb,var(--page) 80%,var(--line));
+}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.credit-data-table-scroll,.ch-table-wrap,.ch-pagination){background:var(--page)!important;border-color:var(--line)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table{font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important;width:100%!important;border-collapse:collapse!important;border-spacing:0!important;border:0!important;background:var(--page)!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table :is(thead,tbody,tfoot,tr){background:transparent!important;border:0!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table :is(th,td){font-family:inherit!important;font-size:13px!important;line-height:1.5!important;color:var(--ink)!important;border:0!important;border-bottom:1px solid var(--line)!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table thead th{font-size:12px!important;font-weight:600!important;background:var(--head)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tbody>tr>:is(td,th){background:var(--page)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tbody>tr:nth-child(even)>:is(td,th){background:var(--row-alt)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tbody>tr:is(:hover,:focus-within)>:is(td,th){background:var(--hover)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tfoot :is(th,td){background:var(--head)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tbody>tr:last-child>:is(th,td){border-bottom:0!important}
+#credit-ui #credit-hub #pal-pipeline .credit-data-table tbody>tr:last-child>td{background:var(--head)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table :is(tbody,tfoot)>tr>.ct-category-cell{font-size:14px!important;font-weight:600!important;color:var(--ink)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table .ct-category-cell :is(.ch-row-link,a,.pal-snapshot-label){font-size:inherit!important;font-weight:inherit!important;color:inherit!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table .ct-amount-cell,
+#credit-ui :is(#credit-hub,.credit-ui-surface) table .ct-amount-cell :is(.ch-row-link,a){color:var(--ink)!important;font-variant-numeric:tabular-nums!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) table tfoot :is(th,td){font-weight:600!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button{font-size:inherit!important;font-weight:600!important;line-height:inherit!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-search-row input,.ct-global-search input,.cd-search-label input){font-size:12px!important;line-height:1.5!important;color:var(--ink)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label){background:var(--page)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-global-search,.cd-search-label) input{background:transparent!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-search-row input{background:var(--page)!important}
+/* The magnifier and clear action belong to the input wrapper. Keeping the
+   icon above the input prevents an opaque host input background hiding it. */
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ch-register-search,.ct-global-search,.cd-search-label){display:flex!important;align-items:center!important;gap:0!important;box-sizing:border-box!important;padding:0!important;min-height:40px;border:1px solid var(--line)!important;border-radius:8px!important;background:var(--page)!important;color:var(--muted)!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ch-register-search,.ct-global-search,.cd-search-label)[hidden]{display:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ch-register-search,.ct-global-search,.cd-search-label):focus-within{outline:2px solid var(--credit-theme-focus,#255be3)!important;outline-offset:2px}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-with-icon{position:relative!important;display:flex!important;align-items:center!important;min-width:0!important;width:100%!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-with-icon>input[type=search]{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:38px!important;min-height:38px!important;margin:0!important;padding:8px 34px 8px 36px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:var(--ink)!important;font:inherit!important;font-size:12px!important;line-height:1.5!important;box-shadow:none!important;outline:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-field>.credit-ui-search-icon{position:absolute!important;display:block!important;left:11px!important;right:auto!important;top:50%!important;transform:translateY(-50%)!important;z-index:1;width:18px!important;height:18px!important;min-width:18px!important;max-width:18px!important;max-height:18px!important;margin:0!important;padding:0!important;opacity:1!important;visibility:visible!important;background:none!important;border:0!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;color:var(--muted)!important;pointer-events:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-icon :is(path,circle,line){fill:none!important;stroke:currentColor!important;stroke-width:1.7!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-clear{z-index:1;color:var(--muted)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-clear:hover{background:var(--pale)!important;color:var(--ink)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-clear svg{position:static!important;display:block!important;width:16px!important;height:16px!important;transform:none!important;fill:none!important;stroke:currentColor!important;color:inherit!important;visibility:visible!important;opacity:1!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-clear svg path{fill:none!important;stroke:currentColor!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-search-row input,.credit-ui-search-with-icon>input)::placeholder{color:var(--muted)!important;opacity:1!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-search-row input{border:1px solid var(--line)!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button{background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading svg{fill:none!important;stroke:currentColor!important;color:var(--muted)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button:is(:hover,.is-active){background:var(--credit-theme-selected,#eaf1ff)!important;color:var(--credit-theme-link,#255be3)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) th:is([aria-sort=ascending],[aria-sort=descending]) .ct-sort{color:var(--credit-theme-link,#255be3)!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button:is(:hover,.is-active) svg,
+#credit-ui :is(#credit-hub,.credit-ui-surface) th:is([aria-sort=ascending],[aria-sort=descending]) .ct-sort svg{color:inherit!important}
 :is(#credit-hub,.credit-ui-surface) :is(.ch-pagination,.ch-page-size,.ct-status){font-size:12px!important;line-height:1.5!important;color:var(--muted)!important}
 :is(#credit-hub,.credit-ui-surface) .ch-btn{font-size:13px!important;line-height:1.4!important}
 :is(#credit-hub,.credit-ui-surface) .ct-pagination-nav .ch-btn{font-size:12px!important}

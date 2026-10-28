@@ -1,0 +1,46 @@
+TABLE PALETTE AND SEARCH ICONS — LOCAL VERIFICATION
+28 October 2026
+
+Cause
+- Shared --pale/--ink variables preferred Confluence DS tokens, so gray neutral
+  fills and near-black text replaced the local table palette. Body cells also
+  lacked important background protection against native table CSS.
+- A positioned search-input wrapper could paint over its sibling magnifier.
+  Several inline/expanded searches did not include a magnifier at all.
+
+Changes
+- Table boundaries resolve dashboard light/dark colors directly. Scoped cell
+  styles protect header, stripe, hover, total, border and text treatments.
+- Category labels retain 14px semibold hierarchy; amounts remain neutral.
+  Space font inheritance and semantic status/change pills remain intact.
+- The shared search helper owns an 18px SVG inside the input wrapper, reuses
+  existing magnifiers and supplies missing ones. Input padding separates the
+  magnifier, text and clear action. Teardown restores the original markup.
+- source/dashboard/ui.js is the canonical UI helper; the build regenerates
+  attachments/credit-ui.js. Shared dashboard CSS remains canonical in source.
+
+Validation
+- npm test: all 45 local regression commands passed.
+- qa/table-style-regression.html: 22/22 browser comparisons passed, covering all
+  11 dashboard pages in light/dark mode, plus an expanded analysis on each page.
+  The harness compares actual computed table/cell/input/icon styles against the
+  same local preview with conflicting DS colors, native table resets and SVG
+  overrides injected. Native tables outside the app retain host styling.
+- Main register search filters to Relationship 001; Clear restores all 240
+  sample rows with the original 10-row page. The magnifier remains visible.
+- Facility drill retains its inline search icon; Back to table restores the
+  register. Shared controls tests cover icon reuse, missing icons, clear/focus,
+  repeat enhancement, teardown and compact column search behavior.
+- A 390px browser viewport has no horizontal page overflow. Table columns
+  scroll within their container; the search input and magnifier fit the toolbar.
+
+Delivery
+Upload the refreshed application attachments, including credit-style.css,
+credit-ui.js and matching generated Page.js/HTMLPage.js pairs, to 3845862527.
+Header include and page macros are unchanged for this update. Reload after
+uploading. No financial workbook or manifest updates are included or required.
+
+Limits
+These are local browser and regression checks with synthetic data and simulated
+Confluence CSS. They do not establish live Confluence access or verify live
+font downloads. The actual space continues supplying its configured font files.
