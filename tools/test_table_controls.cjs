@@ -11,8 +11,15 @@ assert.equal(T.scalar('$1.2m'),1200000);assert.equal(T.scalar('-2.5%'),-2.5);ass
 d.querySelector('main').innerHTML='<section><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr><th>Name</th><th>Amount</th></tr></thead><tbody><tr><td><button>Alpha</button></td><td>$2.0m</td></tr><tr><td>Beta</td><td>$900.0k</td></tr></tbody></table></div></section>';
 let clicks=0;const original=d.querySelector('tbody button');original.onclick=()=>clicks++;
 let pop;w.CreditUI={popover(options){const el=d.createElement('div');el.innerHTML=options.body;d.body.append(el);pop={element:el,close(){el.remove();options.onClose();}};options.onMount(pop);return pop;}};
-T.enhanceStatic(d);assert.equal(d.querySelectorAll('[data-ct-search]').length,2);d.querySelector('[data-ct-sort="1"]').click();assert.equal(d.querySelector('tbody tr').textContent,'Beta$900.0k');original.click();assert.equal(clicks,1);
-const input=d.querySelector('[data-ct-search="0"]');input.value='alpha';input.dispatchEvent(new w.Event('input'));assert.equal(d.querySelectorAll('tbody tr').length,1);assert.equal(d.activeElement.getAttribute('data-ct-search'),'0');
+T.enhanceStatic(d);assert.equal(d.querySelectorAll('[data-ct-search]').length,2);
+assert.equal(d.querySelectorAll('.ct-heading [data-ct-filter]').length,0,'column headings contain sorting only');
+for(const [index,field] of [...d.querySelectorAll('.ct-column-search')].entries()){
+ assert.equal(field.closest('tr').className,'ct-search-row');
+ assert.equal(field.firstElementChild.getAttribute('data-ct-search'),String(index));
+ const filter=field.lastElementChild;assert.equal(filter.getAttribute('data-ct-filter'),String(index));assert.equal(filter.getAttribute('aria-haspopup'),'dialog');assert.equal(filter.getAttribute('aria-expanded'),'false');
+}
+d.querySelector('[data-ct-sort="1"]').click();assert.equal(d.querySelector('tbody tr').textContent,'Beta$900.0k');original.click();assert.equal(clicks,1);
+const input=d.querySelector('[data-ct-search="0"]');input.value='alpha';input.dispatchEvent(new w.Event('input'));assert.equal(d.querySelectorAll('tbody tr').length,1);assert.equal(d.activeElement.getAttribute('data-ct-search'),'0');assert.ok(d.querySelector('.ct-column-search [data-ct-filter="0"]').classList.contains('is-active'),'the adjacent filter shows the active column search');
 d.querySelector('[data-ct-reset]').click();d.querySelector('[data-ct-filter="0"]').click();pop.element.querySelector('[data-none]').click();pop.close();assert.equal(d.querySelectorAll('tbody tr').length,2,'cancel does not apply');d.querySelector('[data-ct-filter="0"]').click();pop.element.querySelector('[data-none]').click();pop.element.querySelector('[data-apply]').click();assert.match(d.querySelector('tbody').textContent,/No matching rows/);d.querySelector('[data-ct-reset]').click();assert.equal(d.querySelectorAll('tbody tr').length,2);
 d.querySelector('[data-ct-filter="1"]').click();pop.element.querySelector('[data-min]').value='30';pop.element.querySelector('[data-max]').value='20';pop.element.querySelector('[data-apply]').click();assert.match(pop.element.querySelector('[role="alert"]').textContent,/valid range/);pop.close();
 console.log('PASS: cross-page search, combined exact/range/date filters, numeric currency/percent sorting, blanks, no selection, scaled units, DOM row actions, focus restoration, draft cancel/apply, reset and invalid ranges.');
@@ -21,11 +28,31 @@ d.querySelector('main').innerHTML='<section><div class="credit-data-table-scroll
 T.enhanceStatic(d);assert.equal(d.querySelectorAll('tbody tr').length,10);assert.equal(d.querySelector('[data-ct-size]').value,'10');assert.ok(d.querySelector('[data-ct-prev]').disabled);d.querySelector('[data-ct-next]').click();assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 10');d.querySelector('[data-ct-next]').click();d.querySelector('[data-ct-next]').click();assert.equal(d.querySelectorAll('tbody tr').length,1);assert.ok(d.querySelector('[data-ct-next]').disabled);d.querySelector('[data-ct-prev]').click();assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 20');
 const size=d.querySelector('[data-ct-size]');size.value='25';size.dispatchEvent(new w.Event('change'));assert.equal(d.querySelectorAll('tbody tr').length,25);assert.match(d.querySelector('.ch-pagination').textContent,/1–25 of 31/);const globalSearch=d.querySelector('[data-ct-global]');globalSearch.value='Entry 30';globalSearch.dispatchEvent(new w.Event('input'));assert.equal(d.querySelectorAll('tbody tr').length,1);assert.equal(d.activeElement.getAttribute('data-ct-global'),'');assert.equal(d.querySelector('.ch-pagination'),null);d.querySelector('[data-ct-reset]').click();assert.equal(d.querySelector('[data-ct-global]').value,'');assert.equal(d.querySelectorAll('tbody tr').length,25);const noMatch=d.querySelector('[data-ct-global]');noMatch.value='nothing';noMatch.dispatchEvent(new w.Event('input'));assert.equal(d.querySelector('.ch-pagination'),null);
 console.log('PASS: shared 10-row defaults, next/previous and last-page boundaries, 25-row selection, global search across all rows, search focus, page reset and empty pagination.');
-// Numbered navigation is bounded, keyboard-addressable and preserves search/sort state.
-assert.deepEqual(Array.from(T.pageNumbers(0,12)),[0,1,2,'gap',9,10,11]);assert.deepEqual(Array.from(T.pageNumbers(6,12)),[0,1,2,'gap',5,6,7,'gap',9,10,11]);assert.deepEqual(Array.from(T.pageNumbers(11,12)),[0,1,2,'gap',9,10,11]);
-d.querySelector('[data-ct-reset]').click();const ten=d.querySelector('[data-ct-size]');ten.value='10';ten.dispatchEvent(new w.Event('change'));d.querySelector('[data-ct-page="3"]').click();assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 30');assert.equal(d.querySelector('[aria-current="page"]').textContent,'4');assert.equal(d.activeElement.getAttribute('data-ct-page'),'3');assert.ok(d.querySelector('[data-ct-next]').disabled);d.querySelector('[data-ct-page="0"]').click();assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 0');assert.ok(d.querySelector('[data-ct-prev]').disabled);
+// Compact navigation retains one page status, bounded previous/next and focus.
+d.querySelector('[data-ct-reset]').click();const ten=d.querySelector('[data-ct-size]');ten.value='10';ten.dispatchEvent(new w.Event('change'));
+const checkNavigation=(page,pages,range)=>{
+ const footer=d.querySelector('.ch-pagination'),nav=footer.querySelector('nav');
+ assert.equal(nav.querySelector('.ct-page-status').textContent,'Page '+page+' of '+pages);
+ assert.equal(nav.querySelector('.ct-page-status').getAttribute('role'),'status');
+ assert.equal(footer.querySelector('.ct-page-range').textContent,range);
+ assert.equal((footer.textContent.match(/Page \d+ of \d+/g)||[]).length,1,'one page announcement without duplicate text');
+ assert.deepEqual([...nav.children].map(n=>n.tagName),['BUTTON','SPAN','BUTTON']);
+ assert.deepEqual([...nav.querySelectorAll('button')].map(b=>b.textContent),['Previous','Next']);
+ assert.equal(footer.querySelector('[data-ct-page],.ct-page-numbers,.ct-page-gap'),null,'no numbered page buttons or ellipses');
+};
+checkNavigation(1,4,'1–10 of 31');
+for(let page=2;page<=4;page++){d.querySelector('[data-ct-next]').click();checkNavigation(page,4,((page-1)*10+1)+'–'+Math.min(page*10,31)+' of 31');}
+assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 30');assert.ok(d.querySelector('[data-ct-next]').disabled);assert.equal(d.activeElement.getAttribute('data-ct-prev'),'','focus moves to Previous when Next becomes disabled');
+for(let page=3;page>=1;page--)d.querySelector('[data-ct-prev]').click();
+checkNavigation(1,4,'1–10 of 31');assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 0');assert.ok(d.querySelector('[data-ct-prev]').disabled);assert.equal(d.activeElement.getAttribute('data-ct-next'),'','focus moves to Next when Previous becomes disabled');
+const filteredSearch=d.querySelector('[data-ct-global]');filteredSearch.value='Entry 1';filteredSearch.dispatchEvent(new w.Event('input'));
+d.querySelector('[data-ct-sort="1"]').click();d.querySelector('[data-ct-sort="1"]').click();d.querySelector('[data-ct-next]').click();
+checkNavigation(2,2,'11–11 of 11');assert.equal(d.querySelector('tbody tr').cells[0].textContent,'Entry 1');assert.equal(d.querySelector('[data-ct-global]').value,'Entry 1');assert.equal(d.querySelector('th:nth-child(2)').getAttribute('aria-sort'),'descending','page changes preserve search and numeric sorting');
+d.querySelector('[data-ct-reset]').click();const fifty=d.querySelector('[data-ct-size]');fifty.value='50';fifty.dispatchEvent(new w.Event('change'));
+checkNavigation(1,1,'1–31 of 31');assert.equal(d.querySelectorAll('tbody tr').length,31);assert.ok(d.querySelector('[data-ct-prev]').disabled);assert.ok(d.querySelector('[data-ct-next]').disabled);assert.equal(d.activeElement.getAttribute('data-ct-size'),'','page size remains focused when all rows fit');
 for(const total of [0,1,10,11]){const host=d.createElement('div');T.pagination({host,total,page:0,pageSize:10,onChange(){}});assert.equal(!!host.querySelector('.ch-pagination'),total>10);}
-console.log('PASS: first/middle/last page number windows, ellipses, direct page jumps, aria-current, keyboard focus and boundary buttons.');
+const longHost=d.createElement('div');T.pagination({host:longHost,total:120,page:99,pageSize:10,onChange(){}});assert.equal(longHost.querySelector('.ct-page-status').textContent,'Page 12 of 12');assert.equal(longHost.querySelector('.ct-page-range').textContent,'111–120 of 120');assert.equal(longHost.querySelectorAll('nav button').length,2);assert.ok(longHost.querySelector('[data-ct-next]').disabled);
+console.log('PASS: adjacent column filters, Previous/Page n of n/Next only, row ranges, first/last focus, search/sort preservation, 50-row single-page controls and clamped bounds.');
 // Overview summaries stay compact, including after their card is expanded and closed.
 d.querySelector('main').innerHTML='<div id="ch-content">'+['pal-pipeline','pal-snapshot'].map(id=>'<section class="ch-card pal-table-card" id="'+id+'" data-table-mode="summary"><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr><th>Measure</th><th>Count</th></tr></thead><tbody><tr><td>Facilities</td><td><button data-drill>24</button></td></tr></tbody></table></div></section>').join('')+'</div>';
 let drilled=0;const pending=d.querySelector('#pal-pipeline'),coverage=d.querySelector('#pal-snapshot');T.enhanceNumbers(d);const before=pending.outerHTML,coverageBefore=coverage.outerHTML;pending.querySelector('[data-drill]').onclick=()=>drilled++;

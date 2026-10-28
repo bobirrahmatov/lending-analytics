@@ -445,7 +445,8 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  ];
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function destination(key,c){if(c.mode==='demo')return './'+key.toLowerCase()+'.html';const id=String(c.pageIds?.[key]||'');return /^[1-9]\d*$/.test(id)?(c.contextPath||'/confluence').replace(/\/$/,'')+'/pages/viewpage.action?pageId='+id:null;}
- function picture(assets,name,alt,width,height,hero=false){return '<picture><source type="image/webp" srcset="'+esc(assets+name+'.webp')+'"><img src="'+esc(assets+name+'.jpg')+'" alt="'+esc(alt)+'" width="'+width+'" height="'+height+'" loading="'+(hero?'eager':'lazy')+'" decoding="async" fetchpriority="'+(hero?'high':'low')+'"></picture>'; }
+ // Use JPEG directly: a browser may support WebP even when its Confluence attachment cannot be served.
+ function picture(assets,name,alt,width,height,hero=false){return '<picture><img src="'+esc(assets+name+'.jpg')+'" alt="'+esc(alt)+'" width="'+width+'" height="'+height+'" loading="'+(hero?'eager':'lazy')+'" decoding="async" fetchpriority="'+(hero?'high':'low')+'"></picture>'; }
  const arrow='<svg class="la-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>';
  function link([key,title],c){const href=destination(key,c);return '<li>'+(href?'<a class="la-page-link" href="'+esc(href)+'"><span>'+esc(title)+'</span>'+arrow+'</a>':'<span class="la-page-label">'+esc(title)+'</span>')+'</li>';}
  function faqSection(){return '<section class="la-faq" aria-labelledby="la-faq-title"><h2 id="la-faq-title">Frequently asked questions</h2><div class="la-faq-list">'+faqs.map(([question,answer],i)=>'<div class="la-faq-item"><h3><button type="button" id="la-faq-question-'+i+'" aria-expanded="false" aria-controls="la-faq-answer-'+i+'"><span>'+esc(question)+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M5 12h14"/><path class="la-faq-vertical" d="M12 5v14"/></svg></button></h3><div class="la-faq-answer" id="la-faq-answer-'+i+'" role="region" aria-labelledby="la-faq-question-'+i+'" aria-hidden="true" inert><div><p>'+esc(answer)+'</p></div></div></div>').join('')+'</div></section>';}
@@ -458,7 +459,12 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
     '<section class="la-purpose" aria-labelledby="la-purpose-title"><h2 id="la-purpose-title">One place to understand<br>the lending picture.</h2><div><p>Lending Analytics brings facility, covenant and CCM information together for portfolio oversight and day-to-day credit work. It connects financial exposure with the obligations and people responsible for monitoring it.</p><p>Use the sidebar to move between views. Each page answers a specific question; the records behind a result retain their own source, reporting date and business context.</p></div></section>'+
     '<section class="la-areas" aria-label="Explore Lending Analytics">'+areas.map(([key,category,title,description,links])=>'<article class="la-area" aria-labelledby="la-area-'+key+'"><figure class="la-area-media">'+picture(assets,'lending-'+key,'',640,480)+'</figure><div class="la-area-copy"><p class="la-category">'+esc(category)+'</p><h2 id="la-area-'+key+'">'+esc(title)+'</h2><p class="la-area-description">'+esc(description)+'</p><ul class="la-links" aria-label="'+esc(category)+' dashboards">'+links.map(item=>link(item,config)).join('')+'</ul></div></article>').join('')+'</section>'+
     '<section class="la-journey" aria-labelledby="la-journey-title"><div><p class="la-eyebrow">From summary to detail</p><h2 id="la-journey-title">Explore without losing<br>your place.</h2></div><ol><li><strong>Set your scope</strong><span>Choose the available region, product or underwriter filters. Applied filters remain visible on the page.</span></li><li><strong>Follow a result</strong><span>Select a chart segment or table row to explore its detail. Use the breadcrumb to step back through your selection.</span></li><li><strong>See the supporting records</strong><span>Expand a chart for a focused analysis, then inspect its detailed table. Close returns you to the dashboard.</span></li></ol></section>'+faqSection()+'</main>';
-   root.querySelectorAll('.la-hero img,.la-area-media img').forEach(img=>img.addEventListener('error',()=>{const source=img.closest('picture')?.querySelector('source');if(source){source.remove();return;}img.closest('figure').hidden=true;}));
+   root.querySelectorAll('.la-hero img,.la-area-media img').forEach(img=>{
+    // Keep navigation and copy available if an attachment is missing, including a cached failure.
+    const unavailable=()=>{const figure=img.closest('figure');if(figure)figure.hidden=true;};
+    img.addEventListener('error',unavailable,{once:true});
+    if(img.complete&&img.naturalWidth===0)unavailable();
+   });
    root.querySelectorAll('.la-faq-item button').forEach(button=>button.addEventListener('click',()=>{
     const expanded=button.getAttribute('aria-expanded')!=='true',answer=root.querySelector('#'+button.getAttribute('aria-controls'));
     button.setAttribute('aria-expanded',String(expanded));answer.setAttribute('aria-hidden',String(!expanded));answer.inert=!expanded;
@@ -469,5 +475,5 @@ const root=document.getElementById('credit-hub');if(!root)return;if(window.CREDI
  }};
 })(window);
 
-window.CREDIT_PAGE_BUILD="59b991316167:lendingAnalytics";
+window.CREDIT_PAGE_BUILD="dbe9faa3c149:lendingAnalytics";
 })();

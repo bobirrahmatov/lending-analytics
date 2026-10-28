@@ -32,6 +32,8 @@ const hostCSS=`
 .wiki-content table{border:3px solid #777!important;border-spacing:5px!important;color:#111!important;background:#ddd!important}
 .wiki-content table :is(thead,tbody,tfoot,tr){background:#d6d6d6!important}
 .wiki-content table :is(th,td){background:#ccc!important;color:#080808!important;border:2px solid #999!important;font-family:Georgia,serif!important;font-size:18px!important}
+.wiki-content table .ct-search-row th{padding-top:0!important;padding-bottom:24px!important;vertical-align:top!important}
+.wiki-content .ct-search-row input{margin-top:-4px!important}
 .wiki-content table :is(th,td) a{color:#080808!important}
 .wiki-content input{background:#ddd!important;color:#080808!important;border-color:#888!important;font-family:Georgia,serif!important}
 .wiki-content label svg{width:32px!important;height:32px!important;display:none;fill:#888;stroke:none}
@@ -89,6 +91,18 @@ function inspect(scope='page'){
   return !field||box.right>textStart+1||box.top<search.getBoundingClientRect().top-1?[{index:i,error:'Magnifier is clipped or overlaps input text'}]:[];
  });
  check(scope+': every advanced search has a visible magnifier',badSearches.length===0,{searches:searches.length,failures:badSearches});
+ const columnSearches=[...docs[1].querySelectorAll('#credit-hub .ct-column-search')].filter(visible);
+ const badColumns=columnSearches.flatMap((group,index)=>{
+  const input=group.querySelector('input'),filter=group.querySelector('.ct-filter'),cell=group.closest('th');
+  if(!input||!filter||!cell||!visible(filter))return [{index,error:'Missing input or adjacent filter'}];
+  const field=input.getBoundingClientRect(),button=filter.getBoundingClientRect(),box=cell.getBoundingClientRect(),top=field.top-box.top,bottom=box.bottom-field.bottom;
+  const centered=Math.abs(top-bottom)<=2&&top>=10&&Math.abs((field.top+field.height/2)-(button.top+button.height/2))<=1;
+  return centered&&button.left>=field.right+6?[]:[{index,top,bottom,inputRight:field.right,filterLeft:button.left,error:'Column controls are not centered and adjacent'}];
+ });
+ check(scope+': column searches and filters are centered with equal vertical spacing',badColumns.length===0,{columns:columnSearches.length,failures:badColumns});
+ const pagers=[...docs[1].querySelectorAll('#credit-hub .ct-pagination-nav')].filter(visible);
+ check(scope+': pagination uses Previous, page status, Next only',pagers.every(nav=>nav.children.length===3&&nav.children[0].hasAttribute('data-ct-prev')&&/^Page \d+ of \d+$/.test(nav.children[1].textContent)&&nav.children[2].hasAttribute('data-ct-next')),{pagers:pagers.length});
+ check(scope+': no numbered page controls remain',!docs[1].querySelector('#credit-hub [data-ct-page],#credit-hub .ct-page-numbers'));
  const native=docs.map(doc=>styles(doc.querySelector('#qa-native-table td'),['backgroundColor','color']));
  check(scope+': native host table remains outside dashboard protection',native[1].backgroundColor==='rgb(204, 204, 204)'&&native[1].color==='rgb(8, 8, 8)',native[1]);
  const header=docs[1].querySelector('#credit-hub table thead th'),cell=docs[1].querySelector('#credit-hub table tbody td');

@@ -65,10 +65,37 @@ assert.equal(registerRows, rows, 'Top-ten chart never truncates the source regis
 assert.equal(registerColumns.find(column => column[0] === 'owner_name')[1], 'Underwriter');
 assert.doesNotMatch(root.textContent, /\bowners?\b/i, 'Workload visible terminology consistently uses Underwriter');
 assert.match(monitor.getMethod(workloadId)[0], /top (?:ten|10)|ten largest/i);
-for (const series of workload.series) series.data.forEach((point, index) => {
-  assert.equal(point.y, point.custom.rows.length);
-  drill(workload, series, point, index, workloadId);
-});
+function assertUnderwriterStacks(options, records, expectedId) {
+  assert.equal(options.chart.type, 'bar', 'Long underwriter labels retain readable horizontal bars');
+  assert.equal(options.plotOptions.series.stacking, 'normal', 'One additive bar per underwriter');
+  assert.equal(options.yAxis.reversedStacks, false, 'Other actions precede the critical segment');
+  assert.equal(options.yAxis.stackLabels.enabled, true, 'Each underwriter total remains visible at the end');
+  assert.equal(options.plotOptions.bar.dataLabels.enabled, true);
+  assert.equal(options.plotOptions.bar.dataLabels.inside, true, 'Counts sit inside their own segments');
+  assert.equal(options.plotOptions.bar.dataLabels.style.color, '#fff');
+  assert.equal(options.plotOptions.bar.dataLabels.formatter.call({ y: 4 }), '4');
+  assert.equal(options.plotOptions.bar.dataLabels.formatter.call({ y: 0 }), null, 'Zero segments do not show phantom labels');
+  assert.deepEqual(Array.from(options.series, series => series.name), ['Other actions', 'Critical']);
+  assert.deepEqual(Array.from(options.series, series => series.color), ['#255BE3', '#D64545']);
+  const allRows = options.series.flatMap(series => series.data.flatMap(point => point.custom.rows));
+  assert.equal(allRows.length, records.length, 'Displayed totals reconcile with selected underwriter records');
+  assert.equal(new Set(allRows).size, records.length, 'Stack partitions never count an obligation twice');
+  assert.ok(allRows.every(row => records.includes(row)));
+  options.xAxis.categories.forEach((label, index) => {
+    const displayed = pointsAt(options, index), identifier = key(displayed[0]);
+    const expected = records.filter(row => key(row) === identifier);
+    assert.equal(options.series.reduce((sum, series) => sum + series.data[index].y, 0), expected.length, label + ' reconciles to its total');
+    for (const series of options.series) {
+      const point = series.data[index], expectedSegment = expected.filter(row => series.name === 'Critical' ? row.critical : !row.critical);
+      assert.equal(point.y, expectedSegment.length);
+      assert.equal(point.custom.rows.length, expectedSegment.length);
+      assert.ok(point.custom.rows.every(row => expectedSegment.includes(row)));
+      drill(options, series, point, index, expectedId);
+    }
+  });
+}
+assertUnderwriterStacks(workload, selected, workloadId);
+assert.match(monitor.getMethod(workloadId)[0], /one stacked bar/i);
 const firstOrder = pointKeys(workload);
 render([...rows].reverse());
 assert.deepEqual(pointKeys(chart(workloadId)), firstOrder, 'Input row order cannot change tied top-ten membership');
@@ -115,6 +142,7 @@ assert.equal(monitor.expanded(analysis), true);
 const expanded = chart(priorityId + '-detail-0');
 assert.equal(expanded.xAxis.categories.length, 10);
 assert.deepEqual(pointKeys(expanded), expectedKeys);
+assertUnderwriterStacks(expanded, [...selected].reverse(), priorityId);
 assert.equal(analysis.allRecords.length, rows.filter(row => row.action_required).length, 'Expanded source records retain underwriters beyond the chart top ten');
 assert.ok(analysis.allRecords.some(row => row.owner_id === 'U13'));
 panel.remove();
@@ -123,6 +151,7 @@ for (const critical of [true, false]) {
   const homogeneous = rows.filter(row => row.action_required).slice(0, 20).map(row => ({ ...row, critical }));
   render(homogeneous);
   assertPriorities(homogeneous);
+  assertUnderwriterStacks(chart(workloadId), homogeneous, workloadId);
   assert.ok(chart(workloadId).xAxis.categories.length <= 10, 'A smaller filtered scope is not padded with empty underwriters');
 }
 render([]);
@@ -130,5 +159,5 @@ assert.equal(monitor.getRows(workloadId).length, 0);
 assert.equal(monitor.getRows(priorityId).length, 0);
 assert.equal(charts.length, 0, 'Empty selections do not invent zero-valued records or chart categories');
 assert.match(root.querySelector('#' + priorityId).textContent, /No records/);
-console.log('PASS workload exact-ID top ten, deterministic ties/missing IDs, full register and expansion records; additive critical/other priority stacks, totals and exact drills.');
+console.log('PASS workload exact-ID top ten, deterministic ties/missing IDs, full register and expansion records; additive critical/other underwriter and priority stacks, in-bar counts, totals and exact drills.');
 dom.window.close();

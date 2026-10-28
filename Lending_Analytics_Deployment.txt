@@ -79,9 +79,10 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
    controls with plus/minus indicators and require no separate FAQ page or portal
    dependency.
    The existing sidebar remains available. The landing downloads no financial
-   records or Highcharts. Upload lending-analytics-hero.webp, lending-portfolio.webp,
-   lending-underwriting.webp and lending-monitoring.webp, plus their matching .jpg
-   fallback files, with the application assets. The hero is preloaded at high
+   records or Highcharts. Upload lending-analytics-hero.jpg, lending-portfolio.jpg,
+   lending-underwriting.jpg and lending-monitoring.jpg with the application assets.
+   Images use JPEG directly so unavailable WebP attachments cannot prevent them
+   from displaying. The packaged WebP copies are optional. The JPEG hero is preloaded at high
    priority; subject-card images load lazily. Intrinsic image dimensions reserve
    layout space, and media size follows the available content column. Smaller
    optimized files reduce transfer work; instant live loading is not guaranteed.
@@ -95,11 +96,12 @@ Trends is a compatibility route to Portfolio. Sources is a dataset, not a page.
 UPGRADING FROM THE PREVIOUS PACKAGE
 Upload the complete application attachments from this build, including
 credit-style.css, credit-ui.js, credit-native-sidebar.js and every matching
-Page.js/HTMLPage.js logic/renderer pair. Keep the four optimized WebP images and
-their JPEG fallbacks together. Do not change filenames or append cache versions.
+Page.js/HTMLPage.js logic/renderer pair and the four landing JPEG images.
+Do not change filenames or append cache versions.
 
-This table-style and search-icon update does not change any page macro fragment
-or the Space_Navigation.html header include. Retain their existing installations.
+Replace confluence-pages/lendinganalytics.html on landing page 3782729579 to
+switch its hero preload to JPEG. The other page macro fragments and the
+Space_Navigation.html header include remain unchanged.
 Existing dashboard macros remain independent of any WCSpedia or other portal
 include. No page permissions change.
 After uploading, hard reload to avoid mixing cached application assets. Sample
@@ -164,7 +166,10 @@ charts, methodology and drills. Existing owner_id/owner_name source fields and
 attachment schemas keep their names; no workbook migration is needed.
 Underwriter Workload shows the top ten current underwriters by actionable record
 count, grouped by exact ID, with display-name/ID tie ordering. Missing IDs remain
-a separate group. The prior comparison uses the same selected IDs. The page
+a separate group. Each underwriter has one horizontal stacked bar: blue other
+actions and red critical actions, with counts inside each nonzero segment and
+a total at the end. This also applies to the expanded Top 10 underwriters view.
+The prior comparison uses the same selected IDs. The page
 totals and source register retain every underwriter. Monitoring-area priorities
 uses one full-width stacked column chart: blue other actions plus red critical
 actions, with segment counts, column totals and four summary statistics. Counts
@@ -252,7 +257,10 @@ The shared search helper places each advanced-table magnifier inside its input
 wrapper, above the input background, and adds it where drill searches omitted it.
 This covers page registers, summary-table searches and expanded/inline records.
 Search, clear, sorting, column filtering, paging and record drills retain their
-existing behavior. Compact per-column searches keep their existing layout.
+existing behavior. Each column search has equal top/bottom padding, and its
+filter button sits immediately beside the input. Header labels retain sorting.
+All shared table pagers use Previous, Page n of n, Next. Row ranges and the
+10/25/50 page-size selector remain; numbered page buttons and ellipses are removed.
 See qa/Table_Confluence_Style_Verification.txt for local evidence and limits.
 
 RESET AND TAB RESPONSIVENESS
@@ -384,7 +392,8 @@ All dashboard pages share this component; the landing retains its centered
 introduction without an extra breadcrumb. Local chart drill paths retain their
 existing controls. These frame and breadcrumb changes are in credit-style.css
 and the matching generated page pairs. The supplied landing fragment includes
-image preloading; this table update does not require replacing that fragment.
+JPEG image preloading; replace the landing fragment when upgrading from the
+earlier WebP preload. Other dashboard fragments do not require replacement.
 
 NATIVE SIDEBAR FOOTER AND RESPONSIVE CONTENT
 The shared native-sidebar adapter recognizes collapsed inner rails inside a

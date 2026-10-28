@@ -166,3 +166,20 @@ summary wraps into two columns without page overflow.
 These checks use local previews and host fixtures; live Confluence was not edited.
 Replace the application attachments and all matching generated page script pairs.
 The existing header include, page macro fragments and data attachments are unchanged.
+
+28 October — stacked Underwriter bars, shared table controls and JPEG delivery
+Workload by Underwriter and its expanded Top 10 underwriters view now use one
+horizontal stacked bar per exact-ID group. Blue other actions plus red critical
+actions reconcile to the bar total. Nonzero segment counts sit inside the bar;
+the total sits at its end. Ranking and exact source drills are preserved.
+Table column searches have equal vertical spacing and an adjacent filter button.
+All shared pagers use Previous / Page n of n / Next, retaining row ranges and
+page size. The 22-case light/dark host-style fixture also checks this geometry.
+Landing images and hero preloads now request the four existing JPEG attachments
+directly; no WebP response is required. Cached/late image failures remove only
+the decorative figure and preserve content and all eleven dashboard links.
+Replace the landing page fragment on 3782729579 along with application assets.
+Other dashboard fragments, the header include and financial datasets are unchanged.
+Local browser checks verified loaded JPEGs, centered filters, pager transitions,
+one stacked bar per underwriter and the expanded view. Live Confluence delivery
+and attachment permissions still require validation on the actual site.

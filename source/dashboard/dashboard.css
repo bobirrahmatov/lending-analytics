@@ -707,17 +707,15 @@
 #credit-hub .ct-table-card .ct-search-row input{height:30px;min-width:130px;border-color:#e0e6ee;font-size:11px}
 #credit-hub .ct-table-card .ch-pagination,#credit-hub .cd-records .ch-pagination{margin:0;padding:12px 20px;border-top:1px solid #e4eaf2;background:var(--page,#fff)}
 :is(#credit-hub,.credit-ui-surface) .ct-pagination-nav{display:flex;align-items:center;gap:6px;margin-left:auto;max-width:100%;flex-wrap:wrap}
-:is(#credit-hub,.credit-ui-surface) .ct-page-numbers{display:flex;align-items:center;gap:4px}
+:is(#credit-hub,.credit-ui-surface) .ct-page-status{padding:0 8px;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink)}
 :is(#credit-hub,.credit-ui-surface) .ct-pagination-nav .ch-btn{height:32px;min-height:32px;min-width:32px;padding:5px 9px;border-radius:7px;font-size:12px}
-:is(#credit-hub,.credit-ui-surface) .ct-pagination-nav [aria-current=page]{color:#255be3;background:#edf3ff;border-color:#cbdafa;font-weight:600}
-:is(#credit-hub,.credit-ui-surface) .ct-page-gap{padding:0 3px;color:#64748b}
 @media(max-width:700px){
  #credit-hub .cd-record-toolbar{padding:0 14px 12px;gap:10px}
  #credit-hub .cd-record-toolbar .cd-source-filters{flex-shrink:1;width:100%}
  #credit-hub .cd-record-toolbar .cd-search-label{flex:1 1 100%;width:100%}
  :is(#credit-hub,.credit-ui-surface) .ct-pagination-nav{flex-basis:100%;justify-content:flex-end;gap:4px}
  :is(#credit-hub,.credit-ui-surface) .ct-pagination-nav .ch-btn{min-width:28px;padding:5px 7px;font-size:11px}
- :is(#credit-hub,.credit-ui-surface) .ct-page-numbers{gap:2px}
+ :is(#credit-hub,.credit-ui-surface) .ct-page-status{padding:0 6px}
  #credit-hub .ct-table-card .ch-pagination{padding:12px 14px}
 }
 #credit-hub .cd-record-toolbar .cd-search-label{display:flex;align-items:center;gap:8px}
@@ -1681,6 +1679,17 @@ body:not(.contenteditor):not(:has(#editpageform,#content-editor)):has(#credit-ui
 #credit-ui :is(#credit-hub,.credit-ui-surface) .credit-ui-search-clear svg path{fill:none!important;stroke:currentColor!important}
 #credit-ui :is(#credit-hub,.credit-ui-surface) :is(.ct-search-row input,.credit-ui-search-with-icon>input)::placeholder{color:var(--muted)!important;opacity:1!important}
 #credit-ui :is(#credit-hub,.credit-ui-surface) .ct-search-row input{border:1px solid var(--line)!important;box-shadow:none!important}
+/* Pair each column search with its own filter. Equal cell padding keeps the
+   controls centered even when a host theme adds header-row separators. */
+#credit-ui :is(#credit-hub,.credit-ui-surface) table .ct-search-row th{padding:12px 14px!important;vertical-align:middle!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search{display:flex!important;align-items:center!important;gap:8px!important;min-width:0}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.credit-ui-search-field{display:flex!important;align-items:center!important;flex:1 1 auto;min-width:80px;width:auto;margin:0!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search input{box-sizing:border-box!important;height:32px!important;min-height:32px!important;margin:0!important;padding-top:6px!important;padding-bottom:6px!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.ct-filter{display:flex!important;align-items:center!important;justify-content:center!important;flex:0 0 32px!important;box-sizing:border-box!important;width:32px!important;height:32px!important;min-height:32px!important;margin:0!important;padding:6px!important;border:1px solid var(--line)!important;border-radius:6px!important;background:var(--page)!important;color:var(--muted)!important;box-shadow:none!important;cursor:pointer}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.ct-filter:is(:hover,.is-active,[aria-expanded=true]){background:var(--credit-theme-selected,#eaf1ff)!important;color:var(--credit-theme-link,#255be3)!important;border-color:currentColor!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.ct-filter:focus-visible{outline:2px solid var(--credit-theme-focus,#255be3)!important;outline-offset:2px}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.ct-filter svg{display:block!important;width:16px!important;height:16px!important;fill:none!important;stroke:currentColor!important;color:inherit!important;visibility:visible!important;opacity:1!important}
+#credit-ui :is(#credit-hub,.credit-ui-surface) .ct-column-search>.ct-filter svg :is(path,line,polyline){fill:none!important;stroke:currentColor!important}
 #credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button{background:transparent!important;color:var(--ink)!important;border:0!important;box-shadow:none!important}
 #credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading svg{fill:none!important;stroke:currentColor!important;color:var(--muted)!important}
 #credit-ui :is(#credit-hub,.credit-ui-surface) .ct-heading button:is(:hover,.is-active){background:var(--credit-theme-selected,#eaf1ff)!important;color:var(--credit-theme-link,#255be3)!important}

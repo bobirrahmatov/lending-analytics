@@ -1,4 +1,4 @@
-TABLE PALETTE AND SEARCH ICONS — LOCAL VERIFICATION
+TABLE PALETTE, SEARCH CONTROLS AND PAGINATION — LOCAL VERIFICATION
 28 October 2026
 
 Cause
@@ -7,6 +7,8 @@ Cause
   lacked important background protection against native table CSS.
 - A positioned search-input wrapper could paint over its sibling magnifier.
   Several inline/expanded searches did not include a magnifier at all.
+- Column search cells had no top padding, placing inputs against their top
+  border. Column filter buttons were separated from their fields in the headings.
 
 Changes
 - Table boundaries resolve dashboard light/dark colors directly. Scoped cell
@@ -18,6 +20,11 @@ Changes
   magnifier, text and clear action. Teardown restores the original markup.
 - source/dashboard/ui.js is the canonical UI helper; the build regenerates
   attachments/credit-ui.js. Shared dashboard CSS remains canonical in source.
+- Column searches have 12px top/bottom cell padding and adjacent 32px filter
+  buttons, aligned at their vertical centers. Host padding/margin resets are
+  scoped out; sorting remains in the heading and filters retain their behavior.
+- Every shared pager displays Previous, Page n of n, Next. The separate row
+  range and 10/25/50 page-size selector remain; numbered buttons are removed.
 
 Validation
 - npm test: all 45 local regression commands passed.
@@ -25,7 +32,9 @@ Validation
   11 dashboard pages in light/dark mode, plus an expanded analysis on each page.
   The harness compares actual computed table/cell/input/icon styles against the
   same local preview with conflicting DS colors, native table resets and SVG
-  overrides injected. Native tables outside the app retain host styling.
+  overrides injected. It also verifies equal search-field spacing, adjacent
+  filter alignment and the three-part pager against host padding/margin resets.
+  Native tables outside the app retain host styling.
 - Main register search filters to Relationship 001; Clear restores all 240
   sample rows with the original 10-row page. The magnifier remains visible.
 - Facility drill retains its inline search icon; Back to table restores the
@@ -37,8 +46,10 @@ Validation
 Delivery
 Upload the refreshed application attachments, including credit-style.css,
 credit-ui.js and matching generated Page.js/HTMLPage.js pairs, to 3845862527.
-Header include and page macros are unchanged for this update. Reload after
-uploading. No financial workbook or manifest updates are included or required.
+The bundled image-loading change also requires replacing the landing fragment
+on page 3782729579 to preload JPEG instead of WebP. Other macros and the header
+include remain unchanged. Reload after uploading. No financial workbook or
+manifest updates are included or required.
 
 Limits
 These are local browser and regression checks with synthetic data and simulated

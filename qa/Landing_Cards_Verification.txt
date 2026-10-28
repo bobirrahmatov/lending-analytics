@@ -1,4 +1,13 @@
 LENDING ANALYTICS — CITI INSIGHTS-STYLE SUBJECT CARDS
+28 October 2026 — JPEG delivery follow-up
+The current landing and its high-priority hero preload use the existing JPEGs
+directly. Browsers no longer select a WebP source that the attachment host may
+fail to serve. All four JPEGs decoded successfully in the local browser preview.
+Startup tests cover late and cached image failures and preserve all links/copy.
+Replace confluence-pages/lendinganalytics.html on page 3782729579 to update the
+preload. Other page fragments and the space header do not change.
+
+Original card design verification:
 27 October 2026 • release 1.1.2 • build 505a9eb80728
 
 Three editorial subject cards replace the plain numbered landing columns.
