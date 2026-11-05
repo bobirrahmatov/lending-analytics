@@ -1,11 +1,11 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Dashboard Excel data guide</title><style>body{font:15px/1.6 Arial,sans-serif;color:#203754;max-width:1250px;margin:40px auto;padding:0 24px}h1,h2,h3{color:#17365d}table{border-collapse:collapse;width:100%;margin:16px 0 28px}th,td{border:1px solid #d8e2ef;padding:9px;text-align:left;vertical-align:top}th{background:#edf3f9}code{overflow-wrap:anywhere}tr:nth-child(even){background:#f8fafc}.scroll{overflow:auto}li{margin-bottom:12px}</style>
 <h1>Dashboard Excel data guide</h1>
 <p>Replace the synthetic sample rows with prepared source data. The dashboards read these Excel attachments directly. No JSON data files or manifest are required in workbook mode. Sources_current.xlsx and Sources_previous.xlsx are not used.</p>
-<h2>Upload and replace data</h2><ol>
-<li>Keep filenames, sheet names and headers exactly as supplied. Covenants follows the original Covenants dashboard and Covenants_current.xlsx source headers. Activity follows Covenants_Activity_Report.xlsx (Maker Date and Covenant Compliance), delivered under Activity_current.xlsx. Insurance and Appraisals each use an independent domain contract, not LPTM. Only Facility follows the LPTM facility export; CCM follows its CCM schema and Trends follows the LPTM aggregate export. Insurance/Appraisal legacy source-file column order has not been verified; use the exact supplied domain template.</li>
-<li>Replace data values in every relevant sheet. Keep identifiers as text, dates as YYYY-MM-DD text or real date-only Excel cells, amounts as numeric USD units, and flag fields as plain Yes/No text (no checkboxes or TRUE/FALSE cells). PSE_non_PSE uses PSE/non-PSE; SFT_Facility uses Yes/No; Committed_Uncommitted uses Committed/Uncommitted. ROTCE is a decimal ratio, not a value multiplied by 100. No formulas, merged cells or subtotal rows in input data.</li>
-<li>Retain Metadata in every file. Set schema_version=2 and workbook_contract=2. Use one new bundle_id across the entire upload, including previous and history files. Keep each file's dataset and period values. Update rows and any auxiliary sheet row counts. is_demo must remain Yes for samples; use No only for approved real records.</li>
-<li>Source filenames, IDs, domains and coverage are fixed in the application. There are no Sources workbooks to maintain. Reporting dates come from each sheet’s As Of Date / Report_Date rows, never the upload date. A source sheet must have one reporting date. For a zero-row sheet only, supply as_of_date as YYYY-MM-DD text in Metadata because no row date exists.</li>
+<p>All input headers use underscore-separated names, for example Report_Date, Relationship_ID and Underwriter_ID. This is workbook contract 3: replace dashboard scripts and all workbooks together. Old spaced headers are not accepted. The guide below lists the exact header for every column.</p><h2>Upload and replace data</h2><ol>
+<li>Keep filenames, sheet names and headers exactly as supplied. Covenants follows the original Covenants dashboard and Covenants_current.xlsx source column order, with standardized underscore headers. Activity follows Covenants_Activity_Report.xlsx (Maker_Date and Covenant_Compliance), delivered under Activity_current.xlsx. Insurance and Appraisals each use an independent domain contract, not LPTM. Only Facility follows the LPTM facility export; CCM follows its CCM schema and Trends follows the LPTM aggregate export. Insurance/Appraisal legacy source-file column order has not been verified; use the exact supplied domain template.</li>
+<li>Replace data values in every relevant sheet. Keep identifiers as text, dates as YYYY-MM-DD text or real date-only Excel cells, amounts as numeric USD units, and flag fields as plain Yes/No text (no checkboxes or TRUE/FALSE cells). PSE_Non_PSE uses PSE/non-PSE; SFT_Facility uses Yes/No; Committed_Uncommitted uses Committed/Uncommitted. ROTCE is a decimal ratio, not a value multiplied by 100. No formulas, merged cells or subtotal rows in input data.</li>
+<li>Retain Metadata in every file. Set schema_version=2 and workbook_contract=3. Use one new bundle_id across the entire upload, including previous and history files. Keep each file's dataset and period values. Update rows and any auxiliary sheet row counts. is_demo must remain Yes for samples; use No only for approved real records.</li>
+<li>Source filenames, IDs, domains and coverage are fixed in the application. There are no Sources workbooks to maintain. Reporting dates come from each sheet’s Report_Date rows, never the upload date. A source sheet must have one reporting date. For a zero-row sheet only, supply as_of_date as YYYY-MM-DD text in Metadata because no row date exists.</li>
 <li>Upload the complete selected set to attachment page 3845862527. Upload previous files first, then all current files and selected history files; upload Facility_current.xlsx last and then reload. Updates are not atomic: the loader rejects mixed bundle IDs instead of combining different releases. No live data is stored in browser storage.</li>
 <li>For live use, set allowSampleData:false in the dashboard macros. Remove or replace old sample comparison attachments too. A missing or invalid optional previous file makes that domain's comparison unavailable; it is never replaced with an estimated change. A malformed required current file reports an error.</li>
 </ol>
@@ -19,7 +19,7 @@
 <tr><td>Underwriter Summary / Underwriter Workload</td><td>The combined current monitoring populations from Covenants, CA, Maturity, CCM, Insurances and Appraisals. Summary charts and registers preserve each original obligation key.</td></tr>
 <tr><td>Related documents</td><td>Documents.xlsx (optional). Missing document data does not invent links.</td></tr></table>
 <h2>Weekly refresh</h2><ol>
-<li>Put the previous reporting snapshot in each _previous file and the new snapshot in its matching _current file. Keep the exact filenames and headers. As Of Date records the reporting date; Maker Date remains the individual Activity event date.</li>
+<li>Put the previous reporting snapshot in each _previous file and the new snapshot in its matching _current file. Keep the exact filenames and headers. Report_Date records the reporting date; Maker_Date remains the individual Activity event date.</li>
 <li>Update Metadata row counts and period=current/previous. Give the entire upload one new bundle_id, including optional history. Keep flags as Yes/No text. Source IDs and domain mappings stay fixed and need no weekly edits.</li>
 <li>Upload the complete set, with Facility_current.xlsx last, and reload. Fixed-name replacements are not atomic; mixed bundle IDs are rejected while uploads are incomplete.</li></ol>
 <h2>Grain and comparison methodology</h2>
@@ -27,10 +27,10 @@
 <p>Prepared flags such as action_required, critical, coming_due, pal_ca_expired and the PAL period fields remain explicit input columns. Populate them using your approved source rules and reconcile them to the dates/status fields. The loader does not guess missing business rules from names or upload dates. Raw source exports require the additional validation fields and Metadata supplied here before use.</p>
 <p>Every snapshot comparison uses its matching _current and _previous workbooks. The application constructs source controls from the fixed mapping and validated workbook contents. Missing previous files remain unavailable even if historical records or consolidated Trends data exist.</p>
 <p>Previous files use the same columns as their current counterparts. Their Metadata.period is previous, and their reporting dates are historical. Weekly deltas compare the supplied current and previous reporting dates with matching configured coverage. The previous date must be strictly earlier; it need not be the previous weekday or exactly seven days earlier. Both dates are displayed, so a skipped reporting week is not silently labelled as one-week growth.</p>
-<p>Portfolio_Aggregated_History.xlsx contains one row per Report_Date + Region + Product_Program + Product_Sub_Program + Committed_Uncommitted + PSE_non_PSE. It is already aggregated. Never include a total row alongside detail groups, duplicate a group, or add balances across reporting dates. Keep facility/underwriter-only fields blank and comparison_ready No. Trends sums measures within a date and uses the last supplied snapshot in the matching month for MoM/QoQ/YoY. Missing baseline or a zero denominator is unavailable. Distinct relationship/CA counts across groups can overlap and must not be added as portfolio-wide distinct counts.</p>
+<p>Portfolio_Aggregated_History.xlsx contains one row per Report_Date + Region + Product_Program + Product_Sub_Program + Committed_Uncommitted + PSE_Non_PSE. It is already aggregated. Never include a total row alongside detail groups, duplicate a group, or add balances across reporting dates. Keep facility/underwriter-only fields blank and comparison_ready No. Trends sums measures within a date and uses the last supplied snapshot in the matching month for MoM/QoQ/YoY. Missing baseline or a zero denominator is unavailable. Distinct relationship/CA counts across groups can overlap and must not be added as portfolio-wide distinct counts.</p>
 <p>Products are source values, not a fixed four-product list. SBL, Structured Lending, CRE, Partner Lending, Law Firm, RRE and additional programs are accepted consistently when their exact values match across relevant files.</p>
 <p>Covenants_History.xlsx separates Data (covenant rows), Portfolio (same-date facility snapshots), Snapshots (unique complete dates), and Controls (counts by date/domain/source). No earlier snapshot is manufactured from today's data.</p>
-<h2>Metadata fields</h2><p>All files have a key/value Metadata sheet. rows counts Data records, excluding the header. Facility files also declare ca_rows and maturity_rows. Covenant history declares portfolio_rows, snapshots_rows and controls_rows. Keep zero-row sheets with their headers and a zero count. All listed columns must exist; “blank allowed” below refers to cell values, not permission to omit a header. Headers may move because mapping is by name, but the supplied ordering follows each verified owning source.</p>
+<h2>Metadata fields</h2><p>All files have a Metadata sheet with Key and Value column headings. Metadata key values such as as_of_date and bundle_id are configuration keys, not column headers, and stay unchanged. rows counts Data records, excluding the header. Facility files also declare ca_rows and maturity_rows. Covenant history declares portfolio_rows, snapshots_rows and controls_rows. Keep zero-row sheets with their headers and a zero count. All listed columns must exist; “blank allowed” below refers to cell values, not permission to omit a header. Headers may move because mapping is by name, but the supplied ordering follows each verified owning source.</p>
 
 <h2>Files and sample populations</h2><table><tr><th>File</th><th>Use</th><th>Sheets and sample row counts</th></tr>
 <tr><td>Facility_current.xlsx</td><td>Current input</td><td>Data: 120, CA: 48, Maturity: 42</td></tr>
@@ -72,7 +72,7 @@
 <tr><td>10</td><td>Risk_Category</td><td>risk_category</td><td>text</td><td>Blank allowed</td><td>Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.</td></tr>
 <tr><td>11</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
 <tr><td>12</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>13</td><td>CAID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
+<tr><td>13</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
 <tr><td>14</td><td>Lead_Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
 <tr><td>15</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>16</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
@@ -85,7 +85,7 @@
 <tr><td>23</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not an additional accountable workload owner.</td></tr>
 <tr><td>24</td><td>CA_Expiration_Date</td><td>ca_expiration_date</td><td>date</td><td>Blank allowed</td><td>CA expiration date; does not establish authorization workflow status.</td></tr>
 <tr><td>25</td><td>Credit_Classification</td><td>classification</td><td>text</td><td>Required</td><td>Canonical credit classification code.</td></tr>
-<tr><td>26</td><td>PSE_non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Controlled PSE classification from Product_Mapping.</td></tr>
+<tr><td>26</td><td>PSE_Non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Controlled PSE classification from Product_Mapping.</td></tr>
 <tr><td>27</td><td>SFT_Facility</td><td>sft</td><td>Yes / No</td><td>Required</td><td>Controlled SFT classification; do not infer from blank fields.</td></tr>
 <tr><td>28</td><td>Facility_First_Approval_Date</td><td>facility_first_approval_date</td><td>date</td><td>Blank allowed</td><td>Original facility approval date, kept separately from origination.</td></tr>
 <tr><td>29</td><td>Origination_Date</td><td>origination_date</td><td>date</td><td>Blank allowed</td><td>Primary new-business date.</td></tr>
@@ -98,43 +98,43 @@
 <tr><td>36</td><td>Total_Unused_Commitment</td><td>unused_commitment</td><td>number</td><td>Required</td><td>Source supplied for Americas; computed for EMEA/APAC.</td></tr>
 <tr><td>37</td><td>Total_Undrawn</td><td>total_undrawn</td><td>number</td><td>Required</td><td>Prepared output: tfa minus total_os; negative values retained for review.</td></tr>
 <tr><td>38</td><td>ROTCE</td><td>rotce</td><td>number</td><td>Blank allowed</td><td>Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null.</td></tr>
-<tr><td>39</td><td>facility_key</td><td>facility_key</td><td>text</td><td>Required</td><td>Unique source + facility identifier at the selected snapshot.</td></tr>
-<tr><td>40</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>41</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>42</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>43</td><td>maturity_basis</td><td>maturity_basis</td><td>text</td><td>Required</td><td>DATED, DEMAND or UNKNOWN.</td></tr>
-<tr><td>44</td><td>ytd_new</td><td>ytd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting year to as_of_date.</td></tr>
-<tr><td>45</td><td>mtd_new</td><td>mtd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting month to as_of_date.</td></tr>
-<tr><td>46</td><td>reporting_currency</td><td>reporting_currency</td><td>text</td><td>Required</td><td>USD; amounts must be translated upstream using an approved FX basis.</td></tr>
-<tr><td>47</td><td>unused_uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Required</td><td>Total undrawn minus unused commitment; PAL overview card.</td></tr>
-<tr><td>48</td><td>pal_ca_expired</td><td>pal_ca_expired</td><td>Yes / No</td><td>Required</td><td>CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.</td></tr>
-<tr><td>49</td><td>pal_ca_month</td><td>pal_ca_month</td><td>text</td><td>Blank allowed</td><td>Eligible CA expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
-<tr><td>50</td><td>pal_facility_expired</td><td>pal_facility_expired</td><td>Yes / No</td><td>Required</td><td>Facility maturity before report date; CM and DM both included.</td></tr>
-<tr><td>51</td><td>pal_facility_month</td><td>pal_facility_month</td><td>text</td><td>Blank allowed</td><td>Facility expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
-<tr><td>52</td><td>pal_approval_period</td><td>pal_approval_period</td><td>text</td><td>Blank allowed</td><td>CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.</td></tr>
-<tr><td>53</td><td>pal_pipeline_bucket</td><td>pal_pipeline_bucket</td><td>text</td><td>Blank allowed</td><td>1-30 / 31-60 / 61-90 / &gt;90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.</td></tr>
-<tr><td>54</td><td>pal_spread_bucket</td><td>pal_spread_bucket</td><td>text</td><td>Blank allowed</td><td>SBL with Direct OS &gt;0; &lt;=70 / 70-125 / &gt;125 bps. Missing spread remains null.</td></tr>
-<tr><td>55</td><td>pal_spread_weight</td><td>pal_spread_weight</td><td>number</td><td>Blank allowed</td><td>Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.</td></tr>
-<tr><td>56</td><td>pal_spread_os</td><td>pal_spread_os</td><td>number</td><td>Required</td><td>Direct OS denominator for valid-spread SBL; zero otherwise.</td></tr>
-<tr><td>57</td><td>pal_pricing_exception</td><td>pal_pricing_exception</td><td>Yes / No</td><td>Required</td><td>SBL Direct OS &gt;0 and pricing exception Yes.</td></tr>
-<tr><td>58</td><td>pal_prior_ytd</td><td>pal_prior_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior year through same month/day.</td></tr>
-<tr><td>59</td><td>pal_prior_mtd</td><td>pal_prior_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.</td></tr>
-<tr><td>60</td><td>pal_new_ytd</td><td>pal_new_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>61</td><td>pal_approved_ytd</td><td>pal_approved_ytd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>62</td><td>pal_pending_ytd</td><td>pal_pending_ytd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>63</td><td>pal_new_qtd</td><td>pal_new_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>64</td><td>pal_approved_qtd</td><td>pal_approved_qtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>65</td><td>pal_pending_qtd</td><td>pal_pending_qtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>66</td><td>pal_new_mtd</td><td>pal_new_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>67</td><td>pal_approved_mtd</td><td>pal_approved_mtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>68</td><td>pal_pending_mtd</td><td>pal_pending_mtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>69</td><td>pal_new_wtd</td><td>pal_new_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>70</td><td>pal_approved_wtd</td><td>pal_approved_wtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>71</td><td>pal_pending_wtd</td><td>pal_pending_wtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>72</td><td>pal_prior_qtd</td><td>pal_prior_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.</td></tr>
-<tr><td>73</td><td>pal_prior_wtd</td><td>pal_prior_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.</td></tr>
-<tr><td>74</td><td>rotce_period</td><td>rotce_period</td><td>text</td><td>Blank allowed</td><td>Source ROTCE reporting period, displayed independently of portfolio report date.</td></tr>
-<tr><td>75</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>39</td><td>Facility_Key</td><td>facility_key</td><td>text</td><td>Required</td><td>Unique source + facility identifier at the selected snapshot.</td></tr>
+<tr><td>40</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>41</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>42</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>43</td><td>Maturity_Basis</td><td>maturity_basis</td><td>text</td><td>Required</td><td>DATED, DEMAND or UNKNOWN.</td></tr>
+<tr><td>44</td><td>YTD_New</td><td>ytd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting year to as_of_date.</td></tr>
+<tr><td>45</td><td>MTD_New</td><td>mtd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting month to as_of_date.</td></tr>
+<tr><td>46</td><td>Reporting_Currency</td><td>reporting_currency</td><td>text</td><td>Required</td><td>USD; amounts must be translated upstream using an approved FX basis.</td></tr>
+<tr><td>47</td><td>Unused_Uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Required</td><td>Total undrawn minus unused commitment; PAL overview card.</td></tr>
+<tr><td>48</td><td>PAL_CA_Expired</td><td>pal_ca_expired</td><td>Yes / No</td><td>Required</td><td>CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.</td></tr>
+<tr><td>49</td><td>PAL_CA_Month</td><td>pal_ca_month</td><td>text</td><td>Blank allowed</td><td>Eligible CA expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
+<tr><td>50</td><td>PAL_Facility_Expired</td><td>pal_facility_expired</td><td>Yes / No</td><td>Required</td><td>Facility maturity before report date; CM and DM both included.</td></tr>
+<tr><td>51</td><td>PAL_Facility_Month</td><td>pal_facility_month</td><td>text</td><td>Blank allowed</td><td>Facility expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
+<tr><td>52</td><td>PAL_Approval_Period</td><td>pal_approval_period</td><td>text</td><td>Blank allowed</td><td>CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.</td></tr>
+<tr><td>53</td><td>PAL_Pipeline_Bucket</td><td>pal_pipeline_bucket</td><td>text</td><td>Blank allowed</td><td>1-30 / 31-60 / 61-90 / &gt;90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.</td></tr>
+<tr><td>54</td><td>PAL_Spread_Bucket</td><td>pal_spread_bucket</td><td>text</td><td>Blank allowed</td><td>SBL with Direct OS &gt;0; &lt;=70 / 70-125 / &gt;125 bps. Missing spread remains null.</td></tr>
+<tr><td>55</td><td>PAL_Spread_Weight</td><td>pal_spread_weight</td><td>number</td><td>Blank allowed</td><td>Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.</td></tr>
+<tr><td>56</td><td>PAL_Spread_OS</td><td>pal_spread_os</td><td>number</td><td>Required</td><td>Direct OS denominator for valid-spread SBL; zero otherwise.</td></tr>
+<tr><td>57</td><td>PAL_Pricing_Exception</td><td>pal_pricing_exception</td><td>Yes / No</td><td>Required</td><td>SBL Direct OS &gt;0 and pricing exception Yes.</td></tr>
+<tr><td>58</td><td>PAL_Prior_YTD</td><td>pal_prior_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior year through same month/day.</td></tr>
+<tr><td>59</td><td>PAL_Prior_MTD</td><td>pal_prior_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.</td></tr>
+<tr><td>60</td><td>PAL_New_YTD</td><td>pal_new_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>61</td><td>PAL_Approved_YTD</td><td>pal_approved_ytd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>62</td><td>PAL_Pending_YTD</td><td>pal_pending_ytd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>63</td><td>PAL_New_QTD</td><td>pal_new_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>64</td><td>PAL_Approved_QTD</td><td>pal_approved_qtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>65</td><td>PAL_Pending_QTD</td><td>pal_pending_qtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>66</td><td>PAL_New_MTD</td><td>pal_new_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>67</td><td>PAL_Approved_MTD</td><td>pal_approved_mtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>68</td><td>PAL_Pending_MTD</td><td>pal_pending_mtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>69</td><td>PAL_New_WTD</td><td>pal_new_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>70</td><td>PAL_Approved_WTD</td><td>pal_approved_wtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>71</td><td>PAL_Pending_WTD</td><td>pal_pending_wtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>72</td><td>PAL_Prior_QTD</td><td>pal_prior_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.</td></tr>
+<tr><td>73</td><td>PAL_Prior_WTD</td><td>pal_prior_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.</td></tr>
+<tr><td>74</td><td>ROTCE_Period</td><td>rotce_period</td><td>text</td><td>Blank allowed</td><td>Source ROTCE reporting period, displayed independently of portfolio report date.</td></tr>
+<tr><td>75</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
 </table></div>
 <h4>CA</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
 <tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
@@ -144,49 +144,49 @@
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
 <tr><td>7</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>8</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>9</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>10</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>11</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>12</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>13</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>14</td><td>ca_id</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>15</td><td>facility_id</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
-<tr><td>16</td><td>covenant_id</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>17</td><td>status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>18</td><td>due_date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>19</td><td>deferred_date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>20</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>21</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>22</td><td>days_past_due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>23</td><td>aging_bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>24</td><td>action_required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
-<tr><td>25</td><td>critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>26</td><td>coming_due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>27</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>28</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>29</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>30</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>31</td><td>description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>32</td><td>remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>33</td><td>origination_unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>34</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>35</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>36</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>37</td><td>borrowers_name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>38</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>39</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>40</td><td>frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>41</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>42</td><td>day45_date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>43</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>44</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>45</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>46</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>47</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>48</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>8</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>9</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>10</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>11</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>12</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>13</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>14</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>15</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>16</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>17</td><td>Status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
+<tr><td>18</td><td>Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>19</td><td>Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>20</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>21</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>22</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>23</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>24</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>25</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
+<tr><td>26</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>27</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>28</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>29</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>30</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>31</td><td>Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>32</td><td>Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>33</td><td>Origination_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>34</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>35</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>36</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>37</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>38</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>39</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>40</td><td>Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>41</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>42</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>43</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>44</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>45</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>46</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>47</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>48</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h4>Maturity</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
 <tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
@@ -196,143 +196,143 @@
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
 <tr><td>7</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>8</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>9</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>10</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>11</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>12</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>13</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>14</td><td>ca_id</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>15</td><td>facility_id</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
-<tr><td>16</td><td>covenant_id</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>17</td><td>status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>18</td><td>due_date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>19</td><td>deferred_date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>20</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>21</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>22</td><td>days_past_due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>23</td><td>aging_bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>24</td><td>action_required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
-<tr><td>25</td><td>critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>26</td><td>coming_due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>27</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>28</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>29</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>30</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>31</td><td>description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>32</td><td>remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>33</td><td>origination_unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>34</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>35</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>36</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>37</td><td>borrowers_name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>38</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>39</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>40</td><td>frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>41</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>42</td><td>day45_date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>43</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>44</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>45</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>46</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>47</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>48</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>8</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>9</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>10</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>11</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>12</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>13</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>14</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>15</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>16</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>17</td><td>Status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
+<tr><td>18</td><td>Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>19</td><td>Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>20</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>21</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>22</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>23</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>24</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>25</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
+<tr><td>26</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>27</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>28</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>29</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>30</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>31</td><td>Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>32</td><td>Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>33</td><td>Origination_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>34</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>35</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>36</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>37</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>38</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>39</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>40</td><td>Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>41</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>42</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>43</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>44</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>45</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>46</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>47</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>48</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>Covenants_current.xlsx / Covenants_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>As Of Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>4</td><td>Originating Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>5</td><td>Underwriting Team Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
+<tr><td>4</td><td>Originating_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>5</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
-<tr><td>7</td><td>Product Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>8</td><td>OU Expense Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>9</td><td>CU Expense Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>10</td><td>Relationship ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>11</td><td>Relationship Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>12</td><td>Borrowers Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>13</td><td>CA Number</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>14</td><td>Facility Number</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
-<tr><td>15</td><td>Product Program Name</td><td>product_program_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>16</td><td>Facility Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>17</td><td>Covenant Number</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>18</td><td>Periodicity / Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>19</td><td>Covenant Due Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>20</td><td>Covenant Deferred Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>21</td><td>No of Days Past Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>22</td><td>Coming Due / Past Due</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>23</td><td>Past Due Category</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>24</td><td>Covenant Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>25</td><td>Covenant Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>26</td><td>45 Days Past Due Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>27</td><td>Control Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>28</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>29</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>30</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>31</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>32</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>33</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>34</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>35</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>36</td><td>aging_bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>37</td><td>action_required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
-<tr><td>38</td><td>critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>39</td><td>coming_due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>40</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>41</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>42</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>43</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>44</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>45</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>46</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>47</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>48</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>51</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>7</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>8</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>9</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>10</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
+<tr><td>11</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>12</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>13</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>14</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>15</td><td>Product_Program_Name</td><td>product_program_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>16</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>17</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>18</td><td>Periodicity_Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>19</td><td>Covenant_Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>20</td><td>Covenant_Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>21</td><td>No_Of_Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>22</td><td>Coming_Due_Past_Due</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
+<tr><td>23</td><td>Past_Due_Category</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>24</td><td>Covenant_Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>25</td><td>Covenant_Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>26</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>27</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>28</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>29</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>30</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>31</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>32</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>33</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>34</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>35</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>36</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>37</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>38</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
+<tr><td>39</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>40</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>41</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>42</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>43</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>44</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>45</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>46</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>47</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>48</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>51</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>Activity_current.xlsx / Activity_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>Maker Date</td><td>event_date</td><td>date</td><td>Required</td><td>Maker date from activity source.</td></tr>
-<tr><td>2</td><td>As of Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
+<tr><td>1</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Required</td><td>Maker date from activity source.</td></tr>
+<tr><td>2</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>3</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
-<tr><td>4</td><td>Relationship ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>5</td><td>Relationship Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>6</td><td>CA Number</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>7</td><td>Covenant Number</td><td>covenant_id</td><td>text</td><td>Required</td><td>Covenant key associated with event.</td></tr>
-<tr><td>8</td><td>Product Program Name</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
+<tr><td>4</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
+<tr><td>5</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>6</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>7</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Required</td><td>Covenant key associated with event.</td></tr>
+<tr><td>8</td><td>Product_Program_Name</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
 <tr><td>9</td><td>Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
-<tr><td>10</td><td>Underwriting Team Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
-<tr><td>11</td><td>Covenant Compliance</td><td>event_type</td><td>text</td><td>Required</td><td>DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation.</td></tr>
-<tr><td>12</td><td>Covenant Deferred Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>13</td><td>Cumulative Deferred Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>14</td><td>Modified in Reporting Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>15</td><td>event_id</td><td>event_id</td><td>text</td><td>Required</td><td>Unique source event ID; one row per event, not one per covenant.</td></tr>
-<tr><td>16</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>17</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>18</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>19</td><td>month</td><td>month</td><td>text</td><td>Required</td><td>Prepared output: event_date formatted YYYY-MM.</td></tr>
-<tr><td>20</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>21</td><td>borrower_name</td><td>borrower_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>22</td><td>facility_id</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>23</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>24</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>25</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>26</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>27</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>28</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>29</td><td>originating_unit</td><td>originating_unit</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>30</td><td>days45_date</td><td>days45_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>31</td><td>days_past_due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>32</td><td>due_date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>33</td><td>description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>34</td><td>frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>35</td><td>remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>36</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>37</td><td>status</td><td>status</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>10</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
+<tr><td>11</td><td>Covenant_Compliance</td><td>event_type</td><td>text</td><td>Required</td><td>DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation.</td></tr>
+<tr><td>12</td><td>Covenant_Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>13</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>14</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>15</td><td>Event_ID</td><td>event_id</td><td>text</td><td>Required</td><td>Unique source event ID; one row per event, not one per covenant.</td></tr>
+<tr><td>16</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>17</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>18</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>19</td><td>Month</td><td>month</td><td>text</td><td>Required</td><td>Prepared output: event_date formatted YYYY-MM.</td></tr>
+<tr><td>20</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>21</td><td>Borrower_Name</td><td>borrower_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>22</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>23</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>24</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>25</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>26</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>27</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>28</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>29</td><td>Originating_Unit</td><td>originating_unit</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>30</td><td>45_Days_Past_Due_Date</td><td>days45_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>31</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>32</td><td>Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>33</td><td>Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>34</td><td>Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>35</td><td>Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>36</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>37</td><td>Status</td><td>status</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>CCM_current.xlsx / CCM_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
@@ -346,152 +346,152 @@
 <tr><td>8</td><td>Next_CCM_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
 <tr><td>9</td><td>Next_CCM_Approval_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
 <tr><td>10</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>11</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>12</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>13</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>14</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>15</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>11</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>12</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>13</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>14</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>15</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
 <tr><td>16</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>17</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>18</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>19</td><td>ca_id</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>20</td><td>facility_id</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
-<tr><td>21</td><td>covenant_id</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>22</td><td>status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>23</td><td>deferred_date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>24</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>25</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>26</td><td>days_past_due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>27</td><td>aging_bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>28</td><td>action_required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
-<tr><td>29</td><td>critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>30</td><td>coming_due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>31</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>32</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>33</td><td>description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>34</td><td>remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>35</td><td>origination_unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>36</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>37</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>38</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>39</td><td>borrowers_name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>40</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>41</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>42</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>43</td><td>day45_date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>44</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>45</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>46</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>47</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>48</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>18</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>19</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>20</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>21</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>22</td><td>Status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
+<tr><td>23</td><td>Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>24</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>25</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>26</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>27</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>28</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>29</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
+<tr><td>30</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>31</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>32</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>33</td><td>Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>34</td><td>Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>35</td><td>Origination_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>36</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>37</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>38</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>39</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>40</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>41</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>42</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>43</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>44</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>45</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>46</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>47</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>48</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>Insurances_current.xlsx / Insurances_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>As Of Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
-<tr><td>3</td><td>Relationship ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>4</td><td>Relationship Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>3</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
+<tr><td>4</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
 <tr><td>5</td><td>Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
-<tr><td>6</td><td>Underwriting Team Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
-<tr><td>7</td><td>Product Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>8</td><td>CA Number</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>9</td><td>Facility Number</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>6</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
+<tr><td>7</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
+<tr><td>8</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>9</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
 <tr><td>10</td><td>Status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>11</td><td>Due Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>12</td><td>Days Past Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>13</td><td>Aging Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>14</td><td>Action Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>11</td><td>Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>12</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>13</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>14</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
 <tr><td>15</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>16</td><td>Coming Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>17</td><td>Expired Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>18</td><td>Deficiency Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>19</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>20</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>21</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>22</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>23</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>24</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>25</td><td>covenant_id</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>26</td><td>deferred_date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>27</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>28</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>29</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>30</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>31</td><td>description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>32</td><td>remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>33</td><td>origination_unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>34</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>35</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>36</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>37</td><td>borrowers_name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>38</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>39</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>40</td><td>frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>41</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>42</td><td>day45_date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>43</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>44</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>45</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>46</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>47</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>48</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>16</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>17</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>18</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>19</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>20</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>21</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>22</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>23</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>24</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>25</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>26</td><td>Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>27</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>28</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>29</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>30</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>31</td><td>Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>32</td><td>Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>33</td><td>Origination_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>34</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>35</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>36</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>37</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>38</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>39</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>40</td><td>Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>41</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>42</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>43</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>44</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>45</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>46</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>47</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>48</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>Appraisals_current.xlsx / Appraisals_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>As Of Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
-<tr><td>3</td><td>Relationship ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>4</td><td>Relationship Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>3</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
+<tr><td>4</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
 <tr><td>5</td><td>Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
-<tr><td>6</td><td>Underwriting Team Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
-<tr><td>7</td><td>Product Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>8</td><td>CA Number</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>9</td><td>Facility Number</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>6</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
+<tr><td>7</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
+<tr><td>8</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>9</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
 <tr><td>10</td><td>Status</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>11</td><td>Due Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>12</td><td>Days Past Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>13</td><td>Aging Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>14</td><td>Action Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>11</td><td>Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>12</td><td>Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>13</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>14</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
 <tr><td>15</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>16</td><td>Coming Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>17</td><td>Appraisal Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>18</td><td>Appraisal Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>19</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>20</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>21</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>22</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>23</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>24</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>25</td><td>covenant_id</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>26</td><td>deferred_date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>27</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>28</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>29</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>30</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>31</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>32</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>33</td><td>origination_unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>34</td><td>control_unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>35</td><td>ou_expense_code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>36</td><td>cu_expense_code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>37</td><td>borrowers_name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>38</td><td>product_underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>39</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>40</td><td>frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>41</td><td>source_aging_bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>42</td><td>day45_date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>43</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>44</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>45</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>46</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>47</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>48</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>16</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>17</td><td>Appraisal_Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>18</td><td>Appraisal_Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>19</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>20</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>21</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>22</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>23</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>24</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>25</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>26</td><td>Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>27</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>28</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>29</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>30</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>31</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>32</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>33</td><td>Origination_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>34</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>35</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>36</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>37</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>38</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>39</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>40</td><td>Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>41</td><td>Source_Aging_Bucket</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>42</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>43</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>44</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>45</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>46</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>47</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>48</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h3>Portfolio_Aggregated_History.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
@@ -500,7 +500,7 @@
 <tr><td>3</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Canonical product.</td></tr>
 <tr><td>4</td><td>Product_Sub_Program</td><td>product_subprogram</td><td>text</td><td>Blank allowed</td><td>Consolidated Trends field: product_subprogram. Legacy aggregated history may leave this null.</td></tr>
 <tr><td>5</td><td>Committed_Uncommitted</td><td>commitment</td><td>Committed / Uncommitted</td><td>Required</td><td>COMMITTED or UNCOMMITTED.</td></tr>
-<tr><td>6</td><td>PSE_non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Canonical PSE flag.</td></tr>
+<tr><td>6</td><td>PSE_Non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Canonical PSE flag.</td></tr>
 <tr><td>7</td><td>TFA</td><td>tfa</td><td>number</td><td>Required</td><td>Sum of prepared facility amounts, USD units.</td></tr>
 <tr><td>8</td><td>OSUC</td><td>osuc</td><td>number</td><td>Required</td><td>Sum of prepared OSUC, USD units.</td></tr>
 <tr><td>9</td><td>Total_OS</td><td>total_os</td><td>number</td><td>Required</td><td>Sum of prepared total outstanding, USD units.</td></tr>
@@ -509,80 +509,80 @@
 <tr><td>12</td><td>PSE_OS</td><td>PSE_OS</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>13</td><td>Total_Unused_Commitment</td><td>unused_commitment</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_commitment. Legacy aggregated history may leave this null.</td></tr>
 <tr><td>14</td><td>Total_Undrawn</td><td>Total_Undrawn</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
-<tr><td>15</td><td>Count_of_Facilities</td><td>facility_count</td><td>integer</td><td>Required</td><td>Distinct facilities at this exact grain; nonadditive if grain overlaps.</td></tr>
-<tr><td>16</td><td>Count_of_Relationships</td><td>Count_of_Relationships</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
-<tr><td>17</td><td>Count_of_CAs</td><td>Count_of_CAs</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
-<tr><td>18</td><td>history_id</td><td>history_id</td><td>text</td><td>Required</td><td>Unique report-date + region + product + subprogram + commitment + PSE aggregate key.</td></tr>
-<tr><td>19</td><td>facility_key</td><td>facility_key</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
-<tr><td>20</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>15</td><td>Count_Of_Facilities</td><td>facility_count</td><td>integer</td><td>Required</td><td>Distinct facilities at this exact grain; nonadditive if grain overlaps.</td></tr>
+<tr><td>16</td><td>Count_Of_Relationships</td><td>Count_of_Relationships</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
+<tr><td>17</td><td>Count_Of_CAs</td><td>Count_of_CAs</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
+<tr><td>18</td><td>History_ID</td><td>history_id</td><td>text</td><td>Required</td><td>Unique report-date + region + product + subprogram + commitment + PSE aggregate key.</td></tr>
+<tr><td>19</td><td>Facility_Key</td><td>facility_key</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>20</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
 <tr><td>21</td><td>Lead_Underwriter</td><td>owner_name</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
 <tr><td>22</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
-<tr><td>23</td><td>management_status</td><td>management_status</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
-<tr><td>24</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
-<tr><td>25</td><td>unused_uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_uncommitted. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>26</td><td>comparison_ready</td><td>comparison_ready</td><td>Yes / No</td><td>Blank allowed</td><td>Must be No. Consolidated history is only for Trends, never snapshot comparisons.</td></tr>
+<tr><td>23</td><td>Management_Status</td><td>management_status</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>24</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>25</td><td>Unused_Uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_uncommitted. Legacy aggregated history may leave this null.</td></tr>
+<tr><td>26</td><td>Comparison_Ready</td><td>comparison_ready</td><td>Yes / No</td><td>Blank allowed</td><td>Must be No. Consolidated history is only for Trends, never snapshot comparisons.</td></tr>
 </table></div>
 <h3>Documents.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>document_id</td><td>document_id</td><td>text</td><td>Required</td><td>Stable document ID.</td></tr>
-<tr><td>2</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>Monitoring category or ALL.</td></tr>
-<tr><td>3</td><td>title</td><td>title</td><td>text</td><td>Required</td><td>Document title.</td></tr>
-<tr><td>4</td><td>url</td><td>url</td><td>text</td><td>Required</td><td>Approved https or same-origin relative URL; javascript/file/data URLs rejected.</td></tr>
-<tr><td>5</td><td>as_of_date</td><td>as_of_date</td><td>date</td><td>Blank allowed</td><td>Document reporting date.</td></tr>
+<tr><td>1</td><td>Document_ID</td><td>document_id</td><td>text</td><td>Required</td><td>Stable document ID.</td></tr>
+<tr><td>2</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>Monitoring category or ALL.</td></tr>
+<tr><td>3</td><td>Title</td><td>title</td><td>text</td><td>Required</td><td>Document title.</td></tr>
+<tr><td>4</td><td>URL</td><td>url</td><td>text</td><td>Required</td><td>Approved https or same-origin relative URL; javascript/file/data URLs rejected.</td></tr>
+<tr><td>5</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Blank allowed</td><td>Document reporting date.</td></tr>
 </table></div>
 <h3>Covenants_History.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>As Of Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>4</td><td>Originating Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
-<tr><td>5</td><td>Underwriting Team Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
+<tr><td>4</td><td>Originating_Unit</td><td>origination_unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
+<tr><td>5</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
-<tr><td>7</td><td>Product Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
-<tr><td>8</td><td>OU Expense Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>9</td><td>CU Expense Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
-<tr><td>10</td><td>Relationship ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>11</td><td>Relationship Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>12</td><td>Borrowers Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
-<tr><td>13</td><td>CA Number</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
-<tr><td>14</td><td>Facility Number</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
-<tr><td>15</td><td>Product Program Name</td><td>product_program_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>16</td><td>Facility Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
-<tr><td>17</td><td>Covenant Number</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
-<tr><td>18</td><td>Periodicity / Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>19</td><td>Covenant Due Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
-<tr><td>20</td><td>Covenant Deferred Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
-<tr><td>21</td><td>No of Days Past Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
-<tr><td>22</td><td>Coming Due / Past Due</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
-<tr><td>23</td><td>Past Due Category</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
-<tr><td>24</td><td>Covenant Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
-<tr><td>25</td><td>Covenant Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
-<tr><td>26</td><td>45 Days Past Due Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
-<tr><td>27</td><td>Control Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
-<tr><td>28</td><td>item_id</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
-<tr><td>29</td><td>category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
-<tr><td>30</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>31</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>32</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>33</td><td>owner_role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
-<tr><td>34</td><td>deferral_approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
-<tr><td>35</td><td>effective_due_date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
-<tr><td>36</td><td>aging_bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
-<tr><td>37</td><td>action_required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
-<tr><td>38</td><td>critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
-<tr><td>39</td><td>coming_due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
-<tr><td>40</td><td>classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
-<tr><td>41</td><td>next_month_end</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
-<tr><td>42</td><td>expired_bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
-<tr><td>43</td><td>deficiency_bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
-<tr><td>44</td><td>pal_covenant_bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
-<tr><td>45</td><td>pal_due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
-<tr><td>46</td><td>ccm_status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
-<tr><td>47</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
-<tr><td>48</td><td>cumulative_deferred_days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>49</td><td>modified_in_reporting_month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>50</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
-<tr><td>51</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>7</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
+<tr><td>8</td><td>OU_Expense_Code</td><td>ou_expense_code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>9</td><td>CU_Expense_Code</td><td>cu_expense_code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
+<tr><td>10</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
+<tr><td>11</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>12</td><td>Borrowers_Name</td><td>borrowers_name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
+<tr><td>13</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
+<tr><td>14</td><td>Facility_ID</td><td>facility_id</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
+<tr><td>15</td><td>Product_Program_Name</td><td>product_program_name</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>16</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Source facility type.</td></tr>
+<tr><td>17</td><td>Covenant_ID</td><td>covenant_id</td><td>text</td><td>Blank allowed</td><td>Native covenant identifier; required for COVENANTS.</td></tr>
+<tr><td>18</td><td>Periodicity_Frequency</td><td>frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
+<tr><td>19</td><td>Covenant_Due_Date</td><td>due_date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
+<tr><td>20</td><td>Covenant_Deferred_Date</td><td>deferred_date</td><td>date</td><td>Blank allowed</td><td>Approved deferred due date; used only when deferral_approved is true.</td></tr>
+<tr><td>21</td><td>No_Of_Days_Past_Due</td><td>days_past_due</td><td>integer</td><td>Blank allowed</td><td>Prepared output: nonnegative days as of source date; null if no date.</td></tr>
+<tr><td>22</td><td>Coming_Due_Past_Due</td><td>status</td><td>text</td><td>Required</td><td>PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.</td></tr>
+<tr><td>23</td><td>Past_Due_Category</td><td>source_aging_bucket</td><td>text</td><td>Blank allowed</td><td>Original source aging category for past-due reconciliation and coming-due display bands.</td></tr>
+<tr><td>24</td><td>Covenant_Description</td><td>description</td><td>text</td><td>Blank allowed</td><td>Covenant or monitoring description; internal covenants excluded during upstream preparation.</td></tr>
+<tr><td>25</td><td>Covenant_Remarks</td><td>remarks</td><td>text</td><td>Blank allowed</td><td>Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.</td></tr>
+<tr><td>26</td><td>45_Days_Past_Due_Date</td><td>day45_date</td><td>date</td><td>Blank allowed</td><td>Source 45 Days Past Due Date; retained separately from computed day count.</td></tr>
+<tr><td>27</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
+<tr><td>28</td><td>Item_ID</td><td>item_id</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
+<tr><td>29</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
+<tr><td>30</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>31</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>32</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>33</td><td>Underwriter_Role</td><td>owner_role</td><td>text</td><td>Required</td><td>UNDERWRITER or SPECIALIST; one accountable owner per item.</td></tr>
+<tr><td>34</td><td>Deferral_Approved</td><td>deferral_approved</td><td>Yes / No</td><td>Required</td><td>Explicit source approval; a date alone does not authorize a deferral.</td></tr>
+<tr><td>35</td><td>Effective_Due_Date</td><td>effective_due_date</td><td>date</td><td>Blank allowed</td><td>Prepared output: approved deferral date or original due date.</td></tr>
+<tr><td>36</td><td>Aging_Bucket</td><td>aging_bucket</td><td>text</td><td>Required</td><td>Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.</td></tr>
+<tr><td>37</td><td>Action_Required</td><td>action_required</td><td>Yes / No</td><td>Required</td><td>Prepared output: actionable under the documented category rule.</td></tr>
+<tr><td>38</td><td>Critical</td><td>critical</td><td>Yes / No</td><td>Required</td><td>Prepared output: category escalation threshold; rule version attached to release.</td></tr>
+<tr><td>39</td><td>Coming_Due</td><td>coming_due</td><td>Yes / No</td><td>Required</td><td>Prepared output: COMING_DUE in inclusive next 3 calendar months.</td></tr>
+<tr><td>40</td><td>Classification</td><td>classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
+<tr><td>41</td><td>Next_Month_End</td><td>next_month_end</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
+<tr><td>42</td><td>Expired_Bucket</td><td>expired_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source expiration bucket, kept separately from deficiency aging.</td></tr>
+<tr><td>43</td><td>Deficiency_Bucket</td><td>deficiency_bucket</td><td>text</td><td>Blank allowed</td><td>Insurance source deficiency bucket; never overwrite expiration bucket.</td></tr>
+<tr><td>44</td><td>PAL_Covenant_Bucket</td><td>pal_covenant_bucket</td><td>text</td><td>Blank allowed</td><td>PAL past due covenant bands 1-45 / 46-90 / &gt;90, based on effective due date.</td></tr>
+<tr><td>45</td><td>PAL_Due30</td><td>pal_due30</td><td>Yes / No</td><td>Required</td><td>Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.</td></tr>
+<tr><td>46</td><td>CCM_Status</td><td>ccm_status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
+<tr><td>47</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>48</td><td>Cumulative_Deferred_Days</td><td>cumulative_deferred_days</td><td>integer</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>49</td><td>Modified_In_Reporting_Month</td><td>modified_in_reporting_month</td><td>Yes / No</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>50</td><td>Maker_Date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
+<tr><td>51</td><td>Event_Type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
 <h4>Portfolio</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
 <tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
@@ -597,7 +597,7 @@
 <tr><td>10</td><td>Risk_Category</td><td>risk_category</td><td>text</td><td>Blank allowed</td><td>Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.</td></tr>
 <tr><td>11</td><td>Relationship_ID</td><td>relationship_id</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
 <tr><td>12</td><td>Relationship_Name</td><td>relationship_name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>13</td><td>CAID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
+<tr><td>13</td><td>CA_ID</td><td>ca_id</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
 <tr><td>14</td><td>Lead_Underwriter</td><td>owner_name</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
 <tr><td>15</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>16</td><td>Control_Unit</td><td>control_unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
@@ -610,7 +610,7 @@
 <tr><td>23</td><td>Product_Underwriter</td><td>product_underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not an additional accountable workload owner.</td></tr>
 <tr><td>24</td><td>CA_Expiration_Date</td><td>ca_expiration_date</td><td>date</td><td>Blank allowed</td><td>CA expiration date; does not establish authorization workflow status.</td></tr>
 <tr><td>25</td><td>Credit_Classification</td><td>classification</td><td>text</td><td>Required</td><td>Canonical credit classification code.</td></tr>
-<tr><td>26</td><td>PSE_non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Controlled PSE classification from Product_Mapping.</td></tr>
+<tr><td>26</td><td>PSE_Non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Controlled PSE classification from Product_Mapping.</td></tr>
 <tr><td>27</td><td>SFT_Facility</td><td>sft</td><td>Yes / No</td><td>Required</td><td>Controlled SFT classification; do not infer from blank fields.</td></tr>
 <tr><td>28</td><td>Facility_First_Approval_Date</td><td>facility_first_approval_date</td><td>date</td><td>Blank allowed</td><td>Original facility approval date, kept separately from origination.</td></tr>
 <tr><td>29</td><td>Origination_Date</td><td>origination_date</td><td>date</td><td>Blank allowed</td><td>Primary new-business date.</td></tr>
@@ -623,53 +623,53 @@
 <tr><td>36</td><td>Total_Unused_Commitment</td><td>unused_commitment</td><td>number</td><td>Required</td><td>Source supplied for Americas; computed for EMEA/APAC.</td></tr>
 <tr><td>37</td><td>Total_Undrawn</td><td>total_undrawn</td><td>number</td><td>Required</td><td>Prepared output: tfa minus total_os; negative values retained for review.</td></tr>
 <tr><td>38</td><td>ROTCE</td><td>rotce</td><td>number</td><td>Blank allowed</td><td>Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null.</td></tr>
-<tr><td>39</td><td>facility_key</td><td>facility_key</td><td>text</td><td>Required</td><td>Unique source + facility identifier at the selected snapshot.</td></tr>
-<tr><td>40</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
-<tr><td>41</td><td>source_record_id</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
-<tr><td>42</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
-<tr><td>43</td><td>maturity_basis</td><td>maturity_basis</td><td>text</td><td>Required</td><td>DATED, DEMAND or UNKNOWN.</td></tr>
-<tr><td>44</td><td>ytd_new</td><td>ytd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting year to as_of_date.</td></tr>
-<tr><td>45</td><td>mtd_new</td><td>mtd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting month to as_of_date.</td></tr>
-<tr><td>46</td><td>reporting_currency</td><td>reporting_currency</td><td>text</td><td>Required</td><td>USD; amounts must be translated upstream using an approved FX basis.</td></tr>
-<tr><td>47</td><td>unused_uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Required</td><td>Total undrawn minus unused commitment; PAL overview card.</td></tr>
-<tr><td>48</td><td>pal_ca_expired</td><td>pal_ca_expired</td><td>Yes / No</td><td>Required</td><td>CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.</td></tr>
-<tr><td>49</td><td>pal_ca_month</td><td>pal_ca_month</td><td>text</td><td>Blank allowed</td><td>Eligible CA expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
-<tr><td>50</td><td>pal_facility_expired</td><td>pal_facility_expired</td><td>Yes / No</td><td>Required</td><td>Facility maturity before report date; CM and DM both included.</td></tr>
-<tr><td>51</td><td>pal_facility_month</td><td>pal_facility_month</td><td>text</td><td>Blank allowed</td><td>Facility expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
-<tr><td>52</td><td>pal_approval_period</td><td>pal_approval_period</td><td>text</td><td>Blank allowed</td><td>CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.</td></tr>
-<tr><td>53</td><td>pal_pipeline_bucket</td><td>pal_pipeline_bucket</td><td>text</td><td>Blank allowed</td><td>1-30 / 31-60 / 61-90 / &gt;90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.</td></tr>
-<tr><td>54</td><td>pal_spread_bucket</td><td>pal_spread_bucket</td><td>text</td><td>Blank allowed</td><td>SBL with Direct OS &gt;0; &lt;=70 / 70-125 / &gt;125 bps. Missing spread remains null.</td></tr>
-<tr><td>55</td><td>pal_spread_weight</td><td>pal_spread_weight</td><td>number</td><td>Blank allowed</td><td>Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.</td></tr>
-<tr><td>56</td><td>pal_spread_os</td><td>pal_spread_os</td><td>number</td><td>Required</td><td>Direct OS denominator for valid-spread SBL; zero otherwise.</td></tr>
-<tr><td>57</td><td>pal_pricing_exception</td><td>pal_pricing_exception</td><td>Yes / No</td><td>Required</td><td>SBL Direct OS &gt;0 and pricing exception Yes.</td></tr>
-<tr><td>58</td><td>pal_prior_ytd</td><td>pal_prior_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior year through same month/day.</td></tr>
-<tr><td>59</td><td>pal_prior_mtd</td><td>pal_prior_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.</td></tr>
-<tr><td>60</td><td>pal_new_ytd</td><td>pal_new_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>61</td><td>pal_approved_ytd</td><td>pal_approved_ytd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>62</td><td>pal_pending_ytd</td><td>pal_pending_ytd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within YTD through report date. Weeks start Monday.</td></tr>
-<tr><td>63</td><td>pal_new_qtd</td><td>pal_new_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>64</td><td>pal_approved_qtd</td><td>pal_approved_qtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>65</td><td>pal_pending_qtd</td><td>pal_pending_qtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within QTD through report date. Weeks start Monday.</td></tr>
-<tr><td>66</td><td>pal_new_mtd</td><td>pal_new_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>67</td><td>pal_approved_mtd</td><td>pal_approved_mtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>68</td><td>pal_pending_mtd</td><td>pal_pending_mtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within MTD through report date. Weeks start Monday.</td></tr>
-<tr><td>69</td><td>pal_new_wtd</td><td>pal_new_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>70</td><td>pal_approved_wtd</td><td>pal_approved_wtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>71</td><td>pal_pending_wtd</td><td>pal_pending_wtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within WTD through report date. Weeks start Monday.</td></tr>
-<tr><td>72</td><td>pal_prior_qtd</td><td>pal_prior_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.</td></tr>
-<tr><td>73</td><td>pal_prior_wtd</td><td>pal_prior_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.</td></tr>
-<tr><td>74</td><td>rotce_period</td><td>rotce_period</td><td>text</td><td>Blank allowed</td><td>Source ROTCE reporting period, displayed independently of portfolio report date.</td></tr>
-<tr><td>75</td><td>banker_name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
+<tr><td>39</td><td>Facility_Key</td><td>facility_key</td><td>text</td><td>Required</td><td>Unique source + facility identifier at the selected snapshot.</td></tr>
+<tr><td>40</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
+<tr><td>41</td><td>Source_Record_ID</td><td>source_record_id</td><td>text</td><td>Required</td><td>Stable source key; never a worksheet row number.</td></tr>
+<tr><td>42</td><td>Underwriter_ID</td><td>owner_id</td><td>text</td><td>Required</td><td>Stable staff identifier; use UNASSIGNED explicitly when unresolved.</td></tr>
+<tr><td>43</td><td>Maturity_Basis</td><td>maturity_basis</td><td>text</td><td>Required</td><td>DATED, DEMAND or UNKNOWN.</td></tr>
+<tr><td>44</td><td>YTD_New</td><td>ytd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting year to as_of_date.</td></tr>
+<tr><td>45</td><td>MTD_New</td><td>mtd_new</td><td>Yes / No</td><td>Required</td><td>Prepared output: non-PSE business date in reporting month to as_of_date.</td></tr>
+<tr><td>46</td><td>Reporting_Currency</td><td>reporting_currency</td><td>text</td><td>Required</td><td>USD; amounts must be translated upstream using an approved FX basis.</td></tr>
+<tr><td>47</td><td>Unused_Uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Required</td><td>Total undrawn minus unused commitment; PAL overview card.</td></tr>
+<tr><td>48</td><td>PAL_CA_Expired</td><td>pal_ca_expired</td><td>Yes / No</td><td>Required</td><td>CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.</td></tr>
+<tr><td>49</td><td>PAL_CA_Month</td><td>pal_ca_month</td><td>text</td><td>Blank allowed</td><td>Eligible CA expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
+<tr><td>50</td><td>PAL_Facility_Expired</td><td>pal_facility_expired</td><td>Yes / No</td><td>Required</td><td>Facility maturity before report date; CM and DM both included.</td></tr>
+<tr><td>51</td><td>PAL_Facility_Month</td><td>pal_facility_month</td><td>text</td><td>Blank allowed</td><td>Facility expiry month in reporting month and next two months, date &gt;= report date; otherwise null.</td></tr>
+<tr><td>52</td><td>PAL_Approval_Period</td><td>pal_approval_period</td><td>text</td><td>Blank allowed</td><td>CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.</td></tr>
+<tr><td>53</td><td>PAL_Pipeline_Bucket</td><td>pal_pipeline_bucket</td><td>text</td><td>Blank allowed</td><td>1-30 / 31-60 / 61-90 / &gt;90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.</td></tr>
+<tr><td>54</td><td>PAL_Spread_Bucket</td><td>pal_spread_bucket</td><td>text</td><td>Blank allowed</td><td>SBL with Direct OS &gt;0; &lt;=70 / 70-125 / &gt;125 bps. Missing spread remains null.</td></tr>
+<tr><td>55</td><td>PAL_Spread_Weight</td><td>pal_spread_weight</td><td>number</td><td>Blank allowed</td><td>Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.</td></tr>
+<tr><td>56</td><td>PAL_Spread_OS</td><td>pal_spread_os</td><td>number</td><td>Required</td><td>Direct OS denominator for valid-spread SBL; zero otherwise.</td></tr>
+<tr><td>57</td><td>PAL_Pricing_Exception</td><td>pal_pricing_exception</td><td>Yes / No</td><td>Required</td><td>SBL Direct OS &gt;0 and pricing exception Yes.</td></tr>
+<tr><td>58</td><td>PAL_Prior_YTD</td><td>pal_prior_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior year through same month/day.</td></tr>
+<tr><td>59</td><td>PAL_Prior_MTD</td><td>pal_prior_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.</td></tr>
+<tr><td>60</td><td>PAL_New_YTD</td><td>pal_new_ytd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>61</td><td>PAL_Approved_YTD</td><td>pal_approved_ytd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>62</td><td>PAL_Pending_YTD</td><td>pal_pending_ytd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within YTD through report date. Weeks start Monday.</td></tr>
+<tr><td>63</td><td>PAL_New_QTD</td><td>pal_new_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>64</td><td>PAL_Approved_QTD</td><td>pal_approved_qtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>65</td><td>PAL_Pending_QTD</td><td>pal_pending_qtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within QTD through report date. Weeks start Monday.</td></tr>
+<tr><td>66</td><td>PAL_New_MTD</td><td>pal_new_mtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>67</td><td>PAL_Approved_MTD</td><td>pal_approved_mtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>68</td><td>PAL_Pending_MTD</td><td>pal_pending_mtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within MTD through report date. Weeks start Monday.</td></tr>
+<tr><td>69</td><td>PAL_New_WTD</td><td>pal_new_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>70</td><td>PAL_Approved_WTD</td><td>pal_approved_wtd</td><td>Yes / No</td><td>Required</td><td>NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>71</td><td>PAL_Pending_WTD</td><td>pal_pending_wtd</td><td>Yes / No</td><td>Required</td><td>Eligible pending closure first approval within WTD through report date. Weeks start Monday.</td></tr>
+<tr><td>72</td><td>PAL_Prior_QTD</td><td>pal_prior_qtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.</td></tr>
+<tr><td>73</td><td>PAL_Prior_WTD</td><td>pal_prior_wtd</td><td>Yes / No</td><td>Required</td><td>Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.</td></tr>
+<tr><td>74</td><td>ROTCE_Period</td><td>rotce_period</td><td>text</td><td>Blank allowed</td><td>Source ROTCE reporting period, displayed independently of portfolio report date.</td></tr>
+<tr><td>75</td><td>Banker_Name</td><td>banker_name</td><td>text</td><td>Blank allowed</td><td>Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.</td></tr>
 </table></div>
 <h4>Snapshots</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>as_of_date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Unique complete reporting date.</td></tr>
-<tr><td>2</td><td>complete</td><td>complete</td><td>Yes / No</td><td>Required</td><td>Yes only for complete validated source coverage.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Unique complete reporting date.</td></tr>
+<tr><td>2</td><td>Complete</td><td>complete</td><td>Yes / No</td><td>Required</td><td>Yes only for complete validated source coverage.</td></tr>
 </table></div>
 <h4>Controls</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>as_of_date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Exact snapshot reporting date.</td></tr>
-<tr><td>2</td><td>domain</td><td>domain</td><td>text</td><td>Required</td><td>COVENANTS or PORTFOLIO.</td></tr>
-<tr><td>3</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Stable source ID matching the snapshot rows.</td></tr>
-<tr><td>4</td><td>coverage</td><td>coverage</td><td>text</td><td>Required</td><td>ALL_OBLIGATIONS or EXCEPTIONS_ONLY.</td></tr>
-<tr><td>5</td><td>record_count</td><td>record_count</td><td>integer</td><td>Required</td><td>Complete record count for this date and source.</td></tr>
+<tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Exact snapshot reporting date.</td></tr>
+<tr><td>2</td><td>Domain</td><td>domain</td><td>text</td><td>Required</td><td>COVENANTS or PORTFOLIO.</td></tr>
+<tr><td>3</td><td>Source_ID</td><td>source_id</td><td>text</td><td>Required</td><td>Stable source ID matching the snapshot rows.</td></tr>
+<tr><td>4</td><td>Coverage</td><td>coverage</td><td>text</td><td>Required</td><td>ALL_OBLIGATIONS or EXCEPTIONS_ONLY.</td></tr>
+<tr><td>5</td><td>Record_Count</td><td>record_count</td><td>integer</td><td>Required</td><td>Complete record count for this date and source.</td></tr>
 </table></div>
 <p>Schema references: original Covenants dashboard covenants.js and the headers of Covenants_current.xlsx / Covenants_Activity_Report.xlsx; separate Insurance/Appraisals dashboard contracts; LPTM Facility/aggregate output mappings and CCM schema. All included example rows are synthetic. No existing live workbook is modified.</p></html>
