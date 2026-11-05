@@ -1,28 +1,32 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Dashboard Excel data guide</title><style>body{font:15px/1.6 Arial,sans-serif;color:#203754;max-width:1250px;margin:40px auto;padding:0 24px}h1,h2,h3{color:#17365d}table{border-collapse:collapse;width:100%;margin:16px 0 28px}th,td{border:1px solid #d8e2ef;padding:9px;text-align:left;vertical-align:top}th{background:#edf3f9}code{overflow-wrap:anywhere}tr:nth-child(even){background:#f8fafc}.scroll{overflow:auto}li{margin-bottom:12px}</style>
 <h1>Dashboard Excel data guide</h1>
-<p>Replace the synthetic sample rows with prepared source data. The dashboards read these Excel attachments directly. No JSON data files or manifest are required in workbook mode.</p>
+<p>Replace the synthetic sample rows with prepared source data. The dashboards read these Excel attachments directly. No JSON data files or manifest are required in workbook mode. Sources_current.xlsx and Sources_previous.xlsx are not used.</p>
 <h2>Upload and replace data</h2><ol>
 <li>Keep filenames, sheet names and headers exactly as supplied. Covenants follows the original Covenants dashboard and Covenants_current.xlsx source headers. Activity follows Covenants_Activity_Report.xlsx (Maker Date and Covenant Compliance), delivered under Activity_current.xlsx. Insurance and Appraisals each use an independent domain contract, not LPTM. Only Facility follows the LPTM facility export; CCM follows its CCM schema and Trends follows the LPTM aggregate export. Insurance/Appraisal legacy source-file column order has not been verified; use the exact supplied domain template.</li>
 <li>Replace data values in every relevant sheet. Keep identifiers as text, dates as YYYY-MM-DD text or real date-only Excel cells, amounts as numeric USD units, and flag fields as plain Yes/No text (no checkboxes or TRUE/FALSE cells). PSE_non_PSE uses PSE/non-PSE; SFT_Facility uses Yes/No; Committed_Uncommitted uses Committed/Uncommitted. ROTCE is a decimal ratio, not a value multiplied by 100. No formulas, merged cells or subtotal rows in input data.</li>
 <li>Retain Metadata in every file. Set schema_version=2 and workbook_contract=2. Use one new bundle_id across the entire upload, including previous and history files. Keep each file's dataset and period values. Update rows and any auxiliary sheet row counts. is_demo must remain Yes for samples; use No only for approved real records.</li>
-<li>Sources_current.xlsx is the source-control workbook. It declares each source ID, domain, reporting date, coverage and row count. Reconcile it against all current obligations, facility records and events. Sources_previous.xlsx does the same for optional previous files. Reporting dates describe source observations, not the upload date.</li>
-<li>Upload the complete selected set to attachment page 3845862527. Upload Sources_current.xlsx last and then reload. Updates are not atomic: the loader rejects mixed bundle IDs instead of combining different releases. No live data is stored in browser storage.</li>
+<li>Source filenames, IDs, domains and coverage are fixed in the application. There are no Sources workbooks to maintain. Reporting dates come from each sheet’s As Of Date / Report_Date rows, never the upload date. A source sheet must have one reporting date. For a zero-row sheet only, supply as_of_date as YYYY-MM-DD text in Metadata because no row date exists.</li>
+<li>Upload the complete selected set to attachment page 3845862527. Upload previous files first, then all current files and selected history files; upload Facility_current.xlsx last and then reload. Updates are not atomic: the loader rejects mixed bundle IDs instead of combining different releases. No live data is stored in browser storage.</li>
 <li>For live use, set allowSampleData:false in the dashboard macros. Remove or replace old sample comparison attachments too. A missing or invalid optional previous file makes that domain's comparison unavailable; it is never replaced with an estimated change. A malformed required current file reports an error.</li>
 </ol>
 <h2>What feeds each dashboard</h2>
 <table><tr><th>Dashboard</th><th>Primary Excel inputs</th></tr>
-<tr><td>Portfolio Overview / Relationship Deep Dive</td><td>Facility_current.xlsx / Data. Facility_previous.xlsx supports exact previous-weekday comparisons. Portfolio_Aggregated_History.xlsx supplies only the Trends section within Portfolio and the Trends compatibility route, never daily KPI or entity comparisons.</td></tr>
+<tr><td>Portfolio Overview / Relationship Deep Dive</td><td>Facility_current.xlsx / Data. Facility_previous.xlsx supports comparisons with the supplied earlier reporting snapshot. Portfolio_Aggregated_History.xlsx supplies only the Trends section within Portfolio and the Trends compatibility route, never daily KPI or entity comparisons.</td></tr>
 <tr><td>Covenants</td><td>Covenants_current.xlsx. Facility_current.xlsx enriches exact facility links; Covenants_previous.xlsx supplies the comparison; Facility_previous.xlsx supplies its matched exposure. Optional Covenants_History.xlsx supplies historical record drill-downs only, not the comparison baseline.</td></tr>
 <tr><td>Covenants Activity</td><td>Activity_current.xlsx, with covenant and facility enrichment. Each row is one event; never deduplicate repeated activity to an obligation count.</td></tr>
 <tr><td>CA Expiration / Facility Maturity</td><td>Facility_current.xlsx / CA and Maturity respectively. These are prepared obligation populations, separate from Data's facility balances. Keep each sheet's source controls and exact identifiers.</td></tr>
 <tr><td>CCM / Insurances / Appraisals</td><td>CCM_current.xlsx / Insurances_current.xlsx / Appraisals_current.xlsx respectively.</td></tr>
 <tr><td>Underwriter Summary / Underwriter Workload</td><td>The combined current monitoring populations from Covenants, CA, Maturity, CCM, Insurances and Appraisals. Summary charts and registers preserve each original obligation key.</td></tr>
 <tr><td>Related documents</td><td>Documents.xlsx (optional). Missing document data does not invent links.</td></tr></table>
+<h2>Weekly refresh</h2><ol>
+<li>Put the previous reporting snapshot in each _previous file and the new snapshot in its matching _current file. Keep the exact filenames and headers. As Of Date records the reporting date; Maker Date remains the individual Activity event date.</li>
+<li>Update Metadata row counts and period=current/previous. Give the entire upload one new bundle_id, including optional history. Keep flags as Yes/No text. Source IDs and domain mappings stay fixed and need no weekly edits.</li>
+<li>Upload the complete set, with Facility_current.xlsx last, and reload. Fixed-name replacements are not atomic; mixed bundle IDs are rejected while uploads are incomplete.</li></ol>
 <h2>Grain and comparison methodology</h2>
 <p>Current monitoring has one row per source obligation/association, relationship, facility and cycle. Facility Data has one row per valid facility snapshot. Keep stable item_id, facility_key, event_id and source_record_id values; do not replace them with Excel row numbers. Join only exact entity IDs with compatible reporting dates and CA context. Display names are not join keys. Unknown optional values remain blank; a true zero remains numeric zero.</p>
 <p>Prepared flags such as action_required, critical, coming_due, pal_ca_expired and the PAL period fields remain explicit input columns. Populate them using your approved source rules and reconcile them to the dates/status fields. The loader does not guess missing business rules from names or upload dates. Raw source exports require the additional validation fields and Metadata supplied here before use.</p>
-<p>Every snapshot comparison uses its matching _current and _previous workbooks, with Sources_current and Sources_previous controls. Missing previous files remain unavailable even if historical records or consolidated Trends data exist.</p>
-<p>Previous files use the same columns as their current counterparts. Their Metadata.period is previous, and their reporting dates are historical. Dashboard weekday deltas require the immediately preceding weekday with matching source coverage. An older or prior-month snapshot remains historical data and is not labelled as a weekday comparison.</p>
+<p>Every snapshot comparison uses its matching _current and _previous workbooks. The application constructs source controls from the fixed mapping and validated workbook contents. Missing previous files remain unavailable even if historical records or consolidated Trends data exist.</p>
+<p>Previous files use the same columns as their current counterparts. Their Metadata.period is previous, and their reporting dates are historical. Weekly deltas compare the supplied current and previous reporting dates with matching configured coverage. The previous date must be strictly earlier; it need not be the previous weekday or exactly seven days earlier. Both dates are displayed, so a skipped reporting week is not silently labelled as one-week growth.</p>
 <p>Portfolio_Aggregated_History.xlsx contains one row per Report_Date + Region + Product_Program + Product_Sub_Program + Committed_Uncommitted + PSE_non_PSE. It is already aggregated. Never include a total row alongside detail groups, duplicate a group, or add balances across reporting dates. Keep facility/underwriter-only fields blank and comparison_ready No. Trends sums measures within a date and uses the last supplied snapshot in the matching month for MoM/QoQ/YoY. Missing baseline or a zero denominator is unavailable. Distinct relationship/CA counts across groups can overlap and must not be added as portfolio-wide distinct counts.</p>
 <p>Products are source values, not a fixed four-product list. SBL, Structured Lending, CRE, Partner Lending, Law Firm, RRE and additional programs are accepted consistently when their exact values match across relevant files.</p>
 <p>Covenants_History.xlsx separates Data (covenant rows), Portfolio (same-date facility snapshots), Snapshots (unique complete dates), and Controls (counts by date/domain/source). No earlier snapshot is manufactured from today's data.</p>
@@ -41,11 +45,18 @@
 <tr><td>Insurances_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 51</td></tr>
 <tr><td>Appraisals_current.xlsx</td><td>Current input</td><td>Data: 86</td></tr>
 <tr><td>Appraisals_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 81</td></tr>
-<tr><td>Sources_current.xlsx</td><td>Current input</td><td>Data: 8</td></tr>
-<tr><td>Sources_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 8</td></tr>
 <tr><td>Portfolio_Aggregated_History.xlsx</td><td>Current input</td><td>Data: 120</td></tr>
 <tr><td>Documents.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 1</td></tr>
 <tr><td>Covenants_History.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 388, Portfolio: 240, Snapshots: 2, Controls: 4</td></tr>
+</table><h2>Fixed source mapping</h2><p>These mappings are shipped in the application, not another upload file. Supply the complete configured population. Coverage is a declared feed contract, not proof that an upstream export is complete; if a feed intentionally contains exceptions only, its configured coverage must be changed once before use.</p><table><tr><th>File / sheet</th><th>Source ID</th><th>Domain</th><th>Coverage</th></tr>
+<tr><td>Facility_current.xlsx / Data</td><td>SRC_PORTFOLIO</td><td>PORTFOLIO</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Facility_current.xlsx / CA</td><td>SRC_CA</td><td>CA</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Facility_current.xlsx / Maturity</td><td>SRC_FACILITY</td><td>FACILITY</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Covenants_current.xlsx / Data</td><td>SRC_COVENANTS</td><td>COVENANTS</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Activity_current.xlsx / Data</td><td>SRC_ACTIVITY</td><td>ACTIVITY</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>CCM_current.xlsx / Data</td><td>SRC_CCM</td><td>CCM</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Insurances_current.xlsx / Data</td><td>SRC_INSURANCE</td><td>INSURANCE</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Appraisals_current.xlsx / Data</td><td>SRC_APPRAISALS</td><td>APPRAISALS</td><td>ALL_OBLIGATIONS</td></tr>
 </table><h2>Exact column order and definitions</h2>
 <h3>Facility_current.xlsx / Facility_previous.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
@@ -482,24 +493,12 @@
 <tr><td>49</td><td>event_date</td><td>event_date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 <tr><td>50</td><td>event_type</td><td>event_type</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 </table></div>
-<h3>Sources_current.xlsx / Sources_previous.xlsx</h3>
-<h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>source_id</td><td>source_id</td><td>text</td><td>Required</td><td>Unique source/feed identifier.</td></tr>
-<tr><td>2</td><td>domain</td><td>domain</td><td>text</td><td>Required</td><td>Monitoring category, PORTFOLIO, HISTORY or ACTIVITY.</td></tr>
-<tr><td>3</td><td>source_name</td><td>source_name</td><td>text</td><td>Required</td><td>Human-readable extract name.</td></tr>
-<tr><td>4</td><td>source_file</td><td>source_file</td><td>text</td><td>Required</td><td>Actual original filename or approved report reference.</td></tr>
-<tr><td>5</td><td>as_of_date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Source business date; one per selected source snapshot.</td></tr>
-<tr><td>6</td><td>coverage</td><td>coverage</td><td>text</td><td>Required</td><td>ALL_OBLIGATIONS or EXCEPTIONS_ONLY; an exceptions-only feed cannot support clearance rate.</td></tr>
-<tr><td>7</td><td>record_count</td><td>record_count</td><td>integer</td><td>Required</td><td>Reconciled published row count for this source, after exclusions.</td></tr>
-<tr><td>8</td><td>source_owner</td><td>source_owner</td><td>text</td><td>Required</td><td>Accountable source provider.</td></tr>
-<tr><td>9</td><td>quality_note</td><td>quality_note</td><td>text</td><td>Blank allowed</td><td>Specific limitation, stale date or mapping issue; not a generic quality score.</td></tr>
-</table></div>
 <h3>Portfolio_Aggregated_History.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
 <tr><td>1</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Required</td><td>Historical snapshot date; stocks must not be summed across dates.</td></tr>
 <tr><td>2</td><td>Region</td><td>region</td><td>text</td><td>Required</td><td>Canonical region.</td></tr>
 <tr><td>3</td><td>Product_Program</td><td>product</td><td>text</td><td>Required</td><td>Canonical product.</td></tr>
-<tr><td>4</td><td>Product_Sub_Program</td><td>product_subprogram</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: product_subprogram. Legacy aggregated history may leave this null.</td></tr>
+<tr><td>4</td><td>Product_Sub_Program</td><td>product_subprogram</td><td>text</td><td>Blank allowed</td><td>Consolidated Trends field: product_subprogram. Legacy aggregated history may leave this null.</td></tr>
 <tr><td>5</td><td>Committed_Uncommitted</td><td>commitment</td><td>Committed / Uncommitted</td><td>Required</td><td>COMMITTED or UNCOMMITTED.</td></tr>
 <tr><td>6</td><td>PSE_non_PSE</td><td>pse</td><td>PSE / non-PSE</td><td>Required</td><td>Canonical PSE flag.</td></tr>
 <tr><td>7</td><td>TFA</td><td>tfa</td><td>number</td><td>Required</td><td>Sum of prepared facility amounts, USD units.</td></tr>
@@ -508,20 +507,20 @@
 <tr><td>10</td><td>Direct_OS</td><td>Direct_OS</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>11</td><td>Contingent_OS</td><td>Contingent_OS</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>12</td><td>PSE_OS</td><td>PSE_OS</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
-<tr><td>13</td><td>Total_Unused_Commitment</td><td>unused_commitment</td><td>number</td><td>Blank allowed</td><td>Daily comparison snapshot: unused_commitment. Legacy aggregated history may leave this null.</td></tr>
+<tr><td>13</td><td>Total_Unused_Commitment</td><td>unused_commitment</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_commitment. Legacy aggregated history may leave this null.</td></tr>
 <tr><td>14</td><td>Total_Undrawn</td><td>Total_Undrawn</td><td>number</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>15</td><td>Count_of_Facilities</td><td>facility_count</td><td>integer</td><td>Required</td><td>Distinct facilities at this exact grain; nonadditive if grain overlaps.</td></tr>
 <tr><td>16</td><td>Count_of_Relationships</td><td>Count_of_Relationships</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>17</td><td>Count_of_CAs</td><td>Count_of_CAs</td><td>integer</td><td>Blank allowed</td><td>LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.</td></tr>
 <tr><td>18</td><td>history_id</td><td>history_id</td><td>text</td><td>Required</td><td>Unique report-date + region + product + subprogram + commitment + PSE aggregate key.</td></tr>
-<tr><td>19</td><td>facility_key</td><td>facility_key</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: facility_key. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>20</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: owner_id. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>21</td><td>Lead_Underwriter</td><td>owner_name</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: owner_name. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>22</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: team_lead. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>23</td><td>management_status</td><td>management_status</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: management_status. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>24</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Daily comparison snapshot: facility_type. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>25</td><td>unused_uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Blank allowed</td><td>Daily comparison snapshot: unused_uncommitted. Legacy aggregated history may leave this null.</td></tr>
-<tr><td>26</td><td>comparison_ready</td><td>comparison_ready</td><td>Yes / No</td><td>Blank allowed</td><td>Daily comparison snapshot: comparison_ready. Legacy aggregated history may leave this null.</td></tr>
+<tr><td>19</td><td>facility_key</td><td>facility_key</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>20</td><td>owner_id</td><td>owner_id</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>21</td><td>Lead_Underwriter</td><td>owner_name</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>22</td><td>Underwriting_Team_Lead</td><td>team_lead</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>23</td><td>management_status</td><td>management_status</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>24</td><td>facility_type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
+<tr><td>25</td><td>unused_uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_uncommitted. Legacy aggregated history may leave this null.</td></tr>
+<tr><td>26</td><td>comparison_ready</td><td>comparison_ready</td><td>Yes / No</td><td>Blank allowed</td><td>Must be No. Consolidated history is only for Trends, never snapshot comparisons.</td></tr>
 </table></div>
 <h3>Documents.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>

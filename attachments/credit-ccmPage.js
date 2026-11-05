@@ -1871,6 +1871,12 @@
                 header: 'banker_name',
               },
             ],
+            source: {
+              source_id: 'SRC_PORTFOLIO',
+              domain: 'PORTFOLIO',
+              source_name: 'Portfolio facilities',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
           {
             sheet: 'CA',
@@ -2256,6 +2262,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_CA',
+              domain: 'CA',
+              source_name: 'CA Expiration',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
           {
             sheet: 'Maturity',
@@ -2641,6 +2653,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_FACILITY',
+              domain: 'FACILITY',
+              source_name: 'Facility Maturity',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -3041,6 +3059,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_COVENANTS',
+              domain: 'COVENANTS',
+              source_name: 'Covenants',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -3340,6 +3364,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_ACTIVITY',
+              domain: 'ACTIVITY',
+              source_name: 'Covenants Activity',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -3732,6 +3762,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_CCM',
+              domain: 'CCM',
+              source_name: 'CCM',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -4124,6 +4160,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
+            source: {
+              source_id: 'SRC_INSURANCE',
+              domain: 'INSURANCE',
+              source_name: 'Insurances',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -4516,86 +4558,12 @@
                   'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
               },
             ],
-          },
-        ],
-      },
-      {
-        key: 'sources',
-        current: 'Sources_current.xlsx',
-        previous: 'Sources_previous.xlsx',
-        sheets: [
-          {
-            sheet: 'Data',
-            dataset: 'sources',
-            rows_key: 'rows',
-            category: null,
-            columns: [
-              {
-                field: 'source_id',
-                type: 'text',
-                required: true,
-                definition: 'Unique source/feed identifier.',
-                header: 'source_id',
-              },
-              {
-                field: 'domain',
-                type: 'text',
-                required: true,
-                definition: 'Monitoring category, PORTFOLIO, HISTORY or ACTIVITY.',
-                header: 'domain',
-              },
-              {
-                field: 'source_name',
-                type: 'text',
-                required: true,
-                definition: 'Human-readable extract name.',
-                header: 'source_name',
-              },
-              {
-                field: 'source_file',
-                type: 'text',
-                required: true,
-                definition: 'Actual original filename or approved report reference.',
-                header: 'source_file',
-              },
-              {
-                field: 'as_of_date',
-                type: 'date',
-                required: true,
-                definition: 'Source business date; one per selected source snapshot.',
-                header: 'as_of_date',
-              },
-              {
-                field: 'coverage',
-                type: 'text',
-                required: true,
-                definition:
-                  'ALL_OBLIGATIONS or EXCEPTIONS_ONLY; an exceptions-only feed cannot support clearance rate.',
-                header: 'coverage',
-              },
-              {
-                field: 'record_count',
-                type: 'integer',
-                required: true,
-                definition: 'Reconciled published row count for this source, after exclusions.',
-                header: 'record_count',
-              },
-              {
-                field: 'source_owner',
-                type: 'text',
-                required: true,
-                definition: 'Accountable source provider.',
-                header: 'source_owner',
-              },
-              {
-                field: 'quality_note',
-                type: 'text',
-                required: false,
-                definition:
-                  'Specific limitation, stale date or mapping issue; not a generic quality score.',
-                header: 'quality_note',
-              },
-            ],
+            source: {
+              source_id: 'SRC_APPRAISALS',
+              domain: 'APPRAISALS',
+              source_name: 'Appraisals',
+              coverage: 'ALL_OBLIGATIONS',
+            },
           },
         ],
       },
@@ -4635,7 +4603,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: product_subprogram. Legacy aggregated history may leave this null.',
+                  'Consolidated Trends field: product_subprogram. Legacy aggregated history may leave this null.',
                 header: 'Product_Sub_Program',
               },
               {
@@ -4704,7 +4672,7 @@
                 type: 'number',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: unused_commitment. Legacy aggregated history may leave this null.',
+                  'Consolidated Trends field: unused_commitment. Legacy aggregated history may leave this null.',
                 header: 'Total_Unused_Commitment',
               },
               {
@@ -4752,7 +4720,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: facility_key. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'facility_key',
               },
               {
@@ -4760,7 +4728,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: owner_id. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'owner_id',
               },
               {
@@ -4768,7 +4736,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: owner_name. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'Lead_Underwriter',
               },
               {
@@ -4776,7 +4744,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: team_lead. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'Underwriting_Team_Lead',
               },
               {
@@ -4784,7 +4752,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: management_status. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'management_status',
               },
               {
@@ -4792,7 +4760,7 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: facility_type. Legacy aggregated history may leave this null.',
+                  'Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.',
                 header: 'facility_type',
               },
               {
@@ -4800,7 +4768,7 @@
                 type: 'number',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: unused_uncommitted. Legacy aggregated history may leave this null.',
+                  'Consolidated Trends field: unused_uncommitted. Legacy aggregated history may leave this null.',
                 header: 'unused_uncommitted',
               },
               {
@@ -4808,7 +4776,7 @@
                 type: 'boolean',
                 required: false,
                 definition:
-                  'Daily comparison snapshot: comparison_ready. Legacy aggregated history may leave this null.',
+                  'Must be No. Consolidated history is only for Trends, never snapshot comparisons.',
                 header: 'comparison_ready',
                 encoding: 'yes_no',
               },
@@ -5957,6 +5925,7 @@
         sheets = new Map(),
         datasets = new Map();
       let identity;
+      const sources = [];
       const definition = (key) => definitions.find((item) => item.key === key);
 
       async function readSheet(book, spec, period = 'current') {
@@ -6016,7 +5985,12 @@
                       );
                   }
                 } else validate(spec.dataset, rows);
-                return { ...envelope, rows };
+                const result = { ...envelope, rows };
+                if (spec.source) {
+                  result.source = sourceControl(book, spec, result, period);
+                  if (period === 'current') sources.push(result.source);
+                }
+                return result;
               } catch (error) {
                 throw Error(filename + ' / ' + spec.sheet + ': ' + error.message);
               }
@@ -6026,10 +6000,39 @@
         return sheets.get(key);
       }
 
-      const sourceBook = definition('sources');
-      identity = await readSheet(sourceBook, sourceBook.sheets[0]);
-      const sources = identity.rows;
-      datasets.set('sources', Promise.resolve(sources));
+      function sourceControl(book, spec, envelope, period) {
+        const dates = [...new Set(envelope.rows.map((row) => row.as_of_date))];
+        // There is no data-row date in an empty population. Require an explicit
+        // As Of Date in Metadata for that case only; never use the upload date.
+        const date =
+          dates.length === 1 ? dates[0] : dates.length === 0 ? envelope.as_of_date : null;
+        if (
+          !date ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+          !Number.isFinite(Date.parse(date)) ||
+          new Date(date).toISOString().slice(0, 10) !== date
+        )
+          throw Error(
+            'One valid As Of Date is required per source sheet; empty sheets need Metadata.as_of_date',
+          );
+        if (envelope.rows.some((row) => row.source_id !== spec.source.source_id))
+          throw Error('Source ID does not match the configured workbook domain');
+        return {
+          ...spec.source,
+          source_file: book[period],
+          as_of_date: date,
+          record_count: envelope.rows.length,
+          source_owner: 'Not configured',
+          quality_note:
+            'Configured complete source population; count validated against workbook Metadata.',
+        };
+      }
+
+      const anchor = definition('facility');
+      identity = await readSheet(
+        anchor,
+        anchor.sheets.find((spec) => spec.dataset === 'portfolio'),
+      );
       const manifest = {
         schema_version: 2,
         bundle_id: identity.bundle_id,
@@ -6038,6 +6041,23 @@
       };
 
       function load(name) {
+        if (name === 'sources' && !datasets.has(name))
+          datasets.set(
+            name,
+            (async () => {
+              for (const book of definitions)
+                for (const spec of book.sheets.filter((spec) => spec.source)) {
+                  try {
+                    await readSheet(book, spec);
+                  } catch (error) {
+                    // Activity remains optional enrichment outside its owning dashboard.
+                    if (spec.dataset !== 'activity') throw error;
+                  }
+                }
+              validate('sources', sources);
+              return sources;
+            })(),
+          );
         if (!datasets.has(name))
           datasets.set(
             name,
@@ -6092,28 +6112,25 @@
       }
 
       async function previous() {
-        const previousSources = (await readSheet(sourceBook, sourceBook.sheets[0], 'previous'))
-          .rows;
         const result = { monitoring: [], portfolio: [], activity: [], sources: [] },
           errors = [];
-        // Each domain is independently optional. A missing CCM comparison must
-        // not remove an otherwise valid facility comparison.
-        for (const book of definitions.filter((b) => b.previous && b.key !== 'sources')) {
+        // Each domain is independently optional. Its stable identity is configured;
+        // dates come from the actual rows, and counts are checked against Metadata.
+        for (const book of definitions.filter((book) => book.previous)) {
           for (const spec of book.sheets) {
-            const domain = spec.category || spec.dataset.toUpperCase();
-            const controls = previousSources.filter((s) => s.domain === domain);
-            if (!controls.length) continue;
             try {
-              const rows = (await readSheet(book, spec, 'previous')).rows;
-              w.CreditDataCache.verifySources(spec.dataset, rows, controls);
-              result[spec.dataset].push(...rows);
-              result.sources.push(...controls);
+              const envelope = await readSheet(book, spec, 'previous');
+              result[spec.dataset].push(...envelope.rows);
+              result.sources.push(envelope.source);
             } catch (error) {
               errors.push(error.message);
             }
           }
         }
-        return w.CreditSnapshots.validate({ ...manifest, datasets: result, errors }, validate);
+        return w.CreditSnapshots.validate(
+          { ...manifest, comparison_policy: 'supplied', datasets: result, errors },
+          validate,
+        );
       }
 
       async function covenantHistory() {
@@ -8201,7 +8218,7 @@
           'Count distinct facility IDs with the prepared expired-facility flag (pal_facility_expired). Maturity must be before the source reporting date; both CM and DM records are included. Due-today and missing maturity dates are not expired. Repeated facility IDs count once.',
       };
       const coverageComparison =
-        'All page filters and Portfolio filters apply to both snapshots. The four coverage metrics overlap and must not be added together. Change = current count minus previous count; percentage change = change divided by previous count × 100. The baseline must be a validated Portfolio release with matching source identities and coverage for the immediately preceding weekday. Weekends are skipped; local holidays are not. A zero previous count shows New when the current count is positive, or 0.0% when both are zero. Missing or incompatible baselines and mixed current reporting dates show Unavailable. Aggregate balance history is not used for these counts. Selecting the statistic opens its current supporting records; the information button opens only this methodology.';
+        'All page filters and Portfolio filters apply to both snapshots. The four coverage metrics overlap and must not be added together. Change = current count minus previous count; percentage change = change divided by previous count × 100. The baseline must be a validated Portfolio release with matching source identities and coverage at the supplied earlier reporting date. Both reporting dates are displayed; the interval is not assumed to be one day. A zero previous count shows New when the current count is positive, or 0.0% when both are zero. Missing or incompatible baselines and mixed current reporting dates show Unavailable. Aggregate balance history is not used for these counts. Selecting the statistic opens its current supporting records; the information button opens only this methodology.';
       function addKpiMethods() {
         root
           .querySelectorAll(
@@ -8241,7 +8258,7 @@
                   explanation: [
                     metricRule(label),
                     key
-                      ? 'The current and prior snapshots use the same filters. Change = current minus previous weekday balance; percentage change = change divided by the absolute prior balance. Saturdays and Sundays are skipped, not local holidays. A complete comparison-ready snapshot with numeric balances is required. A zero prior balance shows New balance (or 0.0% if both are zero); missing comparable snapshots show unavailable.'
+                      ? 'The current and prior snapshots use the same filters. Change = current minus supplied previous snapshot balance; percentage change = change divided by the absolute prior balance. As Of Date identifies each supplied snapshot; uploads do not determine reporting dates. A complete comparison-ready snapshot with numeric balances is required. A zero prior balance shows New balance (or 0.0% if both are zero); missing comparable snapshots show unavailable.'
                       : 'Uses the current page population and shared filters. Counts are obligations unless explicitly described as distinct IDs; missing source values are not imputed.',
                   ],
                 });
@@ -13370,13 +13387,13 @@
         const dates = by(ctx.data().portfolio || [], 'as_of_date');
         if (dates.length !== 1)
           return '<span class="pal-variance unavailable">Comparable date unavailable</span>';
-        const date = previousWeekday(report),
+        const comparison = global.CreditSnapshots?.compare(ctx.data(), ['PORTFOLIO']),
+          date = ctx.workbookMode ? comparison?.priorDate : previousWeekday(report),
           cohort =
             !!ctx.hasDrill?.() ||
             !!ctx.state().owner_id ||
             !!ctx.state().team_lead ||
             filterFields().some((f) => f.value),
-          comparison = global.CreditSnapshots?.compare(ctx.data(), ['PORTFOLIO']),
           useFacilities = !!comparison?.ready,
           snapshot = useFacilities
             ? comparison?.prior || []
@@ -13394,9 +13411,9 @@
           );
         if (!ready)
           return (
-            '<span class="pal-variance unavailable" title="A complete prepared snapshot for ' +
-            date +
-            ' is required.">Prior weekday unavailable</span>'
+            '<span class="pal-variance unavailable" title="' +
+            esc(comparison?.reason || 'A complete earlier snapshot is required') +
+            '">Previous snapshot unavailable</span>'
           );
         const previous = sum(filterRows(filtered(snapshot)), key),
           current = sum(rows, key),
@@ -14377,8 +14394,10 @@
                   ? '<strong>' +
                     sign +
                     num(Math.abs(delta)) +
-                    '</strong> <span>vs previous weekday</span>'
-                  : '<span>Prior weekday unavailable</span>';
+                    '</strong> <span>' +
+                    esc(ctx.workbookMode ? comparison.label : 'vs previous weekday') +
+                    '</span>'
+                  : '<span>Previous snapshot unavailable</span>';
               return (
                 '<button type="button" class="pal-coverage-stat" data-pal-rows="' +
                 key +
@@ -14398,7 +14417,7 @@
                 esc(
                   ready
                     ? comparison.label
-                    : comparison?.reason || 'A comparable previous-weekday portfolio is required',
+                    : comparison?.reason || 'A comparable previous portfolio snapshot is required',
                 ) +
                 '">' +
                 trend +
@@ -14464,9 +14483,14 @@
                 '</strong>' +
                 variance(rows, k, report) +
                 '</span><small class="pal-metric-date">' +
-                (report
-                  ? 'vs ' + esc(previousWeekday(report)) + ' · previous weekday'
-                  : 'No snapshot') +
+                (ctx.workbookMode
+                  ? esc(
+                      global.CreditSnapshots?.compare(ctx.data(), ['PORTFOLIO']).label ||
+                        'Previous snapshot unavailable',
+                    )
+                  : report
+                    ? 'vs ' + esc(previousWeekday(report)) + ' · previous weekday'
+                    : 'No snapshot') +
                 '</small></button>',
             )
             .join('') +
@@ -15625,9 +15649,16 @@
       if (!controls.length || dates.length !== 1 || !validDate(dates[0]))
         return fail('Comparable source date unavailable');
       const asOf = dates[0],
-        priorDate = previousWeekday(asOf),
+        supplied = history?.comparison_policy === 'supplied',
+        priorDate = supplied
+          ? history.snapshots.length === 1
+            ? history.snapshots[0].as_of_date
+            : null
+          : previousWeekday(asOf),
         snapshot = history?.snapshots?.find((s) => s.as_of_date === priorDate);
-      if (!snapshot?.complete) return fail('Previous weekday snapshot unavailable');
+      if (supplied && (!validDate(priorDate) || priorDate >= asOf))
+        return fail('Previous As Of Date must be earlier than current');
+      if (!snapshot?.complete) return fail('Previous snapshot unavailable');
       const ids = controls.map((s) => s.source_id).sort();
       if (
         ids.join('|') !==
@@ -15868,7 +15899,7 @@
           (r) => r.as_of_date === cmp.priorDate,
         ),
         controls = sources.filter((s) => s.domain === 'PORTFOLIO');
-      if (!snap?.portfolio_sources) return fail('Previous weekday facility balances unavailable');
+      if (!snap?.portfolio_sources) return fail('Previous snapshot facility balances unavailable');
       if (
         !portfolioReconciles(portfolio, controls, cmp.asOf) ||
         !portfolioReconciles(priorPortfolio, snap.portfolio_sources, cmp.priorDate)
@@ -15941,13 +15972,14 @@
       return p;
     }
     function compare(data, domains, filters = {}) {
+      const supplied = data.previous?.comparison_policy === 'supplied';
       const fail = (reason) => ({
           ready: false,
           reason,
           prior: [],
           priorPortfolio: [],
           priorSources: [],
-          label: 'Prior weekday unavailable',
+          label: supplied ? 'Previous snapshot unavailable' : 'Prior weekday unavailable',
         }),
         p = data.previous?.datasets;
       if (!p) return fail(data.previousError || 'Previous release unavailable');
@@ -15963,21 +15995,32 @@
         const old = previous.find((s) => s.source_id === c.source_id);
         if (!old || old.coverage !== c.coverage || old.domain !== c.domain)
           return fail('Source coverage changed');
-        if (old.as_of_date !== weekday(c.as_of_date))
-          return fail('Previous weekday missing for ' + c.source_id);
+        if (supplied ? old.as_of_date >= c.as_of_date : old.as_of_date !== weekday(c.as_of_date))
+          return fail(
+            supplied
+              ? 'Previous As Of Date must be earlier than current for ' + c.source_id
+              : 'Previous weekday missing for ' + c.source_id,
+          );
       }
       const rs = domains.includes('ACTIVITY')
         ? p.activity
         : domains.includes('PORTFOLIO')
           ? p.portfolio
           : p.monitoring.filter((r) => domains.includes(r.category));
-      const ds = [...new Set(previous.map((s) => s.as_of_date))].sort();
+      const ds = [...new Set(previous.map((s) => s.as_of_date))].sort(),
+        currentDates = [...new Set(controls.map((s) => s.as_of_date))].sort();
       return {
         ready: true,
         prior: scope(rs, filters),
         priorPortfolio: p.portfolio,
         priorSources: p.sources,
-        label: ds.length === 1 ? 'vs ' + ds[0] : 'vs previous source weekdays',
+        priorDate: ds.length === 1 ? ds[0] : null,
+        currentDate: currentDates.length === 1 ? currentDates[0] : null,
+        label: supplied
+          ? 'Current ' + currentDates.join(', ') + ' · Previous ' + ds.join(', ')
+          : ds.length === 1
+            ? 'vs ' + ds[0]
+            : 'vs previous source weekdays',
         reason: '',
       };
     }
@@ -15990,6 +16033,7 @@
       const date = dates[0],
         port = p.sources.filter((s) => s.domain === 'PORTFOLIO');
       return {
+        comparison_policy: data.previous.comparison_policy,
         rows: p.monitoring.filter((r) => r.category === 'COVENANTS'),
         portfolio_rows: p.portfolio.filter((r) => r.as_of_date === date),
         snapshots: [
@@ -16124,7 +16168,7 @@
         }),
       }));
     const rule =
-      'Counts are source obligations, not unique facilities. The same relationship may have several obligations. Shared filters apply to both dates. Daily variance compares the exact previous weekday per source, with identical source coverage. Missing history stays unavailable.';
+      'Counts are source obligations, not unique facilities. The same relationship may have several obligations. Shared filters apply to both dates. Snapshot variance compares the supplied current and previous As Of Dates per source, with identical source coverage. The previous date must be earlier than the current date. Missing history stays unavailable.';
     g.CreditMonitoring = function (ctx) {
       const { root, esc, register, num } = ctx,
         $ = (s) => root.querySelector(s);
@@ -16737,7 +16781,7 @@
             a,
             pa,
             'team_lead',
-            'Current and previous-weekday action counts by team lead.',
+            'Current and previous-snapshot action counts by team lead.',
             5,
             'comparison',
           );
@@ -16795,7 +16839,7 @@
             a,
             pa,
             'region',
-            'Current and prior-weekday CA actions by region.',
+            'Current and previous-snapshot CA actions by region.',
             7,
             'comparison',
           );
@@ -17109,7 +17153,7 @@
             ].map((name) => ({ name, y: 0, rows: [] }));
             series = [
               ['Current', currentGroups, colors[0]],
-              ['Previous weekday', oldGroups, colors[1]],
+              ['Previous snapshot', oldGroups, colors[1]],
             ].map(([name, groups, color]) => ({
               name,
               color,
@@ -17216,8 +17260,8 @@
             cue.textContent = comparison.ready
               ? (delta > 0 ? '+' : '') +
                 delta +
-                ' actions versus the previous weekday. Inspect a current bar to see the responsible records.'
-              : 'A matching previous-weekday release is required to assess movement.';
+                ' actions versus the previous snapshot. Inspect a current bar to see the responsible records.'
+              : 'A matching previous-snapshot release is required to assess movement.';
           } else if (lead && def.rows.length)
             cue.textContent =
               dateLabel(nice(lead.name)) +
@@ -17820,7 +17864,7 @@
       let scope = [],
         events = [],
         registry = {},
-        comparison = { ready: false, prior: [], reason: 'Previous weekday snapshot unavailable' },
+        comparison = { ready: false, prior: [], reason: 'Previous snapshot snapshot unavailable' },
         facilitySet = { records: [], groups: [], missing: 0 };
       const Risk = global.CreditCovenantRisk;
       const settings = { view: 'past', activity: 'DEFERRED', detail: 'links' };
@@ -17899,7 +17943,7 @@
         if (ready && (!Number.isFinite(current) || !Number.isFinite(prior)))
           reason = 'Comparable measure unavailable';
         const d = Risk.delta(current, prior, ready),
-          context = note || 'vs ' + (comparison.priorDate || 'previous weekday');
+          context = note || 'vs ' + (comparison.priorDate || 'previous snapshot');
         if (d.ready && monetary)
           d.text = d.text.replace(
             /\([^)]*\)/,
@@ -18056,7 +18100,7 @@
         );
       }
       const exposureRule =
-        'Link covenant source records to portfolio by exact region, relationship ID and facility ID at the same reporting date, checking CA consistency. A covenant number alone is never a join or deduplication key. Sum each matched portfolio facility once even if it has multiple covenant rows. TFA and OSUC are the separate prepared USD measures; OSUC is not total outstanding. Bankers come only from explicit banker fields, never from the underwriter field. Daily change compares independently linked current and prior weekday cohorts; it requires fully reconciled source controls and complete USD linkage on both dates. Missing balances and partial coverage never become zero.';
+        'Link covenant source records to portfolio by exact region, relationship ID and facility ID at the same reporting date, checking CA consistency. A covenant number alone is never a join or deduplication key. Sum each matched portfolio facility once even if it has multiple covenant rows. TFA and OSUC are the separate prepared USD measures; OSUC is not total outstanding. Bankers come only from explicit banker fields, never from the underwriter field. Snapshot change compares independently linked current and supplied previous cohorts; it requires fully reconciled source controls and complete USD linkage on both dates. Missing balances and partial coverage never become zero.';
       function comparisonHistory(data) {
         return ctx.workbookMode
           ? global.CreditSnapshots.covenantHistory(data)
@@ -19500,7 +19544,7 @@
             ? [
                 registry[id].rule +
                   exposureNote(id) +
-                  ' Daily variance = current minus the previous weekday snapshot; percent change divides by the prior value. Monday compares with Friday. Identical source coverage and active filters are required. Missing history is unavailable; activity charts compare consecutive Maker Date month totals instead. Incomplete latest months compare the same elapsed day in the previous month (clamped to month end). These are event counts, not daily changes or clearance rates.',
+                  ' Snapshot variance = current minus the supplied previous snapshot; percent change divides by the prior value. Reporting dates come from As Of Date, not upload time. Identical source coverage and active filters are required. Missing history is unavailable; activity charts compare consecutive Maker Date month totals instead. Incomplete latest months compare the same elapsed day in the previous month (clamped to month end). These are event counts, not daily changes or clearance rates.',
                 scopeRule,
               ]
             : null,
@@ -21311,5 +21355,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'e3927a3e56a5:CCM';
+  window.CREDIT_PAGE_BUILD = '720d7f3614e3:CCM';
 })();
