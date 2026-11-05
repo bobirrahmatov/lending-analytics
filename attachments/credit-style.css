@@ -183,12 +183,16 @@
 .credit-native-navigation{font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important;color:var(--ds-text,var(--credit-theme-text,#17385e))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce6ef))!important;box-shadow:0 3px 12px #17385e0b}
 /* Paint nested native panels too: the outer wrapper alone cannot override an
  * opaque host sidebar/content/footer. Match the resolved dashboard surface;
- * --credit-sidebar-background remains an optional space override. */
+ * --credit-sidebar-background is only a fallback until a panel colour is known. */
 .credit-native-navigation :is(.acs-side-bar,.acs-side-bar-content,.credit-native-footer,.credit-native-surface){color:var(--ds-text,var(--credit-theme-text,#253b54))!important;border-color:var(--ds-border,var(--credit-theme-border,#dce4ec))!important;box-shadow:none!important}
 /* The native body ID protects against Confluence's important footer rules.
  * Paint only structural surfaces; menu layers and interactive states stay native. */
 :is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation),
-:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) :is(.acs-side-bar,.acs-side-bar-content,.credit-native-footer,.credit-native-surface){background:var(--credit-sidebar-background,var(--credit-resolved-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important}
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) :is(.acs-side-bar,.acs-side-bar-content,.credit-native-footer,.credit-native-surface){background:var(--credit-resolved-sidebar-background,var(--credit-sidebar-background,var(--credit-surface-background,var(--ds-surface,var(--credit-theme-surface,#fff)))))!important}
+/* Structural tree wrappers must not repaint a gray block over the matched
+ * panel. Native link hover/selection, branch controls and menus keep their own
+ * interactive backgrounds. No widths, offsets or collapse state are changed. */
+:is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-compact-path:not(a):not(button):not([role="button"]):not(.aui-layer):not(.aui-dropdown2):not([role="menu"]){background:transparent!important;box-shadow:none!important}
 :is(.credit-native-navigation,#com-atlassian-confluence .credit-native-navigation) .credit-native-toolbar-control:not(:hover):not(:focus-visible){background:transparent!important;color:inherit!important}
 .credit-native-navigation .credit-native-toolbar-control:not(.aui-icon):not([class*="aui-iconfont-"]){font-family:var(--credit-space-font,var(--credit-resolved-space-font,inherit))!important}
 .credit-native-navigation :is(ul,ol,li){list-style:none!important}
