@@ -5382,21 +5382,19 @@
           a.trail.at(-1).preferred = e.target.value;
           renderDrillAnalysis(a, e.target.value);
         });
-        host
-          .querySelectorAll('[data-explorer-method]')
-          .forEach(
-            (button) =>
-              (button.onclick = () =>
-                methodology(a.id, {
-                  title: 'Drill-down analysis',
-                  note: a.trail.map((x) => x.label).join(' › '),
-                  explanation: [
-                    'Every level filters only the exact source rows attached to the original selection. Group counts partition that population; missing dimension values form Not supplied. The chart shows the ten largest groups plus Other groups when necessary; clicking Other groups exposes the remaining groups. Changing the breakdown dimension changes grouping, not scope. Breadcrumbs restore an earlier population.',
-                    'Source rows are not necessarily unique obligations. Relationship IDs are distinct non-empty IDs. Facility keys are distinct region + relationship + facility ID combinations; missing facility IDs are excluded. Critical counts use only explicit true flags; when critical flags are absent, the fourth metric counts distinct underwriter IDs, falling back to underwriter names. Missing keys counts rows lacking either relationship or facility ID. No balances or variances are inferred.',
-                    'View records opens the complete current cohort with search, filters, sorting and pagination. Download in Breakdown exports the whole selected cohort; in Records it exports all rows matching table filters across all pages.',
-                  ],
-                })),
-          );
+        host.querySelectorAll('[data-explorer-method]').forEach(
+          (button) =>
+            (button.onclick = () =>
+              methodology(a.id, {
+                title: 'Drill-down analysis',
+                note: a.trail.map((x) => x.label).join(' › '),
+                explanation: [
+                  'Every level filters only the exact source rows attached to the original selection. Group counts partition that population; missing dimension values form Not supplied. The chart shows the ten largest groups plus Other groups when necessary; clicking Other groups exposes the remaining groups. Changing the breakdown dimension changes grouping, not scope. Breadcrumbs restore an earlier population.',
+                  'Source rows are not necessarily unique obligations. Relationship IDs are distinct non-empty IDs. Facility keys are distinct region + relationship + facility ID combinations; missing facility IDs are excluded. Critical counts use only explicit true flags; when critical flags are absent, the fourth metric counts distinct underwriter IDs, falling back to underwriter names. Missing keys counts rows lacking either relationship or facility ID. No balances or variances are inferred.',
+                  'View records opens the complete current cohort with search, filters, sorting and pagination. Download in Breakdown exports the whole selected cohort; in Records it exports all rows matching table filters across all pages.',
+                ],
+              })),
+        );
         if (dimension && global.Highcharts)
           a.explorerChart = drillChart(
             host.querySelector('#cd-explorer-chart'),
@@ -8149,25 +8147,21 @@
             : '') +
           '</div>';
         global.CreditTables.bindRows({ table: area.querySelector('table'), rows: shown });
-        area
-          .querySelectorAll('[data-pj-entity]')
-          .forEach(
-            (button) =>
-              (button.onclick = () =>
-                button
-                  .closest('table')
-                  .dispatchEvent(
-                    new CustomEvent('credit:table-drill', {
-                      bubbles: true,
-                      detail: {
-                        rows: [shown[+button.dataset.pjRow]],
-                        label: global.CreditTables.rowLabel(shown[+button.dataset.pjRow]),
-                        table: button.closest('table'),
-                        trigger: button,
-                      },
-                    }),
-                  )),
-          );
+        area.querySelectorAll('[data-pj-entity]').forEach(
+          (button) =>
+            (button.onclick = () =>
+              button.closest('table').dispatchEvent(
+                new CustomEvent('credit:table-drill', {
+                  bubbles: true,
+                  detail: {
+                    rows: [shown[+button.dataset.pjRow]],
+                    label: global.CreditTables.rowLabel(shown[+button.dataset.pjRow]),
+                    table: button.closest('table'),
+                    trigger: button,
+                  },
+                }),
+              )),
+        );
         global.CreditTables.decorate({
           table: area.querySelector('table'),
           rows: records,
