@@ -837,6 +837,7 @@
    * credit modules; this reader only preserves typed, validated source values. */
   (function (w) {
     'use strict';
+    const decodedWorkbooks = new WeakMap();
     const MAX_ROWS = 200000,
       MAX_COLUMNS = 256,
       REQUIRED_METADATA = ['schema_version', 'bundle_id', 'dataset', 'rows', 'is_demo'];
@@ -904,37 +905,40 @@
       }
       throw error('date has an invalid value or missing date format', sheet, address);
     }
-    function typedValue(cell, type, workbook, xlsx, address) {
-      const value = scalar(cell, 'Data', address);
+    function typedValue(cell, type, workbook, xlsx, address, sheetName = 'Data') {
+      const value = scalar(cell, sheetName, address);
       if (value === null) return null;
-      if (type === 'date') return calendarDate(cell, value, workbook, xlsx, 'Data', address);
+      if (type === 'date') return calendarDate(cell, value, workbook, xlsx, sheetName, address);
       if (type === 'text' && typeof value !== 'string')
         throw error(
           'text field must use an Excel text cell; preserve identifier leading zeros',
-          'Data',
+          sheetName,
           address,
         );
       if (type === 'boolean' && typeof value !== 'boolean')
-        throw error('boolean field must use TRUE or FALSE', 'Data', address);
+        throw error('boolean field must use TRUE or FALSE', sheetName, address);
       if (
         (type === 'number' || type === 'integer') &&
         (typeof value !== 'number' ||
           !Number.isFinite(value) ||
           (type === 'integer' && !Number.isInteger(value)))
       )
-        throw error('numeric field must contain a finite ' + type, 'Data', address);
+        throw error('numeric field must contain a finite ' + type, sheetName, address);
       // Extension fields are preserved without guessing identifiers from numbers.
       if (!type && typeof value === 'number' && xlsx.SSF.is_date(cell.z || ''))
-        return calendarDate(cell, value, workbook, xlsx, 'Data', address);
+        return calendarDate(cell, value, workbook, xlsx, sheetName, address);
       if (
         !type &&
         (!['string', 'number', 'boolean'].includes(typeof value) ||
           (typeof value === 'number' && !Number.isFinite(value)))
       )
-        throw error('extension field must contain a scalar value', 'Data', address);
+        throw error('extension field must contain a scalar value', sheetName, address);
       return value;
     }
-    async function parse(buffer, { dataset, fields } = {}) {
+    async function parse(
+      buffer,
+      { dataset, fields, sheetName = 'Data', rowCountKey = 'rows', aliases = {} } = {},
+    ) {
       const xlsx = w.XLSX;
       if (!xlsx?.read || !xlsx?.utils || !xlsx?.SSF)
         throw Error('The local Excel reader is unavailable');
@@ -952,18 +956,21 @@
         throw Error('Attachment is not an XLSX workbook. Check sign-in and filename.');
       const started = Date.now();
       await new Promise((resolve) => setTimeout(resolve, 0));
-      let workbook;
+      let workbook = decodedWorkbooks.get(buffer);
       try {
-        workbook = xlsx.read(bytes, {
-          type: 'array',
-          cellDates: false,
-          cellNF: true,
-          cellText: false,
-          cellStyles: false,
-          cellFormula: true,
-          bookVBA: false,
-          sheetRows: MAX_ROWS + 2,
-        });
+        if (!workbook) {
+          workbook = xlsx.read(bytes, {
+            type: 'array',
+            cellDates: false,
+            cellNF: true,
+            cellText: false,
+            cellStyles: false,
+            cellFormula: true,
+            bookVBA: false,
+            sheetRows: MAX_ROWS + 2,
+          });
+          decodedWorkbooks.set(buffer, workbook);
+        }
       } catch {
         throw Error('Attachment is not a readable XLSX workbook');
       }
@@ -1000,26 +1007,40 @@
         typeof metadata.is_demo !== 'boolean'
       )
         throw error('invalid schema, release, dataset, row count or sample identity', 'Metadata');
-      const sheet = workbook.Sheets.Data,
-        range = dimensions(sheet, 'Data', xlsx),
+      if (
+        !Number.isSafeInteger(metadata[rowCountKey]) ||
+        metadata[rowCountKey] < 0 ||
+        metadata[rowCountKey] > MAX_ROWS
+      )
+        throw error('missing or invalid ' + rowCountKey, 'Metadata');
+      const sheet = workbook.Sheets[sheetName],
+        range = dimensions(sheet, sheetName, xlsx),
         headers = [],
         known = new Map(fields.map(([name, type]) => [name, type]));
       for (let col = 0; col <= range.e.c; col++) {
         const address = xlsx.utils.encode_cell({ r: 0, c: col }),
-          header = scalar(sheet[address], 'Data', address);
+          rawHeader = scalar(sheet[address], sheetName, address),
+          header = Object.hasOwn(aliases, rawHeader) ? aliases[rawHeader] : rawHeader;
         if (!validColumn(header) || headers.includes(header))
-          throw error('invalid, empty or duplicate column header', 'Data', address);
+          throw error('invalid, empty or duplicate column header', sheetName, address);
         headers.push(header);
       }
       for (const field of known.keys())
-        if (!headers.includes(field)) throw error('missing column ' + field, 'Data');
+        if (!headers.includes(field)) throw error('missing column ' + field, sheetName);
       const rows = [];
       for (let row = 1; row <= range.e.r; row++) {
         const record = Object.create(null);
         let present = false;
         for (let col = 0; col < headers.length; col++) {
           const address = xlsx.utils.encode_cell({ r: row, c: col }),
-            value = typedValue(sheet[address], known.get(headers[col]), workbook, xlsx, address);
+            value = typedValue(
+              sheet[address],
+              known.get(headers[col]),
+              workbook,
+              xlsx,
+              address,
+              sheetName,
+            );
           record[headers[col]] = value;
           if (value !== null) present = true;
         }
@@ -1029,7 +1050,8 @@
           if (Date.now() - started > 30000) throw Error('Workbook processing timed out');
         }
       }
-      if (rows.length !== metadata.rows) throw error('row count does not match Metadata', 'Data');
+      if (rows.length !== metadata[rowCountKey])
+        throw error('row count does not match Metadata.' + rowCountKey, sheetName);
       if (Date.now() - started > 30000) throw Error('Workbook processing timed out');
       return { ...metadata, rows };
     }
@@ -1231,6 +1253,4785 @@
       };
     }
     w.CreditDataCache = { index, select, sum, verifySources, readBuffer, readJSON, createLoader };
+  })(window);
+
+  /* Generated by tools/build_workbook_contract.py. No financial records. */
+  window.CreditWorkbookContract = {
+    version: 1,
+    workbooks: [
+      {
+        key: 'facility',
+        current: 'Facility_current.xlsx',
+        previous: 'Facility_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'portfolio',
+            rows_key: 'rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: true,
+                definition: 'Native facility identifier as text.',
+                header: 'Facility_ID',
+              },
+              {
+                field: 'parent_facility_id',
+                type: 'text',
+                required: false,
+                definition:
+                  'Parent identifier for reconciliation; do not add parent and child balances twice.',
+                header: 'Parent_Facility_ID',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'product_subprogram',
+                type: 'text',
+                required: false,
+                definition: 'Approved product subprogram from Product_Mapping category mapping.',
+                header: 'Product_Sub_Program',
+              },
+              {
+                field: 'management_status',
+                type: 'text',
+                required: false,
+                definition: 'Source DM/CM management status.',
+                header: 'Management_Status',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Original facility type for product lineage.',
+                header: 'Facility_Type',
+              },
+              {
+                field: 'commitment',
+                type: 'text',
+                required: true,
+                definition: 'COMMITTED or UNCOMMITTED; unknown values block publication.',
+                header: 'Committed_Uncommitted',
+                encoding: 'commitment',
+              },
+              {
+                field: 'risk_category',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.',
+                header: 'Risk_Category',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'Credit approval ID.',
+                header: 'CAID',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'Control_Unit',
+              },
+              {
+                field: 'tfa',
+                type: 'number',
+                required: true,
+                definition:
+                  'Total facility amount in USD units; reporting basis must be confirmed.',
+                header: 'Fac_Amount',
+              },
+              {
+                field: 'direct_os',
+                type: 'number',
+                required: true,
+                definition: 'Direct outstanding in USD units.',
+                header: 'Direct_OS',
+              },
+              {
+                field: 'contingent_os',
+                type: 'number',
+                required: true,
+                definition: 'Contingent outstanding in USD units.',
+                header: 'Contingent_OS',
+              },
+              {
+                field: 'pse_os',
+                type: 'number',
+                required: true,
+                definition: 'Pre-settlement exposure outstanding in USD units.',
+                header: 'PSE_OS',
+              },
+              {
+                field: 'total_comm_exposure',
+                type: 'number',
+                required: false,
+                definition: 'Source committed exposure in USD; retained for OSUC reconciliation.',
+                header: 'Total_Comm_Exposure',
+              },
+              {
+                field: 'maturity_date',
+                type: 'date',
+                required: false,
+                definition: 'Facility maturity; null for demand with maturity_basis DEMAND.',
+                header: 'Maturity_Date',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source product underwriter; not an additional accountable workload owner.',
+                header: 'Product_Underwriter',
+              },
+              {
+                field: 'ca_expiration_date',
+                type: 'date',
+                required: false,
+                definition: 'CA expiration date; does not establish authorization workflow status.',
+                header: 'CA_Expiration_Date',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: true,
+                definition: 'Canonical credit classification code.',
+                header: 'Credit_Classification',
+              },
+              {
+                field: 'pse',
+                type: 'boolean',
+                required: true,
+                definition: 'Controlled PSE classification from Product_Mapping.',
+                header: 'PSE_non_PSE',
+                encoding: 'pse',
+              },
+              {
+                field: 'sft',
+                type: 'boolean',
+                required: true,
+                definition: 'Controlled SFT classification; do not infer from blank fields.',
+                header: 'SFT_Facility',
+                encoding: 'yes_no',
+              },
+              {
+                field: 'facility_first_approval_date',
+                type: 'date',
+                required: false,
+                definition: 'Original facility approval date, kept separately from origination.',
+                header: 'Facility_First_Approval_Date',
+              },
+              {
+                field: 'origination_date',
+                type: 'date',
+                required: false,
+                definition: 'Primary new-business date.',
+                header: 'Origination_Date',
+              },
+              {
+                field: 'renewal_date',
+                type: 'date',
+                required: false,
+                definition: 'Fallback new-business date when origination absent.',
+                header: 'Renewal_Date',
+              },
+              {
+                field: 'ca_review',
+                type: 'text',
+                required: false,
+                definition:
+                  'Canonical Yes or No from EMEA CA Review; required for EMEA CA eligibility.',
+                header: 'CA_Review',
+              },
+              {
+                field: 'loan_spread',
+                type: 'number',
+                required: false,
+                definition:
+                  'Loan spread in basis points, matching original PAL thresholds 70 / 125; 100 bps = 1 percentage point.',
+                header: 'Loan_Spread',
+              },
+              {
+                field: 'pricing_exception',
+                type: 'text',
+                required: false,
+                definition: 'Source pricing exception indicator.',
+                header: 'Pricing_Exception',
+              },
+              {
+                field: 'osuc',
+                type: 'number',
+                required: true,
+                definition:
+                  'NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed during upstream preparation.',
+                header: 'OSUC',
+              },
+              {
+                field: 'total_os',
+                type: 'number',
+                required: true,
+                definition: 'Prepared output: direct_os + contingent_os + pse_os.',
+                header: 'Total_OS',
+              },
+              {
+                field: 'unused_commitment',
+                type: 'number',
+                required: true,
+                definition: 'Source supplied for Americas; computed for EMEA/APAC.',
+                header: 'Total_Unused_Commitment',
+              },
+              {
+                field: 'total_undrawn',
+                type: 'number',
+                required: true,
+                definition:
+                  'Prepared output: tfa minus total_os; negative values retained for review.',
+                header: 'Total_Undrawn',
+              },
+              {
+                field: 'rotce',
+                type: 'number',
+                required: false,
+                definition:
+                  'Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null.',
+                header: 'ROTCE',
+              },
+              {
+                field: 'facility_key',
+                type: 'text',
+                required: true,
+                definition: 'Unique source + facility identifier at the selected snapshot.',
+                header: 'facility_key',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'maturity_basis',
+                type: 'text',
+                required: true,
+                definition: 'DATED, DEMAND or UNKNOWN.',
+                header: 'maturity_basis',
+              },
+              {
+                field: 'ytd_new',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: non-PSE business date in reporting year to as_of_date.',
+                header: 'ytd_new',
+              },
+              {
+                field: 'mtd_new',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: non-PSE business date in reporting month to as_of_date.',
+                header: 'mtd_new',
+              },
+              {
+                field: 'reporting_currency',
+                type: 'text',
+                required: true,
+                definition: 'USD; amounts must be translated upstream using an approved FX basis.',
+                header: 'reporting_currency',
+              },
+              {
+                field: 'unused_uncommitted',
+                type: 'number',
+                required: true,
+                definition: 'Total undrawn minus unused commitment; PAL overview card.',
+                header: 'unused_uncommitted',
+              },
+              {
+                field: 'pal_ca_expired',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.',
+                header: 'pal_ca_expired',
+              },
+              {
+                field: 'pal_ca_month',
+                type: 'text',
+                required: false,
+                definition:
+                  'Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null.',
+                header: 'pal_ca_month',
+              },
+              {
+                field: 'pal_facility_expired',
+                type: 'boolean',
+                required: true,
+                definition: 'Facility maturity before report date; CM and DM both included.',
+                header: 'pal_facility_expired',
+              },
+              {
+                field: 'pal_facility_month',
+                type: 'text',
+                required: false,
+                definition:
+                  'Facility expiry month in reporting month and next two months, date >= report date; otherwise null.',
+                header: 'pal_facility_month',
+              },
+              {
+                field: 'pal_approval_period',
+                type: 'text',
+                required: false,
+                definition:
+                  'CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.',
+                header: 'pal_approval_period',
+              },
+              {
+                field: 'pal_pipeline_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  '1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.',
+                header: 'pal_pipeline_bucket',
+              },
+              {
+                field: 'pal_spread_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null.',
+                header: 'pal_spread_bucket',
+              },
+              {
+                field: 'pal_spread_weight',
+                type: 'number',
+                required: false,
+                definition:
+                  'Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.',
+                header: 'pal_spread_weight',
+              },
+              {
+                field: 'pal_spread_os',
+                type: 'number',
+                required: true,
+                definition: 'Direct OS denominator for valid-spread SBL; zero otherwise.',
+                header: 'pal_spread_os',
+              },
+              {
+                field: 'pal_pricing_exception',
+                type: 'boolean',
+                required: true,
+                definition: 'SBL Direct OS >0 and pricing exception Yes.',
+                header: 'pal_pricing_exception',
+              },
+              {
+                field: 'pal_prior_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback in prior year through same month/day.',
+                header: 'pal_prior_ytd',
+              },
+              {
+                field: 'pal_prior_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.',
+                header: 'pal_prior_mtd',
+              },
+              {
+                field: 'pal_new_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.',
+                header: 'pal_new_ytd',
+              },
+              {
+                field: 'pal_approved_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.',
+                header: 'pal_approved_ytd',
+              },
+              {
+                field: 'pal_pending_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within YTD through report date. Weeks start Monday.',
+                header: 'pal_pending_ytd',
+              },
+              {
+                field: 'pal_new_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.',
+                header: 'pal_new_qtd',
+              },
+              {
+                field: 'pal_approved_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.',
+                header: 'pal_approved_qtd',
+              },
+              {
+                field: 'pal_pending_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within QTD through report date. Weeks start Monday.',
+                header: 'pal_pending_qtd',
+              },
+              {
+                field: 'pal_new_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.',
+                header: 'pal_new_mtd',
+              },
+              {
+                field: 'pal_approved_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.',
+                header: 'pal_approved_mtd',
+              },
+              {
+                field: 'pal_pending_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within MTD through report date. Weeks start Monday.',
+                header: 'pal_pending_mtd',
+              },
+              {
+                field: 'pal_new_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.',
+                header: 'pal_new_wtd',
+              },
+              {
+                field: 'pal_approved_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.',
+                header: 'pal_approved_wtd',
+              },
+              {
+                field: 'pal_pending_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within WTD through report date. Weeks start Monday.',
+                header: 'pal_pending_wtd',
+              },
+              {
+                field: 'pal_prior_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.',
+                header: 'pal_prior_qtd',
+              },
+              {
+                field: 'pal_prior_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.',
+                header: 'pal_prior_wtd',
+              },
+              {
+                field: 'rotce_period',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source ROTCE reporting period, displayed independently of portfolio report date.',
+                header: 'rotce_period',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+            ],
+          },
+          {
+            sheet: 'CA',
+            dataset: 'monitoring',
+            rows_key: 'ca_rows',
+            category: 'CA',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'ca_id',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'facility_id',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'covenant_id',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'status',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'due_date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'deferred_date',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'days_past_due',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'remarks',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'origination_unit',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'control_unit',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'ou_expense_code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'cu_expense_code',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'borrowers_name',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'product_underwriter',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'facility_type',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'frequency',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'source_aging_bucket',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: 'day45_date',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+          {
+            sheet: 'Maturity',
+            dataset: 'monitoring',
+            rows_key: 'maturity_rows',
+            category: 'FACILITY',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'ca_id',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'facility_id',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'covenant_id',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'status',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'due_date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'deferred_date',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'days_past_due',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'remarks',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'origination_unit',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'control_unit',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'ou_expense_code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'cu_expense_code',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'borrowers_name',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'product_underwriter',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'facility_type',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'frequency',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'source_aging_bucket',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: 'day45_date',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'covenants',
+        current: 'Covenants_current.xlsx',
+        previous: 'Covenants_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'monitoring',
+            rows_key: 'rows',
+            category: 'COVENANTS',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'Origination_Unit',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'Product_Underwriter',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'OU_Expense_Code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'CU_Expense_Code',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'Borrowers_Name',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'CA_Number',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'Facility_Number',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program_Name',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'Facility_Type',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'Covenant_Number',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'Periodic_Frequency',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'Covenant_Due_Date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'Covenant_Deferred_Date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'Days_Past_Due',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'Coming_Due_Past_Due',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'Past_Due_Category',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'Covenant_Description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'Covenant_Remarks',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: '45_Days_Past_Due_Date',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'Control_Unit',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'activity',
+        current: 'Activity_current.xlsx',
+        previous: 'Activity_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'activity',
+            rows_key: 'rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: true,
+                definition: 'Covenant key associated with event.',
+                header: 'Covenant_Number',
+              },
+              {
+                field: 'event_date',
+                type: 'date',
+                required: true,
+                definition: 'Maker date from activity source.',
+                header: 'Activity_Date',
+              },
+              {
+                field: 'event_type',
+                type: 'text',
+                required: true,
+                definition:
+                  'DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation.',
+                header: 'Activity_Type',
+              },
+              {
+                field: 'month',
+                type: 'text',
+                required: true,
+                definition: 'Prepared output: event_date formatted YYYY-MM.',
+                header: 'Activity_Month',
+              },
+              {
+                field: 'event_id',
+                type: 'text',
+                required: true,
+                definition: 'Unique source event ID; one row per event, not one per covenant.',
+                header: 'event_id',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'banker_name',
+                header: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'borrower_name',
+                header: 'borrower_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'ca_id',
+                header: 'ca_id',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'facility_id',
+                header: 'facility_id',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'facility_type',
+                header: 'facility_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'owner_role',
+                header: 'owner_role',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'product_underwriter',
+                header: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'control_unit',
+                header: 'control_unit',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'cu_expense_code',
+                header: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'ou_expense_code',
+                header: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'originating_unit',
+                header: 'originating_unit',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'days45_date',
+                header: 'days45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'days_past_due',
+                header: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'deferred_date',
+                header: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'due_date',
+                header: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'description',
+                header: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'frequency',
+                header: 'frequency',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'remarks',
+                header: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'source_aging_bucket',
+                header: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'status',
+                header: 'status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'ccm',
+        current: 'CCM_current.xlsx',
+        previous: 'CCM_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'monitoring',
+            rows_key: 'rows',
+            category: 'CCM',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Client_Name',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'Classification',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'Frequency',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Underwriter',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'Next_CCM_Month_End',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'Next_CCM_Approval_Date',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'CCM_Status',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'ca_id',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'facility_id',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'covenant_id',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'status',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'deferred_date',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'days_past_due',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'remarks',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'origination_unit',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'control_unit',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'ou_expense_code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'cu_expense_code',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'borrowers_name',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'product_underwriter',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'facility_type',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'source_aging_bucket',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: 'day45_date',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'insurance',
+        current: 'Insurances_current.xlsx',
+        previous: 'Insurances_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'monitoring',
+            rows_key: 'rows',
+            category: 'INSURANCE',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'ca_id',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'facility_id',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'covenant_id',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'status',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'due_date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'deferred_date',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'days_past_due',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'remarks',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'origination_unit',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'control_unit',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'ou_expense_code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'cu_expense_code',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'borrowers_name',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'product_underwriter',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'facility_type',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'frequency',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'source_aging_bucket',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: 'day45_date',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'appraisals',
+        current: 'Appraisals_current.xlsx',
+        previous: 'Appraisals_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'monitoring',
+            rows_key: 'rows',
+            category: 'APPRAISALS',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'ca_id',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'facility_id',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'covenant_id',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'status',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'due_date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'deferred_date',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'days_past_due',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'remarks',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'origination_unit',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'control_unit',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'ou_expense_code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'cu_expense_code',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'borrowers_name',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'product_underwriter',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'facility_type',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'frequency',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'source_aging_bucket',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: 'day45_date',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'sources',
+        current: 'Sources_current.xlsx',
+        previous: 'Sources_previous.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'sources',
+            rows_key: 'rows',
+            category: null,
+            columns: [
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Unique source/feed identifier.',
+                header: 'source_id',
+              },
+              {
+                field: 'domain',
+                type: 'text',
+                required: true,
+                definition: 'Monitoring category, PORTFOLIO, HISTORY or ACTIVITY.',
+                header: 'domain',
+              },
+              {
+                field: 'source_name',
+                type: 'text',
+                required: true,
+                definition: 'Human-readable extract name.',
+                header: 'source_name',
+              },
+              {
+                field: 'source_file',
+                type: 'text',
+                required: true,
+                definition: 'Actual original filename or approved report reference.',
+                header: 'source_file',
+              },
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Source business date; one per selected source snapshot.',
+                header: 'as_of_date',
+              },
+              {
+                field: 'coverage',
+                type: 'text',
+                required: true,
+                definition:
+                  'ALL_OBLIGATIONS or EXCEPTIONS_ONLY; an exceptions-only feed cannot support clearance rate.',
+                header: 'coverage',
+              },
+              {
+                field: 'record_count',
+                type: 'integer',
+                required: true,
+                definition: 'Reconciled published row count for this source, after exclusions.',
+                header: 'record_count',
+              },
+              {
+                field: 'source_owner',
+                type: 'text',
+                required: true,
+                definition: 'Accountable source provider.',
+                header: 'source_owner',
+              },
+              {
+                field: 'quality_note',
+                type: 'text',
+                required: false,
+                definition:
+                  'Specific limitation, stale date or mapping issue; not a generic quality score.',
+                header: 'quality_note',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'history',
+        current: 'Portfolio_Aggregated_History.xlsx',
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'history',
+            rows_key: 'rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Historical snapshot date; stocks must not be summed across dates.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition: 'Canonical region.',
+                header: 'Region',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Canonical product.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'product_subprogram',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: product_subprogram. Legacy aggregated history may leave this null.',
+                header: 'Product_Sub_Program',
+              },
+              {
+                field: 'commitment',
+                type: 'text',
+                required: true,
+                definition: 'COMMITTED or UNCOMMITTED.',
+                header: 'Committed_Uncommitted',
+                encoding: 'commitment',
+              },
+              {
+                field: 'pse',
+                type: 'boolean',
+                required: true,
+                definition: 'Canonical PSE flag.',
+                header: 'PSE_non_PSE',
+                encoding: 'pse',
+              },
+              {
+                field: 'tfa',
+                type: 'number',
+                required: true,
+                definition: 'Sum of prepared facility amounts, USD units.',
+                header: 'TFA',
+              },
+              {
+                field: 'osuc',
+                type: 'number',
+                required: true,
+                definition: 'Sum of prepared OSUC, USD units.',
+                header: 'OSUC',
+              },
+              {
+                field: 'total_os',
+                type: 'number',
+                required: true,
+                definition: 'Sum of prepared total outstanding, USD units.',
+                header: 'Total_OS',
+              },
+              {
+                field: 'Direct_OS',
+                header: 'Direct_OS',
+                type: 'number',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'Contingent_OS',
+                header: 'Contingent_OS',
+                type: 'number',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'PSE_OS',
+                header: 'PSE_OS',
+                type: 'number',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'unused_commitment',
+                type: 'number',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: unused_commitment. Legacy aggregated history may leave this null.',
+                header: 'Total_Unused_Commitment',
+              },
+              {
+                field: 'Total_Undrawn',
+                header: 'Total_Undrawn',
+                type: 'number',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'facility_count',
+                type: 'integer',
+                required: true,
+                definition:
+                  'Distinct facilities at this exact grain; nonadditive if grain overlaps.',
+                header: 'Count_of_Facilities',
+              },
+              {
+                field: 'Count_of_Relationships',
+                header: 'Count_of_Relationships',
+                type: 'integer',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'Count_of_CAs',
+                header: 'Count_of_CAs',
+                type: 'integer',
+                required: false,
+                definition:
+                  'LPTM aggregate at the exact supplied date and dimensions. Blank if unavailable; distinct counts must not be summed across overlapping groups.',
+              },
+              {
+                field: 'history_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique report-date + region + product + subprogram + commitment + PSE aggregate key.',
+                header: 'history_id',
+              },
+              {
+                field: 'facility_key',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: facility_key. Legacy aggregated history may leave this null.',
+                header: 'facility_key',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: owner_id. Legacy aggregated history may leave this null.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: owner_name. Legacy aggregated history may leave this null.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: team_lead. Legacy aggregated history may leave this null.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'management_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: management_status. Legacy aggregated history may leave this null.',
+                header: 'management_status',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: facility_type. Legacy aggregated history may leave this null.',
+                header: 'facility_type',
+              },
+              {
+                field: 'unused_uncommitted',
+                type: 'number',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: unused_uncommitted. Legacy aggregated history may leave this null.',
+                header: 'unused_uncommitted',
+              },
+              {
+                field: 'comparison_ready',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Daily comparison snapshot: comparison_ready. Legacy aggregated history may leave this null.',
+                header: 'comparison_ready',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'documents',
+        current: 'Documents.xlsx',
+        optional: true,
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'documents',
+            rows_key: 'rows',
+            category: null,
+            columns: [
+              {
+                field: 'document_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable document ID.',
+                header: 'document_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'Monitoring category or ALL.',
+                header: 'category',
+              },
+              {
+                field: 'title',
+                type: 'text',
+                required: true,
+                definition: 'Document title.',
+                header: 'title',
+              },
+              {
+                field: 'url',
+                type: 'text',
+                required: true,
+                definition:
+                  'Approved https or same-origin relative URL; javascript/file/data URLs rejected.',
+                header: 'url',
+              },
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: false,
+                definition: 'Document reporting date.',
+                header: 'as_of_date',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: 'covenant_history',
+        current: 'Covenants_History.xlsx',
+        optional: true,
+        sheets: [
+          {
+            sheet: 'Data',
+            dataset: 'monitoring',
+            rows_key: 'rows',
+            category: 'COVENANTS',
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'origination_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source originating unit, distinct from Control Unit.',
+                header: 'Origination_Unit',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition: 'Source product underwriter; not counted as a second owner.',
+                header: 'Product_Underwriter',
+              },
+              {
+                field: 'ou_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Origination Unit expense code; text preserves leading zeros.',
+                header: 'OU_Expense_Code',
+              },
+              {
+                field: 'cu_expense_code',
+                type: 'text',
+                required: false,
+                definition: 'Control Unit expense code; text preserves leading zeros.',
+                header: 'CU_Expense_Code',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'borrowers_name',
+                type: 'text',
+                required: false,
+                definition: 'Source borrower display name, distinct from relationship.',
+                header: 'Borrowers_Name',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'CA identifier, deduplicated by approval cycle for CA monitoring.',
+                header: 'CA_Number',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: false,
+                definition: 'Facility identifier; not itself a unique insurance/appraisal key.',
+                header: 'Facility_Number',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program_Name',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Source facility type.',
+                header: 'Facility_Type',
+              },
+              {
+                field: 'covenant_id',
+                type: 'text',
+                required: false,
+                definition: 'Native covenant identifier; required for COVENANTS.',
+                header: 'Covenant_Number',
+              },
+              {
+                field: 'frequency',
+                type: 'text',
+                required: false,
+                definition: 'Covenant periodicity or CCM frequency.',
+                header: 'Periodic_Frequency',
+              },
+              {
+                field: 'due_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Original contractual due/expiry date; required for date-based categories.',
+                header: 'Covenant_Due_Date',
+              },
+              {
+                field: 'deferred_date',
+                type: 'date',
+                required: false,
+                definition: 'Approved deferred due date; used only when deferral_approved is true.',
+                header: 'Covenant_Deferred_Date',
+              },
+              {
+                field: 'days_past_due',
+                type: 'integer',
+                required: false,
+                definition: 'Prepared output: nonnegative days as of source date; null if no date.',
+                header: 'Days_Past_Due',
+              },
+              {
+                field: 'status',
+                type: 'text',
+                required: true,
+                definition:
+                  'PAST_DUE, COMING_DUE, PENDING_AUTH, OPEN, AWAITING_CERTIFICATE, PENDING_REVIEW, CLEARED or UNKNOWN.',
+                header: 'Coming_Due_Past_Due',
+              },
+              {
+                field: 'source_aging_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original source aging category for past-due reconciliation and coming-due display bands.',
+                header: 'Past_Due_Category',
+              },
+              {
+                field: 'description',
+                type: 'text',
+                required: false,
+                definition:
+                  'Covenant or monitoring description; internal covenants excluded during upstream preparation.',
+                header: 'Covenant_Description',
+              },
+              {
+                field: 'remarks',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source remarks; internal-prefixed covenant remarks excluded during upstream preparation.',
+                header: 'Covenant_Remarks',
+              },
+              {
+                field: 'day45_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Source 45 Days Past Due Date; retained separately from computed day count.',
+                header: '45_Days_Past_Due_Date',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'Control_Unit',
+              },
+              {
+                field: 'item_id',
+                type: 'text',
+                required: true,
+                definition:
+                  'Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.',
+                header: 'item_id',
+              },
+              {
+                field: 'category',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.',
+                header: 'category',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'owner_role',
+                type: 'text',
+                required: true,
+                definition: 'UNDERWRITER or SPECIALIST; one accountable owner per item.',
+                header: 'owner_role',
+              },
+              {
+                field: 'deferral_approved',
+                type: 'boolean',
+                required: true,
+                definition: 'Explicit source approval; a date alone does not authorize a deferral.',
+                header: 'deferral_approved',
+              },
+              {
+                field: 'effective_due_date',
+                type: 'date',
+                required: false,
+                definition: 'Prepared output: approved deferral date or original due date.',
+                header: 'effective_due_date',
+              },
+              {
+                field: 'aging_bucket',
+                type: 'text',
+                required: true,
+                definition:
+                  'Prepared output: CURRENT, 1-30, 31-45, 46-60, 61-90, 91-199, 200+ or UNKNOWN.',
+                header: 'aging_bucket',
+              },
+              {
+                field: 'action_required',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: actionable under the documented category rule.',
+                header: 'action_required',
+              },
+              {
+                field: 'critical',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: category escalation threshold; rule version attached to release.',
+                header: 'critical',
+              },
+              {
+                field: 'coming_due',
+                type: 'boolean',
+                required: true,
+                definition: 'Prepared output: COMING_DUE in inclusive next 3 calendar months.',
+                header: 'coming_due',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: false,
+                definition:
+                  'PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.',
+                header: 'classification',
+              },
+              {
+                field: 'next_month_end',
+                type: 'date',
+                required: false,
+                definition: 'CCM data month end, separate from approval due date.',
+                header: 'next_month_end',
+              },
+              {
+                field: 'expired_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source expiration bucket, kept separately from deficiency aging.',
+                header: 'expired_bucket',
+              },
+              {
+                field: 'deficiency_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'Insurance source deficiency bucket; never overwrite expiration bucket.',
+                header: 'deficiency_bucket',
+              },
+              {
+                field: 'pal_covenant_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'pal_covenant_bucket',
+              },
+              {
+                field: 'pal_due30',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
+                header: 'pal_due30',
+              },
+              {
+                field: 'ccm_status',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.',
+                header: 'ccm_status',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+              {
+                field: 'cumulative_deferred_days',
+                header: 'cumulative_deferred_days',
+                type: 'integer',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'modified_in_reporting_month',
+                header: 'modified_in_reporting_month',
+                type: 'boolean',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_date',
+                header: 'event_date',
+                type: 'date',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+              {
+                field: 'event_type',
+                header: 'event_type',
+                type: 'text',
+                required: false,
+                definition:
+                  'Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.',
+              },
+            ],
+          },
+          {
+            sheet: 'Portfolio',
+            dataset: 'portfolio',
+            rows_key: 'portfolio_rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Business reporting date from this source, not publication date.',
+                header: 'Report_Date',
+              },
+              {
+                field: 'region',
+                type: 'text',
+                required: true,
+                definition:
+                  'NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.',
+                header: 'Region',
+              },
+              {
+                field: 'facility_id',
+                type: 'text',
+                required: true,
+                definition: 'Native facility identifier as text.',
+                header: 'Facility_ID',
+              },
+              {
+                field: 'parent_facility_id',
+                type: 'text',
+                required: false,
+                definition:
+                  'Parent identifier for reconciliation; do not add parent and child balances twice.',
+                header: 'Parent_Facility_ID',
+              },
+              {
+                field: 'product',
+                type: 'text',
+                required: true,
+                definition: 'Controlled product program; UNMAPPED if unresolved.',
+                header: 'Product_Program',
+              },
+              {
+                field: 'product_subprogram',
+                type: 'text',
+                required: false,
+                definition: 'Approved product subprogram from Product_Mapping category mapping.',
+                header: 'Product_Sub_Program',
+              },
+              {
+                field: 'management_status',
+                type: 'text',
+                required: false,
+                definition: 'Source DM/CM management status.',
+                header: 'Management_Status',
+              },
+              {
+                field: 'facility_type',
+                type: 'text',
+                required: false,
+                definition: 'Original facility type for product lineage.',
+                header: 'Facility_Type',
+              },
+              {
+                field: 'commitment',
+                type: 'text',
+                required: true,
+                definition: 'COMMITTED or UNCOMMITTED; unknown values block publication.',
+                header: 'Committed_Uncommitted',
+                encoding: 'commitment',
+              },
+              {
+                field: 'risk_category',
+                type: 'text',
+                required: false,
+                definition:
+                  'Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.',
+                header: 'Risk_Category',
+              },
+              {
+                field: 'relationship_id',
+                type: 'text',
+                required: true,
+                definition: 'CARE or approved relationship identifier, stored as text.',
+                header: 'Relationship_ID',
+              },
+              {
+                field: 'relationship_name',
+                type: 'text',
+                required: true,
+                definition: 'Relationship display name; never substitute a CA ID.',
+                header: 'Relationship_Name',
+              },
+              {
+                field: 'ca_id',
+                type: 'text',
+                required: false,
+                definition: 'Credit approval ID.',
+                header: 'CAID',
+              },
+              {
+                field: 'owner_name',
+                type: 'text',
+                required: true,
+                definition: 'Display name from controlled owner mapping.',
+                header: 'Lead_Underwriter',
+              },
+              {
+                field: 'team_lead',
+                type: 'text',
+                required: true,
+                definition: 'Controlled team lead display name; UNASSIGNED if unresolved.',
+                header: 'Underwriting_Team_Lead',
+              },
+              {
+                field: 'control_unit',
+                type: 'text',
+                required: false,
+                definition: 'Source Control Unit used for region mapping.',
+                header: 'Control_Unit',
+              },
+              {
+                field: 'tfa',
+                type: 'number',
+                required: true,
+                definition:
+                  'Total facility amount in USD units; reporting basis must be confirmed.',
+                header: 'Fac_Amount',
+              },
+              {
+                field: 'direct_os',
+                type: 'number',
+                required: true,
+                definition: 'Direct outstanding in USD units.',
+                header: 'Direct_OS',
+              },
+              {
+                field: 'contingent_os',
+                type: 'number',
+                required: true,
+                definition: 'Contingent outstanding in USD units.',
+                header: 'Contingent_OS',
+              },
+              {
+                field: 'pse_os',
+                type: 'number',
+                required: true,
+                definition: 'Pre-settlement exposure outstanding in USD units.',
+                header: 'PSE_OS',
+              },
+              {
+                field: 'total_comm_exposure',
+                type: 'number',
+                required: false,
+                definition: 'Source committed exposure in USD; retained for OSUC reconciliation.',
+                header: 'Total_Comm_Exposure',
+              },
+              {
+                field: 'maturity_date',
+                type: 'date',
+                required: false,
+                definition: 'Facility maturity; null for demand with maturity_basis DEMAND.',
+                header: 'Maturity_Date',
+              },
+              {
+                field: 'product_underwriter',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source product underwriter; not an additional accountable workload owner.',
+                header: 'Product_Underwriter',
+              },
+              {
+                field: 'ca_expiration_date',
+                type: 'date',
+                required: false,
+                definition: 'CA expiration date; does not establish authorization workflow status.',
+                header: 'CA_Expiration_Date',
+              },
+              {
+                field: 'classification',
+                type: 'text',
+                required: true,
+                definition: 'Canonical credit classification code.',
+                header: 'Credit_Classification',
+              },
+              {
+                field: 'pse',
+                type: 'boolean',
+                required: true,
+                definition: 'Controlled PSE classification from Product_Mapping.',
+                header: 'PSE_non_PSE',
+                encoding: 'pse',
+              },
+              {
+                field: 'sft',
+                type: 'boolean',
+                required: true,
+                definition: 'Controlled SFT classification; do not infer from blank fields.',
+                header: 'SFT_Facility',
+                encoding: 'yes_no',
+              },
+              {
+                field: 'facility_first_approval_date',
+                type: 'date',
+                required: false,
+                definition: 'Original facility approval date, kept separately from origination.',
+                header: 'Facility_First_Approval_Date',
+              },
+              {
+                field: 'origination_date',
+                type: 'date',
+                required: false,
+                definition: 'Primary new-business date.',
+                header: 'Origination_Date',
+              },
+              {
+                field: 'renewal_date',
+                type: 'date',
+                required: false,
+                definition: 'Fallback new-business date when origination absent.',
+                header: 'Renewal_Date',
+              },
+              {
+                field: 'ca_review',
+                type: 'text',
+                required: false,
+                definition:
+                  'Canonical Yes or No from EMEA CA Review; required for EMEA CA eligibility.',
+                header: 'CA_Review',
+              },
+              {
+                field: 'loan_spread',
+                type: 'number',
+                required: false,
+                definition:
+                  'Loan spread in basis points, matching original PAL thresholds 70 / 125; 100 bps = 1 percentage point.',
+                header: 'Loan_Spread',
+              },
+              {
+                field: 'pricing_exception',
+                type: 'text',
+                required: false,
+                definition: 'Source pricing exception indicator.',
+                header: 'Pricing_Exception',
+              },
+              {
+                field: 'osuc',
+                type: 'number',
+                required: true,
+                definition:
+                  'NAM/LATAM/IPB/SARG supplied exposure; EMEA/APAC computed during upstream preparation.',
+                header: 'OSUC',
+              },
+              {
+                field: 'total_os',
+                type: 'number',
+                required: true,
+                definition: 'Prepared output: direct_os + contingent_os + pse_os.',
+                header: 'Total_OS',
+              },
+              {
+                field: 'unused_commitment',
+                type: 'number',
+                required: true,
+                definition: 'Source supplied for Americas; computed for EMEA/APAC.',
+                header: 'Total_Unused_Commitment',
+              },
+              {
+                field: 'total_undrawn',
+                type: 'number',
+                required: true,
+                definition:
+                  'Prepared output: tfa minus total_os; negative values retained for review.',
+                header: 'Total_Undrawn',
+              },
+              {
+                field: 'rotce',
+                type: 'number',
+                required: false,
+                definition:
+                  'Relationship return as decimal fraction, e.g. 0.125 = 12.5%; missing stays null.',
+                header: 'ROTCE',
+              },
+              {
+                field: 'facility_key',
+                type: 'text',
+                required: true,
+                definition: 'Unique source + facility identifier at the selected snapshot.',
+                header: 'facility_key',
+              },
+              {
+                field: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Approved source identifier; foreign key to Sources.source_id.',
+                header: 'source_id',
+              },
+              {
+                field: 'source_record_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source key; never a worksheet row number.',
+                header: 'source_record_id',
+              },
+              {
+                field: 'owner_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable staff identifier; use UNASSIGNED explicitly when unresolved.',
+                header: 'owner_id',
+              },
+              {
+                field: 'maturity_basis',
+                type: 'text',
+                required: true,
+                definition: 'DATED, DEMAND or UNKNOWN.',
+                header: 'maturity_basis',
+              },
+              {
+                field: 'ytd_new',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: non-PSE business date in reporting year to as_of_date.',
+                header: 'ytd_new',
+              },
+              {
+                field: 'mtd_new',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Prepared output: non-PSE business date in reporting month to as_of_date.',
+                header: 'mtd_new',
+              },
+              {
+                field: 'reporting_currency',
+                type: 'text',
+                required: true,
+                definition: 'USD; amounts must be translated upstream using an approved FX basis.',
+                header: 'reporting_currency',
+              },
+              {
+                field: 'unused_uncommitted',
+                type: 'number',
+                required: true,
+                definition: 'Total undrawn minus unused commitment; PAL overview card.',
+                header: 'unused_uncommitted',
+              },
+              {
+                field: 'pal_ca_expired',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.',
+                header: 'pal_ca_expired',
+              },
+              {
+                field: 'pal_ca_month',
+                type: 'text',
+                required: false,
+                definition:
+                  'Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null.',
+                header: 'pal_ca_month',
+              },
+              {
+                field: 'pal_facility_expired',
+                type: 'boolean',
+                required: true,
+                definition: 'Facility maturity before report date; CM and DM both included.',
+                header: 'pal_facility_expired',
+              },
+              {
+                field: 'pal_facility_month',
+                type: 'text',
+                required: false,
+                definition:
+                  'Facility expiry month in reporting month and next two months, date >= report date; otherwise null.',
+                header: 'pal_facility_month',
+              },
+              {
+                field: 'pal_approval_period',
+                type: 'text',
+                required: false,
+                definition:
+                  'CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.',
+                header: 'pal_approval_period',
+              },
+              {
+                field: 'pal_pipeline_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  '1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.',
+                header: 'pal_pipeline_bucket',
+              },
+              {
+                field: 'pal_spread_bucket',
+                type: 'text',
+                required: false,
+                definition:
+                  'SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null.',
+                header: 'pal_spread_bucket',
+              },
+              {
+                field: 'pal_spread_weight',
+                type: 'number',
+                required: false,
+                definition:
+                  'Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.',
+                header: 'pal_spread_weight',
+              },
+              {
+                field: 'pal_spread_os',
+                type: 'number',
+                required: true,
+                definition: 'Direct OS denominator for valid-spread SBL; zero otherwise.',
+                header: 'pal_spread_os',
+              },
+              {
+                field: 'pal_pricing_exception',
+                type: 'boolean',
+                required: true,
+                definition: 'SBL Direct OS >0 and pricing exception Yes.',
+                header: 'pal_pricing_exception',
+              },
+              {
+                field: 'pal_prior_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback in prior year through same month/day.',
+                header: 'pal_prior_ytd',
+              },
+              {
+                field: 'pal_prior_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.',
+                header: 'pal_prior_mtd',
+              },
+              {
+                field: 'pal_new_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.',
+                header: 'pal_new_ytd',
+              },
+              {
+                field: 'pal_approved_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.',
+                header: 'pal_approved_ytd',
+              },
+              {
+                field: 'pal_pending_ytd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within YTD through report date. Weeks start Monday.',
+                header: 'pal_pending_ytd',
+              },
+              {
+                field: 'pal_new_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.',
+                header: 'pal_new_qtd',
+              },
+              {
+                field: 'pal_approved_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.',
+                header: 'pal_approved_qtd',
+              },
+              {
+                field: 'pal_pending_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within QTD through report date. Weeks start Monday.',
+                header: 'pal_pending_qtd',
+              },
+              {
+                field: 'pal_new_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.',
+                header: 'pal_new_mtd',
+              },
+              {
+                field: 'pal_approved_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.',
+                header: 'pal_approved_mtd',
+              },
+              {
+                field: 'pal_pending_mtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within MTD through report date. Weeks start Monday.',
+                header: 'pal_pending_mtd',
+              },
+              {
+                field: 'pal_new_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.',
+                header: 'pal_new_wtd',
+              },
+              {
+                field: 'pal_approved_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.',
+                header: 'pal_approved_wtd',
+              },
+              {
+                field: 'pal_pending_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Eligible pending closure first approval within WTD through report date. Weeks start Monday.',
+                header: 'pal_pending_wtd',
+              },
+              {
+                field: 'pal_prior_qtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.',
+                header: 'pal_prior_qtd',
+              },
+              {
+                field: 'pal_prior_wtd',
+                type: 'boolean',
+                required: true,
+                definition:
+                  'Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.',
+                header: 'pal_prior_wtd',
+              },
+              {
+                field: 'rotce_period',
+                type: 'text',
+                required: false,
+                definition:
+                  'Source ROTCE reporting period, displayed independently of portfolio report date.',
+                header: 'rotce_period',
+              },
+              {
+                field: 'banker_name',
+                type: 'text',
+                required: false,
+                definition:
+                  'Explicit source banker / relationship manager name; never substitute underwriter. Optional extension for covenant facility links.',
+                header: 'banker_name',
+              },
+            ],
+          },
+          {
+            sheet: 'Snapshots',
+            dataset: 'snapshots',
+            rows_key: 'snapshots_rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                header: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Unique complete reporting date.',
+              },
+              {
+                field: 'complete',
+                header: 'complete',
+                type: 'boolean',
+                required: true,
+                definition: 'TRUE only for complete validated source coverage.',
+              },
+            ],
+          },
+          {
+            sheet: 'Controls',
+            dataset: 'controls',
+            rows_key: 'controls_rows',
+            category: null,
+            columns: [
+              {
+                field: 'as_of_date',
+                header: 'as_of_date',
+                type: 'date',
+                required: true,
+                definition: 'Exact snapshot reporting date.',
+              },
+              {
+                field: 'domain',
+                header: 'domain',
+                type: 'text',
+                required: true,
+                definition: 'COVENANTS or PORTFOLIO.',
+              },
+              {
+                field: 'source_id',
+                header: 'source_id',
+                type: 'text',
+                required: true,
+                definition: 'Stable source ID matching the snapshot rows.',
+              },
+              {
+                field: 'coverage',
+                header: 'coverage',
+                type: 'text',
+                required: true,
+                definition: 'ALL_OBLIGATIONS or EXCEPTIONS_ONLY.',
+              },
+              {
+                field: 'record_count',
+                header: 'record_count',
+                type: 'integer',
+                required: true,
+                definition: 'Complete record count for this date and source.',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  /* Excel-only publication. The generated contract owns filenames and aliases;
+   * canonical validators and dashboard modules still own the business rules. */
+  (function (w) {
+    'use strict';
+
+    function decode(value, encoding, field) {
+      if (value === null || !encoding) return value;
+      const token = String(value).trim().toUpperCase();
+      if (encoding === 'pse') {
+        if (token === 'PSE') return true;
+        if (token === 'NON-PSE') return false;
+      } else if (encoding === 'yes_no') {
+        if (token === 'YES') return true;
+        if (token === 'NO') return false;
+      } else if (encoding === 'commitment' && ['COMMITTED', 'UNCOMMITTED'].includes(token)) {
+        return token;
+      }
+      throw Error('Invalid ' + field + ': ' + String(value));
+    }
+
+    async function createLoader({ attachment, validate, allowDemo = false }) {
+      const definitions = w.CreditWorkbookContract?.workbooks;
+      if (!definitions) throw Error('Excel workbook contract is unavailable');
+      const buffers = new Map(),
+        sheets = new Map(),
+        datasets = new Map();
+      let identity;
+      const definition = (key) => definitions.find((item) => item.key === key);
+
+      async function readSheet(book, spec, period = 'current') {
+        const filename = book[period];
+        if (!filename) throw Error('No ' + period + ' workbook for ' + book.key);
+        const key = filename + ':' + spec.sheet;
+        if (!sheets.has(key)) {
+          sheets.set(
+            key,
+            (async () => {
+              try {
+                if (!buffers.has(filename))
+                  buffers.set(filename, w.CreditDataCache.readBuffer(attachment(filename)));
+                const aliases = Object.fromEntries(spec.columns.map((f) => [f.header, f.field]));
+                const envelope = await w.CreditExcel.parse(await buffers.get(filename), {
+                  dataset: book.key,
+                  sheetName: spec.sheet,
+                  rowCountKey: spec.rows_key,
+                  aliases,
+                  fields: spec.columns.map((f) => [f.field, f.encoding ? 'text' : f.type]),
+                });
+                if (envelope.workbook_contract !== 1 || envelope.period !== period)
+                  throw Error('Workbook contract or period does not match');
+                if (envelope.is_demo && !allowDemo)
+                  throw Error('Illustrative data cannot be loaded in production');
+                if (
+                  identity &&
+                  (envelope.bundle_id !== identity.bundle_id ||
+                    envelope.is_demo !== identity.is_demo)
+                )
+                  throw Error('Mixed release or sample identity');
+                const rows = envelope.rows.map((row) => {
+                  const result = { ...row };
+                  for (const field of spec.columns) {
+                    result[field.field] = decode(row[field.field], field.encoding, field.header);
+                    if (
+                      field.required &&
+                      (result[field.field] === null || result[field.field] === '')
+                    )
+                      throw Error('Required ' + field.header + ' is blank');
+                  }
+                  if (spec.category && result.category !== spec.category)
+                    throw Error('Expected category ' + spec.category + ' in ' + spec.sheet);
+                  return result;
+                });
+                // A history workbook may repeat an item key on different snapshot dates.
+                if (book.key === 'covenant_history') {
+                  if (['monitoring', 'portfolio'].includes(spec.dataset)) {
+                    for (const date of new Set(rows.map((r) => r.as_of_date)))
+                      validate(
+                        spec.dataset,
+                        rows.filter((r) => r.as_of_date === date),
+                      );
+                  }
+                } else validate(spec.dataset, rows);
+                return { ...envelope, rows };
+              } catch (error) {
+                throw Error(filename + ' / ' + spec.sheet + ': ' + error.message);
+              }
+            })(),
+          );
+        }
+        return sheets.get(key);
+      }
+
+      const sourceBook = definition('sources');
+      identity = await readSheet(sourceBook, sourceBook.sheets[0]);
+      const sources = identity.rows;
+      datasets.set('sources', Promise.resolve(sources));
+      const manifest = {
+        schema_version: 2,
+        bundle_id: identity.bundle_id,
+        is_demo: identity.is_demo,
+        files: {},
+      };
+
+      function load(name) {
+        if (!datasets.has(name))
+          datasets.set(
+            name,
+            (async () => {
+              const rows = [];
+              for (const book of definitions) {
+                if (book.key === 'covenant_history') continue;
+                for (const spec of book.sheets.filter((s) => s.dataset === name)) {
+                  try {
+                    rows.push(...(await readSheet(book, spec)).rows);
+                  } catch (error) {
+                    if (book.optional && /Attachment unavailable \(404\)/.test(error.message))
+                      continue;
+                    throw error;
+                  }
+                }
+              }
+              validate(name, rows);
+              if (['monitoring', 'portfolio', 'activity'].includes(name))
+                w.CreditDataCache.verifySources(name, rows, sources);
+              if (name === 'history') {
+                const grains = new Set();
+                for (const row of rows) {
+                  if (
+                    row.facility_key ||
+                    row.owner_id ||
+                    row.owner_name ||
+                    row.team_lead ||
+                    row.management_status ||
+                    row.facility_type ||
+                    row.comparison_ready === true
+                  )
+                    throw Error(
+                      'Portfolio_Aggregated_History.xlsx must contain aggregates, not facility or owner snapshots',
+                    );
+                  const grain = JSON.stringify([
+                    row.as_of_date,
+                    row.region,
+                    row.product,
+                    row.product_subprogram,
+                    row.commitment,
+                    row.pse,
+                  ]);
+                  if (grains.has(grain)) throw Error('Duplicate portfolio aggregate grain');
+                  grains.add(grain);
+                }
+              }
+              return rows;
+            })(),
+          );
+        return datasets.get(name);
+      }
+
+      async function previous() {
+        const previousSources = (await readSheet(sourceBook, sourceBook.sheets[0], 'previous'))
+          .rows;
+        const result = { monitoring: [], portfolio: [], activity: [], sources: [] },
+          errors = [];
+        // Each domain is independently optional. A missing CCM comparison must
+        // not remove an otherwise valid facility comparison.
+        for (const book of definitions.filter((b) => b.previous && b.key !== 'sources')) {
+          for (const spec of book.sheets) {
+            const domain = spec.category || spec.dataset.toUpperCase();
+            const controls = previousSources.filter((s) => s.domain === domain);
+            if (!controls.length) continue;
+            try {
+              const rows = (await readSheet(book, spec, 'previous')).rows;
+              w.CreditDataCache.verifySources(spec.dataset, rows, controls);
+              result[spec.dataset].push(...rows);
+              result.sources.push(...controls);
+            } catch (error) {
+              errors.push(error.message);
+            }
+          }
+        }
+        return w.CreditSnapshots.validate({ ...manifest, datasets: result, errors }, validate);
+      }
+
+      async function covenantHistory() {
+        const book = definition('covenant_history');
+        const content = {};
+        for (const spec of book.sheets) content[spec.sheet] = (await readSheet(book, spec)).rows;
+        const snapshots = content.Snapshots.map((snapshot) => ({
+          ...snapshot,
+          sources: content.Controls.filter(
+            (r) => r.as_of_date === snapshot.as_of_date && r.domain === 'COVENANTS',
+          ),
+          portfolio_sources: content.Controls.filter(
+            (r) => r.as_of_date === snapshot.as_of_date && r.domain === 'PORTFOLIO',
+          ),
+        }));
+        const result = { rows: content.Data, portfolio_rows: content.Portfolio, snapshots };
+        w.CreditCovenantRisk.validateHistory(result);
+        if (
+          content.Controls.some(
+            (c) =>
+              !snapshots.some((s) => s.as_of_date === c.as_of_date) ||
+              !['COVENANTS', 'PORTFOLIO'].includes(c.domain),
+          )
+        )
+          throw Error('Uncontrolled covenant history source/date');
+        return result;
+      }
+
+      return {
+        manifest,
+        load,
+        previous,
+        covenantHistory,
+        invalidate(name) {
+          datasets.delete(name);
+        },
+      };
+    }
+    w.CreditWorkbooks = { createLoader, decode };
   })(window);
 
   /* Shared dashboard controls; only presentation preferences are persisted. */
@@ -15005,6 +19806,7 @@
           try {
             let p;
             if (config.mode === 'demo') p = global.CREDIT_DEMO?.previous;
+            else if (config.dataMode === 'workbooks') p = await releaseLoader.previous();
             else {
               const f = manifest.files.previous;
               if (f) {
@@ -15026,6 +19828,7 @@
               }
             }
             data.previous = p ? global.CreditSnapshots.validate(p, validateRows) : null;
+            if (p?.errors?.length) data.previousError = p.errors.join('; ');
           } catch (e) {
             data.previous = null;
             data.previousError = e.message;
@@ -15036,7 +19839,13 @@
           try {
             let p;
             if (config.mode === 'demo') p = global.CREDIT_DEMO?.covenant_history;
-            else {
+            else if (config.dataMode === 'workbooks') {
+              try {
+                p = await releaseLoader.covenantHistory();
+              } catch (error) {
+                if (!/Attachment unavailable \(404\)/.test(error.message)) throw error;
+              }
+            } else {
               const f = manifest.files.covenant_history;
               if (f) {
                 p = await readJSON(attachment(f.filename));
@@ -16167,28 +20976,37 @@
           overlay?.show('Loading Lending Analytics…');
           await overlay?.paint?.();
           async function initialize() {
-            manifest =
-              config.mode === 'demo'
-                ? global.CREDIT_DEMO?.manifest
-                : await readJSON(attachment('credit-manifest.json'));
-            if (
-              !manifest ||
-              manifest.schema_version !== 2 ||
-              !manifest.bundle_id ||
-              !manifest.files
-            )
-              throw Error('Unsupported or missing release manifest');
-            if (config.mode !== 'demo' && manifest.is_demo && config.allowSampleData !== true)
-              throw Error(
-                'Illustrative data cannot be loaded in production mode. Publish an approved Access export.',
-              );
-            releaseLoader = global.CreditDataCache.createLoader({
-              manifest,
-              attachment,
-              validate: validateRows,
-              contracts,
-              allowDemo: config.allowSampleData === true,
-            });
+            if (config.mode !== 'demo' && config.dataMode === 'workbooks') {
+              releaseLoader = await global.CreditWorkbooks.createLoader({
+                attachment,
+                validate: validateRows,
+                allowDemo: config.allowSampleData === true,
+              });
+              manifest = releaseLoader.manifest;
+            } else {
+              manifest =
+                config.mode === 'demo'
+                  ? global.CREDIT_DEMO?.manifest
+                  : await readJSON(attachment('credit-manifest.json'));
+              if (
+                !manifest ||
+                manifest.schema_version !== 2 ||
+                !manifest.bundle_id ||
+                !manifest.files
+              )
+                throw Error('Unsupported or missing release manifest');
+              if (config.mode !== 'demo' && manifest.is_demo && config.allowSampleData !== true)
+                throw Error(
+                  'Illustrative data cannot be loaded in production mode. Publish an approved data release.',
+                );
+              releaseLoader = global.CreditDataCache.createLoader({
+                manifest,
+                attachment,
+                validate: validateRows,
+                contracts,
+                allowDemo: config.allowSampleData === true,
+              });
+            }
             await Promise.all([load('monitoring'), load('sources')]);
             global.CreditDataCache.verifySources('monitoring', data.monitoring, data.sources);
             if (startupCancelled) return;
@@ -16348,7 +21166,7 @@
           root.innerHTML =
             '<div class="ch-error" role="alert"><h2>Dashboard unavailable</h2><p>' +
             esc(e.message) +
-            '</p><p>Check the configured attachment page, release manifest and your Confluence access.</p><button class="ch-btn" onclick="location.reload()">Reload</button></div>';
+            '</p><p>Check the configured attachment page, workbook metadata and your Confluence access.</p><button class="ch-btn" onclick="location.reload()">Reload</button></div>';
         } finally {
           await overlay?.paint?.();
           overlay?.destroy();
@@ -16357,5 +21175,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '7b15a1a1d814:CA';
+  window.CREDIT_PAGE_BUILD = 'af607219d3d5:CA';
 })();

@@ -7,7 +7,7 @@
     return;
   }
   if (root.dataset.creditStarted) return;
-  if (window.CREDIT_PAGE_BUILD !== '7b15a1a1d814:workload' || !window.CreditHub) {
+  if (window.CREDIT_PAGE_BUILD !== 'af607219d3d5:workload' || !window.CreditHub) {
     root.textContent = 'Load the matching dashboard logic before this renderer.';
     return;
   }
