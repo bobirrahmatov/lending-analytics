@@ -5231,62 +5231,6 @@
         ],
       },
       {
-        key: 'documents',
-        current: 'Documents.xlsx',
-        optional: true,
-        sheets: [
-          {
-            sheet: 'Data',
-            dataset: 'documents',
-            rows_key: 'rows',
-            category: null,
-            columns: [
-              {
-                field: 'document_id',
-                type: 'text',
-                required: true,
-                definition: 'Stable document ID.',
-                header: 'Document_ID',
-                source_header: 'document_id',
-              },
-              {
-                field: 'category',
-                type: 'text',
-                required: true,
-                definition: 'Monitoring category or ALL.',
-                header: 'Category',
-                source_header: 'category',
-              },
-              {
-                field: 'title',
-                type: 'text',
-                required: true,
-                definition: 'Document title.',
-                header: 'Title',
-                source_header: 'title',
-              },
-              {
-                field: 'url',
-                type: 'text',
-                required: true,
-                definition:
-                  'Approved https or same-origin relative URL; javascript/file/data URLs rejected.',
-                header: 'URL',
-                source_header: 'url',
-              },
-              {
-                field: 'as_of_date',
-                type: 'date',
-                required: false,
-                definition: 'Document reporting date.',
-                header: 'Report_Date',
-                source_header: 'as_of_date',
-              },
-            ],
-          },
-        ],
-      },
-      {
         key: 'covenant_history',
         current: 'Covenants_History.xlsx',
         optional: true,
@@ -12074,7 +12018,6 @@
       previous_monitoring: 'Previous monitoring',
       previous_activity: 'Previous activity',
       covenant_history: 'Covenant history',
-      documents: 'Linked documents',
       sources: 'Source coverage',
       ...domains,
     };
@@ -12237,8 +12180,6 @@
       }
       const history = (extra.covenantHistory || []).filter(priorMatch);
       if (history.length) datasets.covenant_history = history;
-      const docs = (extra.documents || []).filter(exact);
-      if (docs.length) datasets.documents = docs;
       const sourceIds = new Set(
         Object.values(datasets)
           .flat()
@@ -12697,7 +12638,6 @@
           previous: scope.previous || {},
           covenantHistory: scope.covenantHistory || [],
           sources: data.sources,
-          documents: scope.documents,
           history: data.history,
           errors: data.relatedSourceErrors,
         });
@@ -13110,7 +13050,6 @@
             previous: scope.previous,
             covenantHistory: scope.covenantHistory,
             sources: getData().sources,
-            documents: scope.documents,
             history: getData().history,
             errors: getData().relatedSourceErrors,
           },
@@ -20313,13 +20252,6 @@
         ['source_owner', 'text', true],
         ['quality_note', 'text', false],
       ],
-      documents: [
-        ['document_id', 'text', true],
-        ['category', 'text', true],
-        ['title', 'text', true],
-        ['url', 'text', true],
-        ['as_of_date', 'date', false],
-      ],
     };
     const categories = {
       COVENANTS: { label: 'Covenants', color: '#005BFF', metric: 'Past due covenants' },
@@ -20432,7 +20364,6 @@
         history: 'history_id',
         activity: 'event_id',
         sources: 'source_id',
-        documents: 'document_id',
       };
       const seen = new Set();
       rows.forEach((r, i) => {
@@ -20657,7 +20588,6 @@
                 'portfolio',
                 'activity',
                 ...(config.dataMode === 'workbooks' ? [] : ['history']),
-                'documents',
               ].map(async (name) => {
                 if (data[name] !== undefined) return;
                 try {
@@ -21891,7 +21821,6 @@
               getScope: () => ({
                 ...pal.getAnalysis(),
                 activity: filtered(data.activity || []),
-                documents: filtered(data.documents || []),
                 previous: Object.fromEntries(
                   ['portfolio', 'monitoring', 'activity', 'sources'].map((k) => [
                     k,
@@ -21939,5 +21868,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'c1805b3a35df:FACILITY';
+  window.CREDIT_PAGE_BUILD = '7357c69c00fd:FACILITY';
 })();

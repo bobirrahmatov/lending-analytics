@@ -7,7 +7,7 @@
     return;
   }
   if (root.dataset.creditStarted) return;
-  if (window.CREDIT_PAGE_BUILD !== 'c1805b3a35df:APPRAISALS' || !window.CreditHub) {
+  if (window.CREDIT_PAGE_BUILD !== '7357c69c00fd:APPRAISALS' || !window.CreditHub) {
     root.textContent = 'Load the matching dashboard logic before this renderer.';
     return;
   }

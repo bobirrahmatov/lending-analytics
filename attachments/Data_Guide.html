@@ -17,7 +17,7 @@
 <tr><td>CA Expiration / Facility Maturity</td><td>Facility_current.xlsx / CA and Maturity respectively. These are prepared obligation populations, separate from Data's facility balances. Keep each sheet's source controls and exact identifiers.</td></tr>
 <tr><td>CCM / Insurances / Appraisals</td><td>CCM_current.xlsx / Insurances_current.xlsx / Appraisals_current.xlsx respectively.</td></tr>
 <tr><td>Underwriter Summary / Underwriter Workload</td><td>The combined current monitoring populations from Covenants, CA, Maturity, CCM, Insurances and Appraisals. Summary charts and registers preserve each original obligation key.</td></tr>
-<tr><td>Related documents</td><td>Documents.xlsx (optional). Missing document data does not invent links.</td></tr></table>
+</table>
 <h2>Weekly refresh</h2><ol>
 <li>Put the previous reporting snapshot in each _previous file and the new snapshot in its matching _current file. Keep the exact filenames and headers. Report_Date records the reporting date; Maker_Date remains the individual Activity event date.</li>
 <li>Update Metadata row counts and period=current/previous. Give the entire upload one new bundle_id, including optional history. Keep flags as Yes/No text. Source IDs and domain mappings stay fixed and need no weekly edits.</li>
@@ -34,20 +34,19 @@
 
 <h2>Files and sample populations</h2><table><tr><th>File</th><th>Use</th><th>Sheets and sample row counts</th></tr>
 <tr><td>Facility_current.xlsx</td><td>Current input</td><td>Data: 120, CA: 48, Maturity: 42</td></tr>
-<tr><td>Facility_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 120, CA: 45, Maturity: 39</td></tr>
+<tr><td>Facility_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 120, CA: 45, Maturity: 39</td></tr>
 <tr><td>Covenants_current.xlsx</td><td>Current input</td><td>Data: 200</td></tr>
-<tr><td>Covenants_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 188</td></tr>
+<tr><td>Covenants_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 188</td></tr>
 <tr><td>Activity_current.xlsx</td><td>Current input</td><td>Data: 420</td></tr>
-<tr><td>Activity_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 369</td></tr>
+<tr><td>Activity_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 369</td></tr>
 <tr><td>CCM_current.xlsx</td><td>Current input</td><td>Data: 14</td></tr>
-<tr><td>CCM_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 13</td></tr>
+<tr><td>CCM_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 13</td></tr>
 <tr><td>Insurances_current.xlsx</td><td>Current input</td><td>Data: 54</td></tr>
-<tr><td>Insurances_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 51</td></tr>
+<tr><td>Insurances_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 51</td></tr>
 <tr><td>Appraisals_current.xlsx</td><td>Current input</td><td>Data: 86</td></tr>
-<tr><td>Appraisals_previous.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 81</td></tr>
+<tr><td>Appraisals_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 81</td></tr>
 <tr><td>Portfolio_Aggregated_History.xlsx</td><td>Current input</td><td>Data: 120</td></tr>
-<tr><td>Documents.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 1</td></tr>
-<tr><td>Covenants_History.xlsx</td><td>Optional comparison/history or documents</td><td>Data: 388, Portfolio: 240, Snapshots: 2, Controls: 4</td></tr>
+<tr><td>Covenants_History.xlsx</td><td>Optional comparison/history</td><td>Data: 388, Portfolio: 240, Snapshots: 2, Controls: 4</td></tr>
 </table><h2>Fixed source mapping</h2><p>These mappings are shipped in the application, not another upload file. Supply the complete configured population. Coverage is a declared feed contract, not proof that an upstream export is complete; if a feed intentionally contains exceptions only, its configured coverage must be changed once before use.</p><table><tr><th>File / sheet</th><th>Source ID</th><th>Domain</th><th>Coverage</th></tr>
 <tr><td>Facility_current.xlsx / Data</td><td>SRC_PORTFOLIO</td><td>PORTFOLIO</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>Facility_current.xlsx / CA</td><td>SRC_CA</td><td>CA</td><td>ALL_OBLIGATIONS</td></tr>
@@ -521,14 +520,6 @@
 <tr><td>24</td><td>Facility_Type</td><td>facility_type</td><td>text</td><td>Blank allowed</td><td>Leave blank. Consolidated Trends cannot identify or compare individual facilities or underwriters.</td></tr>
 <tr><td>25</td><td>Unused_Uncommitted</td><td>unused_uncommitted</td><td>number</td><td>Blank allowed</td><td>Consolidated Trends field: unused_uncommitted. Legacy aggregated history may leave this null.</td></tr>
 <tr><td>26</td><td>Comparison_Ready</td><td>comparison_ready</td><td>Yes / No</td><td>Blank allowed</td><td>Must be No. Consolidated history is only for Trends, never snapshot comparisons.</td></tr>
-</table></div>
-<h3>Documents.xlsx</h3>
-<h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
-<tr><td>1</td><td>Document_ID</td><td>document_id</td><td>text</td><td>Required</td><td>Stable document ID.</td></tr>
-<tr><td>2</td><td>Category</td><td>category</td><td>text</td><td>Required</td><td>Monitoring category or ALL.</td></tr>
-<tr><td>3</td><td>Title</td><td>title</td><td>text</td><td>Required</td><td>Document title.</td></tr>
-<tr><td>4</td><td>URL</td><td>url</td><td>text</td><td>Required</td><td>Approved https or same-origin relative URL; javascript/file/data URLs rejected.</td></tr>
-<tr><td>5</td><td>Report_Date</td><td>as_of_date</td><td>date</td><td>Blank allowed</td><td>Document reporting date.</td></tr>
 </table></div>
 <h3>Covenants_History.xlsx</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Dashboard field</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
