@@ -1053,5 +1053,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '7a0885852b37:lendingAnalytics';
+  window.CREDIT_PAGE_BUILD = '1b970720017d:lendingAnalytics';
 })();

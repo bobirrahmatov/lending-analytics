@@ -945,6 +945,7 @@
         rowCountKey = 'rows',
         aliases = {},
         metadataYesNo = false,
+        dataOnly = false,
       } = {},
     ) {
       const xlsx = w.XLSX;
@@ -983,56 +984,59 @@
         throw Error('Attachment is not a readable XLSX workbook');
       }
       if (Date.now() - started > 30000) throw Error('Workbook processing timed out');
-      const metaSheet = workbook.Sheets.Metadata,
-        metaRange = dimensions(metaSheet, 'Metadata', xlsx),
-        metadata = Object.create(null);
-      if (
-        metaRange.e.c !== 1 ||
-        scalar(metaSheet.A1, 'Metadata', 'A1') !== (metadataYesNo ? 'Key' : 'key') ||
-        scalar(metaSheet.B1, 'Metadata', 'B1') !== (metadataYesNo ? 'Value' : 'value')
-      )
-        throw error(
-          metadataYesNo
-            ? 'use Key and Value headers in A1:B1'
-            : 'use key and value headers in A1:B1',
-          'Metadata',
-        );
-      for (let row = 1; row <= metaRange.e.r; row++) {
-        const a = 'A' + (row + 1),
-          b = 'B' + (row + 1),
-          key = scalar(metaSheet[a], 'Metadata', a),
-          value = scalar(metaSheet[b], 'Metadata', b);
-        if (key === null && value === null) continue;
-        if (!validName(key) || Object.hasOwn(metadata, key))
-          throw error('invalid or duplicate metadata key', 'Metadata', a);
-        metadata[key] = value;
+      const metadata = Object.create(null);
+      // Domain workbooks use data sheets only. Legacy fixture parsing remains explicit.
+      if (!dataOnly) {
+        const metaSheet = workbook.Sheets.Metadata,
+          metaRange = dimensions(metaSheet, 'Metadata', xlsx);
+        if (
+          metaRange.e.c !== 1 ||
+          scalar(metaSheet.A1, 'Metadata', 'A1') !== (metadataYesNo ? 'Key' : 'key') ||
+          scalar(metaSheet.B1, 'Metadata', 'B1') !== (metadataYesNo ? 'Value' : 'value')
+        )
+          throw error(
+            metadataYesNo
+              ? 'use Key and Value headers in A1:B1'
+              : 'use key and value headers in A1:B1',
+            'Metadata',
+          );
+        for (let row = 1; row <= metaRange.e.r; row++) {
+          const a = 'A' + (row + 1),
+            b = 'B' + (row + 1),
+            key = scalar(metaSheet[a], 'Metadata', a),
+            value = scalar(metaSheet[b], 'Metadata', b);
+          if (key === null && value === null) continue;
+          if (!validName(key) || Object.hasOwn(metadata, key))
+            throw error('invalid or duplicate metadata key', 'Metadata', a);
+          metadata[key] = value;
+        }
+        for (const key of REQUIRED_METADATA)
+          if (!Object.hasOwn(metadata, key)) throw error('missing ' + key, 'Metadata');
+        if (metadataYesNo) {
+          const sample =
+            typeof metadata.is_demo === 'string' ? metadata.is_demo.trim().toLowerCase() : '';
+          if (!['yes', 'no'].includes(sample))
+            throw error('is_demo must use Yes or No text', 'Metadata');
+          metadata.is_demo = sample === 'yes';
+        }
+        if (
+          metadata.schema_version !== 2 ||
+          typeof metadata.bundle_id !== 'string' ||
+          !metadata.bundle_id.trim() ||
+          metadata.dataset !== dataset ||
+          !Number.isSafeInteger(metadata.rows) ||
+          metadata.rows < 0 ||
+          metadata.rows > MAX_ROWS ||
+          typeof metadata.is_demo !== 'boolean'
+        )
+          throw error('invalid schema, release, dataset, row count or sample identity', 'Metadata');
+        if (
+          !Number.isSafeInteger(metadata[rowCountKey]) ||
+          metadata[rowCountKey] < 0 ||
+          metadata[rowCountKey] > MAX_ROWS
+        )
+          throw error('missing or invalid ' + rowCountKey, 'Metadata');
       }
-      for (const key of REQUIRED_METADATA)
-        if (!Object.hasOwn(metadata, key)) throw error('missing ' + key, 'Metadata');
-      if (metadataYesNo) {
-        const sample =
-          typeof metadata.is_demo === 'string' ? metadata.is_demo.trim().toLowerCase() : '';
-        if (!['yes', 'no'].includes(sample))
-          throw error('is_demo must use Yes or No text', 'Metadata');
-        metadata.is_demo = sample === 'yes';
-      }
-      if (
-        metadata.schema_version !== 2 ||
-        typeof metadata.bundle_id !== 'string' ||
-        !metadata.bundle_id.trim() ||
-        metadata.dataset !== dataset ||
-        !Number.isSafeInteger(metadata.rows) ||
-        metadata.rows < 0 ||
-        metadata.rows > MAX_ROWS ||
-        typeof metadata.is_demo !== 'boolean'
-      )
-        throw error('invalid schema, release, dataset, row count or sample identity', 'Metadata');
-      if (
-        !Number.isSafeInteger(metadata[rowCountKey]) ||
-        metadata[rowCountKey] < 0 ||
-        metadata[rowCountKey] > MAX_ROWS
-      )
-        throw error('missing or invalid ' + rowCountKey, 'Metadata');
       const sheet = workbook.Sheets[sheetName],
         range = dimensions(sheet, sheetName, xlsx),
         headers = [],
@@ -1041,7 +1045,7 @@
         const address = xlsx.utils.encode_cell({ r: 0, c: col }),
           rawHeader = scalar(sheet[address], sheetName, address),
           header = Object.hasOwn(aliases, rawHeader) ? aliases[rawHeader] : rawHeader;
-        if (metadataYesNo && !Object.hasOwn(aliases, rawHeader))
+        if ((dataOnly || metadataYesNo) && !Object.hasOwn(aliases, rawHeader))
           throw error('unrecognized workbook column ' + String(rawHeader), sheetName, address);
         if (!validColumn(header) || headers.includes(header))
           throw error('invalid, empty or duplicate column header', sheetName, address);
@@ -1072,7 +1076,7 @@
           if (Date.now() - started > 30000) throw Error('Workbook processing timed out');
         }
       }
-      if (rows.length !== metadata[rowCountKey])
+      if (!dataOnly && rows.length !== metadata[rowCountKey])
         throw error('row count does not match Metadata.' + rowCountKey, sheetName);
       if (Date.now() - started > 30000) throw Error('Workbook processing timed out');
       return { ...metadata, rows };
@@ -1279,7 +1283,7 @@
 
   /* Generated by tools/build_workbook_contract.py. No financial records. */
   window.CreditWorkbookContract = {
-    version: 3,
+    version: 4,
     workbooks: [
       {
         key: 'facility',
@@ -6552,14 +6556,15 @@
       throw Error('Invalid ' + field + ': ' + String(value));
     }
 
-    async function createLoader({ attachment, validate, allowDemo = false }) {
+    async function createLoader({ attachment, validate, allowDemo = false, sampleData = false }) {
       const definitions = w.CreditWorkbookContract?.workbooks;
       if (!definitions) throw Error('Excel workbook contract is unavailable');
+      if (sampleData && !allowDemo) throw Error('Illustrative data cannot be loaded in production');
       await ensureReader(attachment);
       const buffers = new Map(),
         sheets = new Map(),
         datasets = new Map();
-      let identity;
+      const periodDates = {};
       const sources = [];
       const definition = (key) => definitions.find((item) => item.key === key);
 
@@ -6582,24 +6587,10 @@
                 const envelope = await w.CreditExcel.parse(await buffers.get(filename), {
                   dataset: book.key,
                   sheetName: spec.sheet,
-                  rowCountKey: spec.rows_key,
                   aliases,
-                  metadataYesNo: true,
+                  dataOnly: true,
                   fields: spec.columns.map((f) => [f.field, f.encoding ? 'text' : f.type]),
                 });
-                if (
-                  envelope.workbook_contract !== w.CreditWorkbookContract.version ||
-                  envelope.period !== period
-                )
-                  throw Error('Workbook contract or period does not match');
-                if (envelope.is_demo && !allowDemo)
-                  throw Error('Illustrative data cannot be loaded in production');
-                if (
-                  identity &&
-                  (envelope.bundle_id !== identity.bundle_id ||
-                    envelope.is_demo !== identity.is_demo)
-                )
-                  throw Error('Mixed release or sample identity');
                 const rows = envelope.rows.map((row) => {
                   const result = { ...row };
                   for (const field of spec.columns) {
@@ -6641,10 +6632,10 @@
 
       function sourceControl(book, spec, envelope, period) {
         const dates = [...new Set(envelope.rows.map((row) => row.as_of_date))];
-        // There is no data-row date in an empty population. Require an explicit
-        // As Of Date in Metadata for that case only; never use the upload date.
-        const date =
-          dates.length === 1 ? dates[0] : dates.length === 0 ? envelope.as_of_date : null;
+        if (dates.length > 1) throw Error('One Report_Date is required per source sheet');
+        // Header-only monitoring populations belong to the matching Facility snapshot.
+        // Never substitute today's date, an upload timestamp or a current date for previous.
+        const date = dates[0] || periodDates[period];
         if (
           !date ||
           !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
@@ -6652,7 +6643,14 @@
           new Date(date).toISOString().slice(0, 10) !== date
         )
           throw Error(
-            'One valid Report_Date is required per source sheet; empty sheets need Metadata.as_of_date',
+            'A Report_Date is required; an empty source needs a nonempty matching Facility_' +
+              period +
+              '.xlsx Data sheet',
+          );
+        if (book.key === 'facility' && spec.dataset === 'portfolio') periodDates[period] = date;
+        if (period === 'current' && date !== periodDates.current)
+          throw Error(
+            'Current Report_Date must match Facility_current.xlsx (' + periodDates.current + ')',
           );
         if (envelope.rows.some((row) => row.source_id !== spec.source.source_id))
           throw Error('Source ID does not match the configured workbook domain');
@@ -6663,19 +6661,20 @@
           record_count: envelope.rows.length,
           source_owner: 'Not configured',
           quality_note:
-            'Configured complete source population; count validated against workbook Metadata.',
+            'Configured source population; row count calculated from the uploaded data sheet.',
         };
       }
 
       const anchor = definition('facility');
-      identity = await readSheet(
+      await readSheet(
         anchor,
         anchor.sheets.find((spec) => spec.dataset === 'portfolio'),
       );
+      // Internal compatibility envelope only: no manifest attachment or workbook settings.
       const manifest = {
         schema_version: 2,
-        bundle_id: identity.bundle_id,
-        is_demo: identity.is_demo,
+        bundle_id: 'excel-' + periodDates.current,
+        is_demo: sampleData,
         files: {},
       };
 
@@ -6754,7 +6753,7 @@
         const result = { monitoring: [], portfolio: [], activity: [], sources: [] },
           errors = [];
         // Each domain is independently optional. Its stable identity is configured;
-        // dates come from the actual rows, and counts are checked against Metadata.
+        // dates and counts come directly from the uploaded data sheets.
         for (const book of definitions.filter((book) => book.previous)) {
           for (const spec of book.sheets) {
             try {
@@ -21790,6 +21789,7 @@
                 attachment,
                 validate: validateRows,
                 allowDemo: config.allowSampleData === true,
+                sampleData: config.sampleData === true,
               });
               manifest = releaseLoader.manifest;
             } else {
@@ -21974,7 +21974,7 @@
           root.innerHTML =
             '<div class="ch-error" role="alert"><h2>Dashboard unavailable</h2><p>' +
             esc(e.message) +
-            '</p><p>Check the configured attachment page, workbook metadata and your Confluence access.</p><button class="ch-btn" onclick="location.reload()">Reload</button></div>';
+            '</p><p>Check the configured attachment page, Excel filenames, sheet names, column headers and your Confluence access.</p><button class="ch-btn" onclick="location.reload()">Reload</button></div>';
         } finally {
           await overlay?.paint?.();
           overlay?.destroy();
@@ -21983,5 +21983,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '7a0885852b37:deepdive';
+  window.CREDIT_PAGE_BUILD = '1b970720017d:deepdive';
 })();
