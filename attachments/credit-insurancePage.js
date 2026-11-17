@@ -5,6 +5,7 @@
     root.textContent = 'This page needs its matching dashboard settings and scripts.';
     return;
   }
+  window.CREDIT_DATA_FORMAT = 'xlsx';
   /* Dashboard icons on Confluence's existing navigation. Native URLs, titles,
    * tree controls, dimensions and collapse preferences stay native. The optional
    * space include also styles ordinary reader pages in the configured space. */
@@ -1690,9 +1691,10 @@
                 required: true,
                 definition:
                   'CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.',
-                header: 'PAL_CA_Expired',
+                header: 'Eligible_CA_Expired',
                 encoding: 'yes_no',
                 source_header: 'pal_ca_expired',
+                aliases: ['PAL_CA_Expired'],
               },
               {
                 field: 'pal_ca_month',
@@ -1700,17 +1702,19 @@
                 required: false,
                 definition:
                   'Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null.',
-                header: 'PAL_CA_Month',
+                header: 'Eligible_CA_Expiry_Month',
                 source_header: 'pal_ca_month',
+                aliases: ['PAL_CA_Month'],
               },
               {
                 field: 'pal_facility_expired',
                 type: 'boolean',
                 required: true,
                 definition: 'Facility maturity before report date; CM and DM both included.',
-                header: 'PAL_Facility_Expired',
+                header: 'Facility_Matured',
                 encoding: 'yes_no',
                 source_header: 'pal_facility_expired',
+                aliases: ['PAL_Facility_Expired'],
               },
               {
                 field: 'pal_facility_month',
@@ -1718,8 +1722,9 @@
                 required: false,
                 definition:
                   'Facility expiry month in reporting month and next two months, date >= report date; otherwise null.',
-                header: 'PAL_Facility_Month',
+                header: 'Upcoming_Facility_Maturity_Month',
                 source_header: 'pal_facility_month',
+                aliases: ['PAL_Facility_Month'],
               },
               {
                 field: 'pal_approval_period',
@@ -1727,8 +1732,9 @@
                 required: false,
                 definition:
                   'CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.',
-                header: 'PAL_Approval_Period',
+                header: 'Facility_Approval_Month_Comparison',
                 source_header: 'pal_approval_period',
+                aliases: ['PAL_Approval_Period'],
               },
               {
                 field: 'pal_pipeline_bucket',
@@ -1736,8 +1742,9 @@
                 required: false,
                 definition:
                   '1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.',
-                header: 'PAL_Pipeline_Bucket',
+                header: 'Pending_Closure_Age_Band',
                 source_header: 'pal_pipeline_bucket',
+                aliases: ['PAL_Pipeline_Bucket'],
               },
               {
                 field: 'pal_spread_bucket',
@@ -1745,8 +1752,9 @@
                 required: false,
                 definition:
                   'SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null.',
-                header: 'PAL_Spread_Bucket',
+                header: 'Eligible_SBL_Loan_Spread_Band',
                 source_header: 'pal_spread_bucket',
+                aliases: ['PAL_Spread_Bucket'],
               },
               {
                 field: 'pal_spread_weight',
@@ -1754,25 +1762,28 @@
                 required: false,
                 definition:
                   'Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.',
-                header: 'PAL_Spread_Weight',
+                header: 'Eligible_SBL_Spread_Weighted_Amount',
                 source_header: 'pal_spread_weight',
+                aliases: ['PAL_Spread_Weight'],
               },
               {
                 field: 'pal_spread_os',
                 type: 'number',
                 required: true,
                 definition: 'Direct OS denominator for valid-spread SBL; zero otherwise.',
-                header: 'PAL_Spread_OS',
+                header: 'Eligible_SBL_Spread_Outstanding_Amount',
                 source_header: 'pal_spread_os',
+                aliases: ['PAL_Spread_OS'],
               },
               {
                 field: 'pal_pricing_exception',
                 type: 'boolean',
                 required: true,
                 definition: 'SBL Direct OS >0 and pricing exception Yes.',
-                header: 'PAL_Pricing_Exception',
+                header: 'Eligible_SBL_Pricing_Exception',
                 encoding: 'yes_no',
                 source_header: 'pal_pricing_exception',
+                aliases: ['PAL_Pricing_Exception'],
               },
               {
                 field: 'pal_prior_ytd',
@@ -1780,9 +1791,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback in prior year through same month/day.',
-                header: 'PAL_Prior_YTD',
+                header: 'Prior_Period_New_Deal_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_ytd',
+                aliases: ['PAL_Prior_YTD'],
               },
               {
                 field: 'pal_prior_mtd',
@@ -1790,9 +1802,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.',
-                header: 'PAL_Prior_MTD',
+                header: 'Prior_Period_New_Deal_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_mtd',
+                aliases: ['PAL_Prior_MTD'],
               },
               {
                 field: 'pal_new_ytd',
@@ -1800,9 +1813,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.',
-                header: 'PAL_New_YTD',
+                header: 'New_Deal_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_ytd',
+                aliases: ['PAL_New_YTD'],
               },
               {
                 field: 'pal_approved_ytd',
@@ -1810,9 +1824,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_YTD',
+                header: 'Facility_Approved_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_ytd',
+                aliases: ['PAL_Approved_YTD'],
               },
               {
                 field: 'pal_pending_ytd',
@@ -1820,9 +1835,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within YTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_YTD',
+                header: 'Pending_Closure_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_ytd',
+                aliases: ['PAL_Pending_YTD'],
               },
               {
                 field: 'pal_new_qtd',
@@ -1830,9 +1846,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.',
-                header: 'PAL_New_QTD',
+                header: 'New_Deal_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_qtd',
+                aliases: ['PAL_New_QTD'],
               },
               {
                 field: 'pal_approved_qtd',
@@ -1840,9 +1857,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_QTD',
+                header: 'Facility_Approved_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_qtd',
+                aliases: ['PAL_Approved_QTD'],
               },
               {
                 field: 'pal_pending_qtd',
@@ -1850,9 +1868,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within QTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_QTD',
+                header: 'Pending_Closure_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_qtd',
+                aliases: ['PAL_Pending_QTD'],
               },
               {
                 field: 'pal_new_mtd',
@@ -1860,9 +1879,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.',
-                header: 'PAL_New_MTD',
+                header: 'New_Deal_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_mtd',
+                aliases: ['PAL_New_MTD'],
               },
               {
                 field: 'pal_approved_mtd',
@@ -1870,9 +1890,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_MTD',
+                header: 'Facility_Approved_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_mtd',
+                aliases: ['PAL_Approved_MTD'],
               },
               {
                 field: 'pal_pending_mtd',
@@ -1880,9 +1901,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within MTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_MTD',
+                header: 'Pending_Closure_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_mtd',
+                aliases: ['PAL_Pending_MTD'],
               },
               {
                 field: 'pal_new_wtd',
@@ -1890,9 +1912,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.',
-                header: 'PAL_New_WTD',
+                header: 'New_Deal_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_wtd',
+                aliases: ['PAL_New_WTD'],
               },
               {
                 field: 'pal_approved_wtd',
@@ -1900,9 +1923,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_WTD',
+                header: 'Facility_Approved_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_wtd',
+                aliases: ['PAL_Approved_WTD'],
               },
               {
                 field: 'pal_pending_wtd',
@@ -1910,9 +1934,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within WTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_WTD',
+                header: 'Pending_Closure_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_wtd',
+                aliases: ['PAL_Pending_WTD'],
               },
               {
                 field: 'pal_prior_qtd',
@@ -1920,9 +1945,10 @@
                 required: true,
                 definition:
                   'Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.',
-                header: 'PAL_Prior_QTD',
+                header: 'Prior_Period_New_Deal_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_qtd',
+                aliases: ['PAL_Prior_QTD'],
               },
               {
                 field: 'pal_prior_wtd',
@@ -1930,9 +1956,10 @@
                 required: true,
                 definition:
                   'Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.',
-                header: 'PAL_Prior_WTD',
+                header: 'Prior_Period_New_Deal_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_wtd',
+                aliases: ['PAL_Prior_WTD'],
               },
               {
                 field: 'rotce_period',
@@ -2324,9 +2351,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -2334,9 +2362,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -2765,9 +2794,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -2775,9 +2805,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -3222,9 +3253,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -3232,9 +3264,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -4021,9 +4054,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -4031,9 +4065,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'banker_name',
@@ -4460,9 +4495,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -4470,9 +4506,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -4908,9 +4945,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -4918,9 +4956,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -5608,9 +5647,10 @@
                 type: 'text',
                 required: false,
                 definition:
-                  'PAL past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
-                header: 'PAL_Covenant_Bucket',
+                  'Portfolio past due covenant bands 1-45 / 46-90 / >90, based on effective due date.',
+                header: 'Covenant_Past_Due_Band',
                 source_header: 'pal_covenant_bucket',
+                aliases: ['PAL_Covenant_Bucket'],
               },
               {
                 field: 'pal_due30',
@@ -5618,9 +5658,10 @@
                 required: true,
                 definition:
                   'Coming-due covenant within 30 days including as-of date; separate from monitoring three-month window.',
-                header: 'PAL_Due30',
+                header: 'Covenant_Due_Within_30_Days',
                 encoding: 'yes_no',
                 source_header: 'pal_due30',
+                aliases: ['PAL_Due30'],
               },
               {
                 field: 'ccm_status',
@@ -6084,9 +6125,10 @@
                 required: true,
                 definition:
                   'CM only; EMEA CA Review Yes; CA expiration before reporting date. Count distinct relationships.',
-                header: 'PAL_CA_Expired',
+                header: 'Eligible_CA_Expired',
                 encoding: 'yes_no',
                 source_header: 'pal_ca_expired',
+                aliases: ['PAL_CA_Expired'],
               },
               {
                 field: 'pal_ca_month',
@@ -6094,17 +6136,19 @@
                 required: false,
                 definition:
                   'Eligible CA expiry month in reporting month and next two months, date >= report date; otherwise null.',
-                header: 'PAL_CA_Month',
+                header: 'Eligible_CA_Expiry_Month',
                 source_header: 'pal_ca_month',
+                aliases: ['PAL_CA_Month'],
               },
               {
                 field: 'pal_facility_expired',
                 type: 'boolean',
                 required: true,
                 definition: 'Facility maturity before report date; CM and DM both included.',
-                header: 'PAL_Facility_Expired',
+                header: 'Facility_Matured',
                 encoding: 'yes_no',
                 source_header: 'pal_facility_expired',
+                aliases: ['PAL_Facility_Expired'],
               },
               {
                 field: 'pal_facility_month',
@@ -6112,8 +6156,9 @@
                 required: false,
                 definition:
                   'Facility expiry month in reporting month and next two months, date >= report date; otherwise null.',
-                header: 'PAL_Facility_Month',
+                header: 'Upcoming_Facility_Maturity_Month',
                 source_header: 'pal_facility_month',
+                aliases: ['PAL_Facility_Month'],
               },
               {
                 field: 'pal_approval_period',
@@ -6121,8 +6166,9 @@
                 required: false,
                 definition:
                   'CURRENT/PREVIOUS month from first approval date; NAM/LATAM/EMEA only. Otherwise null.',
-                header: 'PAL_Approval_Period',
+                header: 'Facility_Approval_Month_Comparison',
                 source_header: 'pal_approval_period',
+                aliases: ['PAL_Approval_Period'],
               },
               {
                 field: 'pal_pipeline_bucket',
@@ -6130,8 +6176,9 @@
                 required: false,
                 definition:
                   '1-30 / 31-60 / 61-90 / >90 days since first approval in reporting year; NAM/LATAM non-PSE, no origination date and 19 excluded facility types. Otherwise null.',
-                header: 'PAL_Pipeline_Bucket',
+                header: 'Pending_Closure_Age_Band',
                 source_header: 'pal_pipeline_bucket',
+                aliases: ['PAL_Pipeline_Bucket'],
               },
               {
                 field: 'pal_spread_bucket',
@@ -6139,8 +6186,9 @@
                 required: false,
                 definition:
                   'SBL with Direct OS >0; <=70 / 70-125 / >125 bps. Missing spread remains null.',
-                header: 'PAL_Spread_Bucket',
+                header: 'Eligible_SBL_Loan_Spread_Band',
                 source_header: 'pal_spread_bucket',
+                aliases: ['PAL_Spread_Bucket'],
               },
               {
                 field: 'pal_spread_weight',
@@ -6148,25 +6196,28 @@
                 required: false,
                 definition:
                   'Loan spread in bps multiplied by Direct OS for eligible SBL; null without valid spread.',
-                header: 'PAL_Spread_Weight',
+                header: 'Eligible_SBL_Spread_Weighted_Amount',
                 source_header: 'pal_spread_weight',
+                aliases: ['PAL_Spread_Weight'],
               },
               {
                 field: 'pal_spread_os',
                 type: 'number',
                 required: true,
                 definition: 'Direct OS denominator for valid-spread SBL; zero otherwise.',
-                header: 'PAL_Spread_OS',
+                header: 'Eligible_SBL_Spread_Outstanding_Amount',
                 source_header: 'pal_spread_os',
+                aliases: ['PAL_Spread_OS'],
               },
               {
                 field: 'pal_pricing_exception',
                 type: 'boolean',
                 required: true,
                 definition: 'SBL Direct OS >0 and pricing exception Yes.',
-                header: 'PAL_Pricing_Exception',
+                header: 'Eligible_SBL_Pricing_Exception',
                 encoding: 'yes_no',
                 source_header: 'pal_pricing_exception',
+                aliases: ['PAL_Pricing_Exception'],
               },
               {
                 field: 'pal_prior_ytd',
@@ -6174,9 +6225,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback in prior year through same month/day.',
-                header: 'PAL_Prior_YTD',
+                header: 'Prior_Period_New_Deal_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_ytd',
+                aliases: ['PAL_Prior_YTD'],
               },
               {
                 field: 'pal_prior_mtd',
@@ -6184,9 +6236,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback in prior month through same day; clamped to month end.',
-                header: 'PAL_Prior_MTD',
+                header: 'Prior_Period_New_Deal_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_mtd',
+                aliases: ['PAL_Prior_MTD'],
               },
               {
                 field: 'pal_new_ytd',
@@ -6194,9 +6247,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within YTD through report date. Weeks start Monday.',
-                header: 'PAL_New_YTD',
+                header: 'New_Deal_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_ytd',
+                aliases: ['PAL_New_YTD'],
               },
               {
                 field: 'pal_approved_ytd',
@@ -6204,9 +6258,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within YTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_YTD',
+                header: 'Facility_Approved_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_ytd',
+                aliases: ['PAL_Approved_YTD'],
               },
               {
                 field: 'pal_pending_ytd',
@@ -6214,9 +6269,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within YTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_YTD',
+                header: 'Pending_Closure_Year_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_ytd',
+                aliases: ['PAL_Pending_YTD'],
               },
               {
                 field: 'pal_new_qtd',
@@ -6224,9 +6280,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within QTD through report date. Weeks start Monday.',
-                header: 'PAL_New_QTD',
+                header: 'New_Deal_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_qtd',
+                aliases: ['PAL_New_QTD'],
               },
               {
                 field: 'pal_approved_qtd',
@@ -6234,9 +6291,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within QTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_QTD',
+                header: 'Facility_Approved_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_qtd',
+                aliases: ['PAL_Approved_QTD'],
               },
               {
                 field: 'pal_pending_qtd',
@@ -6244,9 +6302,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within QTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_QTD',
+                header: 'Pending_Closure_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_qtd',
+                aliases: ['PAL_Pending_QTD'],
               },
               {
                 field: 'pal_new_mtd',
@@ -6254,9 +6313,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within MTD through report date. Weeks start Monday.',
-                header: 'PAL_New_MTD',
+                header: 'New_Deal_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_mtd',
+                aliases: ['PAL_New_MTD'],
               },
               {
                 field: 'pal_approved_mtd',
@@ -6264,9 +6324,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within MTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_MTD',
+                header: 'Facility_Approved_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_mtd',
+                aliases: ['PAL_Approved_MTD'],
               },
               {
                 field: 'pal_pending_mtd',
@@ -6274,9 +6335,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within MTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_MTD',
+                header: 'Pending_Closure_Month_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_mtd',
+                aliases: ['PAL_Pending_MTD'],
               },
               {
                 field: 'pal_new_wtd',
@@ -6284,9 +6346,10 @@
                 required: true,
                 definition:
                   'Non-PSE origination or renewal fallback within WTD through report date. Weeks start Monday.',
-                header: 'PAL_New_WTD',
+                header: 'New_Deal_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_new_wtd',
+                aliases: ['PAL_New_WTD'],
               },
               {
                 field: 'pal_approved_wtd',
@@ -6294,9 +6357,10 @@
                 required: true,
                 definition:
                   'NAM/LATAM/EMEA first approval within WTD through report date. Weeks start Monday.',
-                header: 'PAL_Approved_WTD',
+                header: 'Facility_Approved_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_approved_wtd',
+                aliases: ['PAL_Approved_WTD'],
               },
               {
                 field: 'pal_pending_wtd',
@@ -6304,9 +6368,10 @@
                 required: true,
                 definition:
                   'Eligible pending closure first approval within WTD through report date. Weeks start Monday.',
-                header: 'PAL_Pending_WTD',
+                header: 'Pending_Closure_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_pending_wtd',
+                aliases: ['PAL_Pending_WTD'],
               },
               {
                 field: 'pal_prior_qtd',
@@ -6314,9 +6379,10 @@
                 required: true,
                 definition:
                   'Non-PSE new deals in the previous QTD period through the same elapsed day, capped at period end.',
-                header: 'PAL_Prior_QTD',
+                header: 'Prior_Period_New_Deal_Quarter_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_qtd',
+                aliases: ['PAL_Prior_QTD'],
               },
               {
                 field: 'pal_prior_wtd',
@@ -6324,9 +6390,10 @@
                 required: true,
                 definition:
                   'Non-PSE new deals in the previous WTD period through the same elapsed day, capped at period end.',
-                header: 'PAL_Prior_WTD',
+                header: 'Prior_Period_New_Deal_Week_To_Date',
                 encoding: 'yes_no',
                 source_header: 'pal_prior_wtd',
+                aliases: ['PAL_Prior_WTD'],
               },
               {
                 field: 'rotce_period',
@@ -6431,6 +6498,45 @@
   (function (w) {
     'use strict';
 
+    let readerPromise;
+    async function ensureReader(attachment) {
+      if (w.XLSX?.read) return;
+      if (!readerPromise)
+        readerPromise = new Promise((resolve, reject) => {
+          const url = new URL(attachment('xlsx.full.min.js'), w.location.href);
+          if (url.origin !== w.location.origin) {
+            reject(Error('Excel reader must be on the same Confluence origin'));
+            return;
+          }
+          const script = w.document.createElement('script');
+          script.src = url.href;
+          const timer = w.setTimeout(() => fail(), 30000);
+          function fail() {
+            w.clearTimeout(timer);
+            script.remove();
+            reject(
+              Error(
+                'Excel reader could not load. Upload xlsx.full.min.js with the dashboard attachments and reload.',
+              ),
+            );
+          }
+          script.onerror = fail;
+          script.onload = () => {
+            if (!w.XLSX?.read) {
+              fail();
+              return;
+            }
+            w.clearTimeout(timer);
+            resolve();
+          };
+          w.document.head.append(script);
+        }).catch((error) => {
+          readerPromise = undefined;
+          throw error;
+        });
+      await readerPromise;
+    }
+
     function decode(value, encoding, field) {
       if (value === null || !encoding) return value;
       const token = String(value).trim().toUpperCase();
@@ -6449,6 +6555,7 @@
     async function createLoader({ attachment, validate, allowDemo = false }) {
       const definitions = w.CreditWorkbookContract?.workbooks;
       if (!definitions) throw Error('Excel workbook contract is unavailable');
+      await ensureReader(attachment);
       const buffers = new Map(),
         sheets = new Map(),
         datasets = new Map();
@@ -6467,7 +6574,11 @@
               try {
                 if (!buffers.has(filename))
                   buffers.set(filename, w.CreditDataCache.readBuffer(attachment(filename)));
-                const aliases = Object.fromEntries(spec.columns.map((f) => [f.header, f.field]));
+                const aliases = Object.fromEntries(
+                  spec.columns.flatMap((f) =>
+                    [f.header, ...(f.aliases || [])].map((header) => [header, f.field]),
+                  ),
+                );
                 const envelope = await w.CreditExcel.parse(await buffers.get(filename), {
                   dataset: book.key,
                   sheetName: spec.sheet,
@@ -20394,7 +20505,11 @@
           portfolioJourney,
           partialTargets = null,
           pendingTargets;
-        const config = global.CREDIT_CONFIG || {};
+        const config = { ...(global.CREDIT_CONFIG || {}) };
+        // Published bundles own their data format. Older macro settings must never
+        // send an Excel deployment back through the retired JSON manifest loader.
+        if (config.mode !== 'demo' && global.CREDIT_DATA_FORMAT === 'xlsx')
+          config.dataMode = 'workbooks';
         let charts = [],
           data = {},
           manifest,
@@ -21868,5 +21983,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '7357c69c00fd:INSURANCE';
+  window.CREDIT_PAGE_BUILD = '7a0885852b37:INSURANCE';
 })();
