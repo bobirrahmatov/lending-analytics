@@ -6,21 +6,21 @@
 <li>Use the new workbooks with data sheets only, or delete Metadata from your existing workbooks. Existing contract-3 underscore headers, including the old PAL_ aliases, remain accepted. Any old Metadata sheet left in a workbook is ignored. The new loader requires no file-level settings or hidden replacement fields.</li>
 <li>For sample preview, the supplied macros set sampleData:true and allowSampleData:true. When using your real data, change both to false once. This setting declares whether the uploaded rows are examples; without a per-workbook marker the dashboard cannot automatically establish sample/live provenance. Replace every sample row and sample comparison file before switching to live use.</li>
 </ol>
-<h2>Weekly updates</h2><ol>
+<h2>Facility uses XLSB</h2><p>Upload Facility_current.xlsb and Facility_previous.xlsb as real Excel Binary Workbooks. In Excel choose Save As → Excel Binary Workbook (*.xlsb); changing a filename extension does not convert it. Keep Data, CA and Maturity sheets and the existing underscore headers. Other domain files remain XLSX. Keep the supplied xlsx.full.min.js reader attachment: despite its filename it supports XLSB as well. No Metadata sheet is needed.</p><p>XLSB is the recommended format here because it keeps the weekly Excel workflow and can reduce workbook size. Plain JSON is not automatically smaller: in our synthetic current Facility sample XLSB used about 58 KB, XLSX 71 KB, minified object JSON 383 KB and compact header/row-array JSON 114 KB. These are sample results, not a guarantee for live files. Both Excel formats are compressed; JSON compression or partitioning would require a separate publishing/loader design. This release does not request JSON data.</p><p>The dashboard still enforces less than 10,000,000 bytes per attachment and at most 200,000 data rows per sheet. Check the actual saved XLSB size. If it remains too large, split the feed through a separately implemented partition contract; do not simply rename or divide files because this loader uses the two exact Facility filenames. Browser memory usage depends on the uncompressed rows, not only upload size.</p><p>Replace the dashboard JavaScript with this build before using the new filenames. Old Facility XLSX attachments are not read or used as a fallback, so they cannot silently supply an outdated snapshot.</p><h2>Weekly updates</h2><ol>
 <li>Put the previous reporting snapshot in each _previous file and the new snapshot in the matching _current file. Keep the supplied filenames, data-sheet names and column headers. No weekly settings edits are needed.</li>
-<li>Update every relevant data sheet. Report_Date is the reporting snapshot date; Maker_Date remains the Activity event date. Nonempty current source sheets must all have the same Report_Date as Facility_current.xlsx / Data. History workbooks intentionally contain several dates.</li>
-<li>Row counts are calculated from nonblank records automatically. Empty monitoring or Activity populations can retain just the headers. Their date comes from the Data sheet of the matching Facility_current.xlsx or Facility_previous.xlsx. Each Facility Data sheet used as a date anchor must contain at least one dated record. An empty previous source without a dated previous Facility snapshot is unavailable; it never inherits the current date.</li>
-<li>Upload the previous files, then current/history files, with Facility_current.xlsx last. Reload only after the upload is complete. Replacements are not atomic: differing current reporting dates are rejected, but partial uploads carrying the same reporting date cannot be identified from the data alone. Compare your source export counts before upload.</li>
+<li>Update every relevant data sheet. Report_Date is the reporting snapshot date; Maker_Date remains the Activity event date. Nonempty current source sheets must all have the same Report_Date as Facility_current.xlsb / Data. History workbooks intentionally contain several dates.</li>
+<li>Row counts are calculated from nonblank records automatically. Empty monitoring or Activity populations can retain just the headers. Their date comes from the Data sheet of the matching Facility_current.xlsb or Facility_previous.xlsb. Each Facility Data sheet used as a date anchor must contain at least one dated record. An empty previous source without a dated previous Facility snapshot is unavailable; it never inherits the current date.</li>
+<li>Upload the previous files, then current/history files, with Facility_current.xlsb last. Reload only after the upload is complete. Replacements are not atomic: differing current reporting dates are rejected, but partial uploads carrying the same reporting date cannot be identified from the data alone. Compare your source export counts before upload.</li>
 </ol>
 <h2>Data rules</h2>
 <p>Use the exact underscore headers listed below. Keep identifiers as text to preserve leading zeros; dates as YYYY-MM-DD text or date-only Excel cells; amounts as numeric USD units; and flags as plain Yes/No text. PSE_Non_PSE uses PSE/non-PSE and Committed_Uncommitted uses Committed/Uncommitted. ROTCE is a decimal ratio. Do not include formulas, merged cells, subtotal rows or duplicate record keys.</p>
 <p>All listed columns must exist. Blank allowed refers to values, not missing headers. Columns can move because the loader maps by name, but the supplied order follows each verified owning source. Products are source values, not a fixed list: SBL, Structured Lending, CRE, Partner Lending, Law Firm, RRE and additional programs are supported.</p>
 <h2>What feeds each dashboard</h2>
 <table><tr><th>Dashboard</th><th>Primary Excel inputs</th></tr>
-<tr><td>Portfolio / Relationship Deep Dive</td><td>Facility_current.xlsx / Data. Facility_previous.xlsx supplies comparisons. Portfolio_Aggregated_History.xlsx feeds only Portfolio's Trends section and the Trends compatibility route.</td></tr>
-<tr><td>Covenants</td><td>Covenants_current.xlsx, with exact Facility_current.xlsx enrichment. Covenants_previous.xlsx and Facility_previous.xlsx supply the prior covenant and exposure snapshot. Optional Covenants_History.xlsx is for historical record drill-downs, never a replacement previous baseline.</td></tr>
+<tr><td>Portfolio / Relationship Deep Dive</td><td>Facility_current.xlsb / Data. Facility_previous.xlsb supplies comparisons. Portfolio_Aggregated_History.xlsx feeds only Portfolio's Trends section and the Trends compatibility route.</td></tr>
+<tr><td>Covenants</td><td>Covenants_current.xlsx, with exact Facility_current.xlsb enrichment. Covenants_previous.xlsx and Facility_previous.xlsb supply the prior covenant and exposure snapshot. Optional Covenants_History.xlsx is for historical record drill-downs, never a replacement previous baseline.</td></tr>
 <tr><td>Covenants Activity</td><td>Activity_current.xlsx with covenant/facility enrichment. One row is one event. Keep repeated activities; do not deduplicate them into obligation counts.</td></tr>
-<tr><td>CA Expiration / Facility Maturity</td><td>Facility_current.xlsx / CA and Maturity respectively. These are separate obligation populations, not duplicated facility balances.</td></tr>
+<tr><td>CA Expiration / Facility Maturity</td><td>Facility_current.xlsb / CA and Maturity respectively. These are separate obligation populations, not duplicated facility balances.</td></tr>
 <tr><td>CCM / Insurances / Appraisals</td><td>CCM_current.xlsx / Insurances_current.xlsx / Appraisals_current.xlsx respectively, with their matching _previous files for comparisons.</td></tr>
 <tr><td>Underwriter Summary / Workload</td><td>Combined obligations from Covenants, CA, Maturity, CCM, Insurances and Appraisals, retaining each original record key.</td></tr>
 </table>
@@ -32,8 +32,8 @@
 <p>Covenants_History.xlsx retains Data, Portfolio, Snapshots and Controls. These are dated historical records and their source counts/completeness, not workbook Metadata. They support validation of historical drill-downs. Do not manufacture earlier records from the current snapshot.</p>
 
 <h2>Files and sample populations</h2><table><tr><th>File</th><th>Use</th><th>Sheets and sample row counts</th></tr>
-<tr><td>Facility_current.xlsx</td><td>Current input</td><td>Data: 120, CA: 48, Maturity: 42</td></tr>
-<tr><td>Facility_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 120, CA: 45, Maturity: 39</td></tr>
+<tr><td>Facility_current.xlsb</td><td>Current input</td><td>Data: 120, CA: 48, Maturity: 42</td></tr>
+<tr><td>Facility_previous.xlsb</td><td>Optional comparison/history</td><td>Data: 120, CA: 45, Maturity: 39</td></tr>
 <tr><td>Covenants_current.xlsx</td><td>Current input</td><td>Data: 200</td></tr>
 <tr><td>Covenants_previous.xlsx</td><td>Optional comparison/history</td><td>Data: 188</td></tr>
 <tr><td>Activity_current.xlsx</td><td>Current input</td><td>Data: 420</td></tr>
@@ -47,16 +47,16 @@
 <tr><td>Portfolio_Aggregated_History.xlsx</td><td>Current input</td><td>Data: 120</td></tr>
 <tr><td>Covenants_History.xlsx</td><td>Optional comparison/history</td><td>Data: 388, Portfolio: 240, Snapshots: 2, Controls: 4</td></tr>
 </table><h2>Fixed source mapping</h2><p>These mappings are shipped in the application, not another upload file. Supply the complete configured population. Coverage is a declared feed contract, not proof that an upstream export is complete; if a feed intentionally contains exceptions only, its configured coverage must be changed once before use.</p><table><tr><th>File / sheet</th><th>Source ID</th><th>Domain</th><th>Coverage</th></tr>
-<tr><td>Facility_current.xlsx / Data</td><td>SRC_PORTFOLIO</td><td>PORTFOLIO</td><td>ALL_OBLIGATIONS</td></tr>
-<tr><td>Facility_current.xlsx / CA</td><td>SRC_CA</td><td>CA</td><td>ALL_OBLIGATIONS</td></tr>
-<tr><td>Facility_current.xlsx / Maturity</td><td>SRC_FACILITY</td><td>FACILITY</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Facility_current.xlsb / Data</td><td>SRC_PORTFOLIO</td><td>PORTFOLIO</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Facility_current.xlsb / CA</td><td>SRC_CA</td><td>CA</td><td>ALL_OBLIGATIONS</td></tr>
+<tr><td>Facility_current.xlsb / Maturity</td><td>SRC_FACILITY</td><td>FACILITY</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>Covenants_current.xlsx / Data</td><td>SRC_COVENANTS</td><td>COVENANTS</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>Activity_current.xlsx / Data</td><td>SRC_ACTIVITY</td><td>ACTIVITY</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>CCM_current.xlsx / Data</td><td>SRC_CCM</td><td>CCM</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>Insurances_current.xlsx / Data</td><td>SRC_INSURANCE</td><td>INSURANCE</td><td>ALL_OBLIGATIONS</td></tr>
 <tr><td>Appraisals_current.xlsx / Data</td><td>SRC_APPRAISALS</td><td>APPRAISALS</td><td>ALL_OBLIGATIONS</td></tr>
 </table><h2>Exact column order and definitions</h2>
-<h3>Facility_current.xlsx / Facility_previous.xlsx</h3>
+<h3>Facility_current.xlsb / Facility_previous.xlsb</h3>
 <h4>Data</h4><div class="scroll"><table><tr><th>Position</th><th>Excel header</th><th>Type</th><th>Cell value</th><th>Meaning</th></tr>
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
