@@ -9277,7 +9277,7 @@
             .sort((x, y) => y.rows.length - x.rows.length)
             .slice(0, 10);
         const ranked = groups(source, 'relationship_id').map((g) => ({
-          relationship_name: g.rows[0].relationship_name || g.name,
+          relationship_name: g.rows[0].relationship_name || '—',
           region: [...new Set(g.rows.map((r) => r.region))].join(', '),
           rows: g.rows,
           exposure: total(g.rows, settings.measure || 'direct_os'),
@@ -9370,7 +9370,7 @@
           );
           insight(
             'Relationship',
-            source[0]?.relationship_name || 'Unavailable',
+            source[0]?.relationship_name || '—',
             'The selected relationship name from the supplied facility records.',
           );
         } else if (a.id.startsWith('metric-')) {
@@ -9378,7 +9378,7 @@
             amount = total(source, field),
             rels = groups(source, 'relationship_id')
               .map((g) => ({
-                name: g.rows[0].relationship_name || g.name,
+                name: g.rows[0].relationship_name || '—',
                 y: total(g.rows, field),
                 custom: { rows: g.rows },
               }))
@@ -9694,7 +9694,7 @@
             'bar',
             groups(source, 'relationship_id')
               .map((g) => ({
-                name: g.rows[0].relationship_name || g.name,
+                name: g.rows[0].relationship_name || '—',
                 y: total(g.rows, 'tfa'),
                 custom: { rows: g.rows },
               }))
@@ -9919,7 +9919,7 @@
               .sort((x, y) => x.rotce - y.rotce)
               .slice(0, 10)
               .map((r) => ({
-                name: r.relationship_name,
+                name: r.relationship_name || '—',
                 y: r.rotce * 100,
                 custom: { rows: r.rows },
               })),
@@ -10031,7 +10031,7 @@
               groups(g.rows, 'owner_name').map((o) =>
                 cohortRow(
                   [
-                    g.rows[0].relationship_name || g.name,
+                    g.rows[0].relationship_name || '—',
                     o.name,
                     ...bucketValues(o.rows),
                     n(o.rows.length),
@@ -10796,19 +10796,14 @@
         ],
         ['region', 'Region', (r) => r.region, (r) => r.region],
         ['team_lead', 'Team', (r) => r.team_lead, (r) => r.team_lead],
-        [
-          'owner',
-          'Underwriter',
-          (r) => r.owner_id || r.owner_name,
-          (r) => r.owner_name || r.owner_id,
-        ],
+        ['owner', 'Underwriter', (r) => r.owner_id || r.owner_name, (r) => r.owner_name || '—'],
         ['product', 'Product', (r) => r.product, (r) => r.product],
         ['status', 'Status', (r) => r.status, (r) => r.status],
         [
           'relationship',
           'Relationship',
           (r) => r.relationship_id,
-          (r) => [r.relationship_id, r.relationship_name].filter(Boolean).join(' – '),
+          (r) => (r.relationship_name ? [r.relationship_id, r.relationship_name].join(' – ') : '—'),
         ],
         [
           'facility',
@@ -12187,9 +12182,11 @@
           keyValue === '__missing__'
             ? 'Not supplied'
             : key === 'relationship_id'
-              ? [keyValue, rs[0].relationship_name].filter(present).join(' — ')
+              ? rs[0].relationship_name
+                ? [keyValue, rs[0].relationship_name].join(' — ')
+                : '—'
               : key === 'owner_id'
-                ? rs[0].owner_name || keyValue
+                ? rs[0].owner_name || '—'
                 : domains[keyValue] || keyValue,
         rows: rs,
         y: value(rs, c),
@@ -12516,14 +12513,20 @@
             : c.measure === 'spread'
               ? v.toFixed(1) + ' bps'
               : amounts.has(c.measure)
-                ? '$' + (v / 1e6).toLocaleString('en-US', { maximumFractionDigits: 2 }) + 'm'
+                ? '$' +
+                  (v / 1e6).toLocaleString('en-US', {
+                    maximumFractionDigits: 2,
+                  }) +
+                  'm'
                 : Number(v).toLocaleString('en-US');
       const number = (v) => Number(v).toLocaleString('en-US');
       const textValue = (key, v) =>
         !present(v)
           ? key === 'banker_name'
             ? ''
-            : 'Not supplied'
+            : ['relationship_name', 'owner_name', 'lead_underwriter', 'team_lead'].includes(key)
+              ? '—'
+              : 'Not supplied'
           : typeof v === 'boolean'
             ? v
               ? 'Yes'
@@ -12733,7 +12736,11 @@
               formatter: function () {
                 return global.CreditDates?.label(this.value) || this.value;
               },
-              style: { width: '150px', textOverflow: 'ellipsis', fontSize: '11px' },
+              style: {
+                width: '150px',
+                textOverflow: 'ellipsis',
+                fontSize: '11px',
+              },
             },
           },
           yAxis: {
@@ -12773,7 +12780,11 @@
               name: c.unit,
               color: pie ? undefined : '#255BE3',
               colorByPoint: pie,
-              data: gs.map((g) => ({ name: g.name, y: g.y, custom: { group: g, rows: g.rows } })),
+              data: gs.map((g) => ({
+                name: g.name,
+                y: g.y,
+                custom: { group: g, rows: g.rows },
+              })),
             },
           ],
         });
@@ -12864,7 +12875,10 @@
             )
             .join('') +
           '</tbody></table></div>';
-        global.CreditTables.bindRows({ table: area.querySelector('table'), rows: shown });
+        global.CreditTables.bindRows({
+          table: area.querySelector('table'),
+          rows: shown,
+        });
         global.CreditTables.decorate({
           table: area.querySelector('table'),
           rows: records,
@@ -12892,7 +12906,10 @@
       }
       // Summary rows keep the exact dataset array used by the supporting table.
       function bindDatasetRows(table, datasets, select) {
-        const rows = Object.entries(datasets).map(([key, records]) => ({ key, records })),
+        const rows = Object.entries(datasets).map(([key, records]) => ({
+            key,
+            records,
+          })),
           keys = new Map(rows.map((r) => [r.records, r.key]));
         global.CreditTables.bindRows({
           table,
@@ -13491,7 +13508,11 @@
             'CAs by expiry month',
             'pal_ca_month',
             a.rows.filter((r) => r.pal_ca_month),
-            { ...a.c, measure: 'relationships', unit: 'Distinct CA relationships' },
+            {
+              ...a.c,
+              measure: 'relationships',
+              unit: 'Distinct CA relationships',
+            },
           );
           add(
             'Facilities by maturity month',
@@ -13632,7 +13653,11 @@
                       .map(
                         (k) =>
                           '<td>' +
-                          esc(format(Number.isFinite(r[k]) ? r[k] : null, { measure: k })) +
+                          esc(
+                            format(Number.isFinite(r[k]) ? r[k] : null, {
+                              measure: k,
+                            }),
+                          ) +
                           '</td>',
                       )
                       .join('') +
@@ -13895,7 +13920,10 @@
             ? '<p class="ch-empty">No matching records. Clear the table filters to broaden this view.</p>'
             : '') +
           '</div>';
-        global.CreditTables.bindRows({ table: area.querySelector('table'), rows: shown });
+        global.CreditTables.bindRows({
+          table: area.querySelector('table'),
+          rows: shown,
+        });
         area.querySelectorAll('[data-pj-entity]').forEach(
           (button) =>
             (button.onclick = () =>
@@ -15515,7 +15543,7 @@
             'Relationships with ROTCE',
           ],
         ]);
-        const names = rels.map((r, i) => i + 1 + '. ' + r.name),
+        const names = rels.map((r, i) => (r.name ? i + 1 + '. ' + r.name : '—')),
           tall = Math.max(400, rels.length * 26 + 140);
         const source = (r) => ({
           rows: r.rows,
@@ -16025,7 +16053,7 @@
             rotce = rotces.length === 1 ? rotces[0] : null;
           html +=
             '<div class="pal-relationship-banner"><div><h2>' +
-            esc(rs[0].relationship_name) +
+            esc(rs[0].relationship_name || '—') +
             '</h2><span>Relationship ID ' +
             esc(settings.relationship) +
             '</span></div><span>' +
@@ -16058,7 +16086,7 @@
                   '<div><strong>' +
                   esc(region) +
                   '</strong><span>' +
-                  esc(by(rr, 'owner_name').join(', ') || 'Underwriter not supplied') +
+                  esc(by(rr, 'owner_name').join(', ') || '—') +
                   '</span><small>' +
                   facilities(rr) +
                   ' ' +
@@ -16935,8 +16963,8 @@
             ? p.rows
                 .map((r) => r.owner_name)
                 .filter(Boolean)
-                .sort()[0] || 'Underwriter not supplied'
-            : 'Underwriter not supplied',
+                .sort()[0] || '—'
+            : '—',
         ),
         counts = new Map();
       for (const label of labels) counts.set(label, (counts.get(label) || 0) + 1);
@@ -16944,7 +16972,10 @@
         .map((p, i) => ({
           ...p,
           name:
-            labels[i] + (counts.get(labels[i]) > 1 ? ' · ' + (p.rows[0].owner_id || 'No ID') : ''),
+            labels[i] +
+            (labels[i] !== '—' && counts.get(labels[i]) > 1
+              ? ' · ' + (p.rows[0].owner_id || 'No ID')
+              : ''),
           displayName: labels[i],
           ownerKey: p.name,
         }))
@@ -18516,13 +18547,13 @@
       r.days_past_due = number(r.days_past_due);
       r.cumulative_deferred_days = number(r.cumulative_deferred_days);
       r.region = String(r.region || 'UNSPECIFIED').toUpperCase();
-      r.owner_name = r.owner_name || 'Unassigned';
-      r.owner_id = r.owner_id || r.owner_name;
+      r.owner_name = r.owner_name || null;
+      r.owner_id = r.owner_id || null;
       r.lead_underwriter = r.lead_underwriter || r.owner_name;
       r.product = r.product || 'Not supplied';
-      r.team_lead = r.team_lead || 'Unassigned';
-      r.relationship_id = r.relationship_id || r.relationship_name || '';
-      r.relationship_name = r.relationship_name || r.relationship_id || 'Not supplied';
+      r.team_lead = r.team_lead || null;
+      r.relationship_id = r.relationship_id || null;
+      r.relationship_name = r.relationship_name || null;
       if (activity) {
         r.event_type = eventType(r.event_type);
         r.event_id = r.event_id || 'ACT:' + index;
@@ -20630,20 +20661,25 @@
         return dates.get(v);
       }
       for (const [i, r] of rows.entries()) {
-        // Names are optional display labels. Upstream standardization owns completeness;
-        // keep exact identifiers for relationships, assignments and comparisons.
-        if (
-          Object.hasOwn(r, 'relationship_name') &&
-          (r.relationship_name === null ||
-            (typeof r.relationship_name === 'string' && !r.relationship_name.trim()))
-        )
-          r.relationship_name = r.relationship_id || null;
-        if (
-          Object.hasOwn(r, 'owner_name') &&
-          typeof r.owner_name === 'string' &&
-          !r.owner_name.trim()
-        )
-          r.owner_name = null;
+        // Missing or generic numbered display names are unavailable. Keep business
+        // identifiers in their own fields; never substitute an ID for a name.
+        for (const field of [
+          'relationship_name',
+          'owner_name',
+          'banker_name',
+          'lead_underwriter',
+          'team_lead',
+        ]) {
+          const value = r[field];
+          if (
+            typeof value === 'string' &&
+            (!value.trim() ||
+              /^(?:relationship|client|borrower|banker|underwriter|specialist|owner|team[ _-]*lead)[ _-]*#?\d+$/i.test(
+                value.trim(),
+              ))
+          )
+            r[field] = null;
+        }
         for (const [field, type] of contracts[name]) {
           // Completeness belongs to upstream standardization. Blank cells remain
           // unavailable; populated cells must still have the declared type.
@@ -21725,12 +21761,7 @@
             const m = new Map(
               rows
                 .filter((r) => r[k])
-                .map((r) => [
-                  r[k],
-                  k === 'owner_id'
-                    ? r.owner_name || r.owner_id || 'Underwriter not supplied'
-                    : r[k],
-                ]),
+                .map((r) => [r[k], k === 'owner_id' ? r.owner_name || '—' : r[k]]),
             );
             if (state[k] && !m.has(state[k]))
               m.set(state[k], state[k] + ' (no records in this view)');
@@ -22065,12 +22096,7 @@
                       ...new Map(
                         data.monitoring
                           .filter((r) => r[k] != null)
-                          .map((r) => [
-                            r[k],
-                            k === 'owner_id'
-                              ? r.owner_name || r.owner_id || 'Underwriter not supplied'
-                              : r[k],
-                          ]),
+                          .map((r) => [r[k], k === 'owner_id' ? r.owner_name || '—' : r[k]]),
                       ).entries(),
                     ]
                       .sort((a, b) => a[1].localeCompare(b[1]))
@@ -22215,5 +22241,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'c6a269d380b7:INSURANCE';
+  window.CREDIT_PAGE_BUILD = '26ed45f77072:INSURANCE';
 })();
