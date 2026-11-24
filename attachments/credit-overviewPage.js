@@ -6663,14 +6663,11 @@
       function sourceControl(book, spec, envelope, period) {
         const dates = [...new Set(envelope.rows.map((row) => row.as_of_date).filter(Boolean))];
         if (dates.length > 1) throw Error('One Report_Date is required per source sheet');
-        // A blank row date may use the explicit date of its source sheet, then the
-        // matching Facility period. Never invent a date or reuse current for previous.
-        const date = dates[0] || periodDates[period] || null;
+        // Dates belong to the owning source. Only Facility's CA/Maturity sheets
+        // may reuse its Data-sheet date, within the same physical workbook/period.
+        // Other files never inherit or have to match a Facility reporting date.
+        const date = dates[0] || (book.key === 'facility' ? periodDates[period] : null) || null;
         if (book.key === 'facility' && spec.dataset === 'portfolio') periodDates[period] = date;
-        if (period === 'current' && date && periodDates.current && date !== periodDates.current)
-          throw Error(
-            'Current Report_Date must match Facility_current.xlsb (' + periodDates.current + ')',
-          );
         for (const row of envelope.rows) if (row.as_of_date == null) row.as_of_date = date;
         if (envelope.rows.some((row) => row.source_id !== spec.source.source_id))
           throw Error('Source ID does not match the configured workbook domain');
@@ -22093,5 +22090,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'fbf6d1446554:overview';
+  window.CREDIT_PAGE_BUILD = '5fc4e7e786bb:overview';
 })();
