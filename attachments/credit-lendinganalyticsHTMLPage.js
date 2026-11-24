@@ -7,7 +7,7 @@
     return;
   }
   if (root.dataset.creditStarted) return;
-  if (window.CREDIT_PAGE_BUILD !== '7d508479b6e4:lendingAnalytics' || !window.CreditHub) {
+  if (window.CREDIT_PAGE_BUILD !== 'd74d36be93fe:lendingAnalytics' || !window.CreditHub) {
     root.textContent = 'Load the matching dashboard logic before this renderer.';
     return;
   }

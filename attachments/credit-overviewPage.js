@@ -873,6 +873,8 @@
       if (sheet['!merges']?.length) throw error('merged cells are not supported', name);
       return range;
     }
+    const cellAt = (sheet, row, col, address) =>
+      sheet['!data'] ? sheet['!data'][row]?.[col] : sheet[address];
     function scalar(cell, sheet, address) {
       if (cell?.f !== undefined || cell?.F !== undefined)
         throw error('formulas are not allowed; publish prepared values', sheet, address);
@@ -929,10 +931,16 @@
       const number = Number(text.replace(/[, ]/g, ''));
       return accounting ? -number : number;
     }
-    function typedValue(cell, type, workbook, xlsx, address, sheetName = 'Data') {
+    function typedValue(cell, type, workbook, xlsx, address, sheetName = 'Data', dates) {
       let value = scalar(cell, sheetName, address);
       if (value === null) return null;
-      if (type === 'date') return calendarDate(cell, value, workbook, xlsx, sheetName, address);
+      if (type === 'date') {
+        const key = typeof value === 'string' ? 's:' + value : 'n:' + cell.z + ':' + value;
+        if (dates?.has(key)) return dates.get(key);
+        const result = calendarDate(cell, value, workbook, xlsx, sheetName, address);
+        dates?.set(key, result);
+        return result;
+      }
       if (type === 'text' && typeof value !== 'string')
         throw error(
           'text field must use an Excel text cell; preserve identifier leading zeros',
@@ -994,6 +1002,7 @@
         if (!workbook) {
           workbook = xlsx.read(bytes, {
             type: 'array',
+            dense: true,
             cellDates: false,
             cellNF: true,
             cellText: false,
@@ -1015,8 +1024,10 @@
           metaRange = dimensions(metaSheet, 'Metadata', xlsx);
         if (
           metaRange.e.c !== 1 ||
-          scalar(metaSheet.A1, 'Metadata', 'A1') !== (metadataYesNo ? 'Key' : 'key') ||
-          scalar(metaSheet.B1, 'Metadata', 'B1') !== (metadataYesNo ? 'Value' : 'value')
+          scalar(cellAt(metaSheet, 0, 0, 'A1'), 'Metadata', 'A1') !==
+            (metadataYesNo ? 'Key' : 'key') ||
+          scalar(cellAt(metaSheet, 0, 1, 'B1'), 'Metadata', 'B1') !==
+            (metadataYesNo ? 'Value' : 'value')
         )
           throw error(
             metadataYesNo
@@ -1027,8 +1038,8 @@
         for (let row = 1; row <= metaRange.e.r; row++) {
           const a = 'A' + (row + 1),
             b = 'B' + (row + 1),
-            key = scalar(metaSheet[a], 'Metadata', a),
-            value = scalar(metaSheet[b], 'Metadata', b);
+            key = scalar(cellAt(metaSheet, row, 0, a), 'Metadata', a),
+            value = scalar(cellAt(metaSheet, row, 1, b), 'Metadata', b);
           if (key === null && value === null) continue;
           if (!validName(key) || Object.hasOwn(metadata, key))
             throw error('invalid or duplicate metadata key', 'Metadata', a);
@@ -1067,7 +1078,7 @@
         known = new Map(fields.map(([name, type]) => [name, type]));
       for (let col = 0; col <= range.e.c; col++) {
         const address = xlsx.utils.encode_cell({ r: 0, c: col }),
-          rawHeader = scalar(sheet[address], sheetName, address),
+          rawHeader = scalar(cellAt(sheet, 0, col, address), sheetName, address),
           header = Object.hasOwn(aliases, rawHeader) ? aliases[rawHeader] : rawHeader;
         if ((dataOnly || metadataYesNo) && !Object.hasOwn(aliases, rawHeader))
           throw error('unrecognized workbook column ' + String(rawHeader), sheetName, address);
@@ -1077,19 +1088,22 @@
       }
       for (const field of known.keys())
         if (!headers.includes(field)) throw error('missing column ' + field, sheetName);
-      const rows = [];
+      const rows = [],
+        dates = new Map(),
+        columns = headers.map((_, col) => xlsx.utils.encode_col(col));
       for (let row = 1; row <= range.e.r; row++) {
         const record = Object.create(null);
         let present = false;
         for (let col = 0; col < headers.length; col++) {
-          const address = xlsx.utils.encode_cell({ r: row, c: col }),
+          const address = columns[col] + (row + 1),
             value = typedValue(
-              sheet[address],
+              cellAt(sheet, row, col, address),
               known.get(headers[col]),
               workbook,
               xlsx,
               address,
               sheetName,
+              dates,
             );
           record[headers[col]] = value;
           if (value !== null) present = true;
@@ -6610,8 +6624,16 @@
       const ca = category === 'CA',
         groups = new Map();
       const unique = (rs, field) => {
-        const values = [...new Set(rs.map((r) => r[field]).filter((v) => v != null && v !== ''))];
-        return values.length === 1 ? values[0] : null;
+        let value = null,
+          found = false;
+        for (const row of rs) {
+          const next = row[field];
+          if (next == null || next === '') continue;
+          if (found && next !== value) return null;
+          value = next;
+          found = true;
+        }
+        return value;
       };
       const eligibility = (r) => {
         if (!ca) return true;
@@ -6637,58 +6659,66 @@
         if (!groups.has(key)) groups.set(key, []);
         groups.get(key).push(row);
       }
+      const timestamps = new Map(),
+        horizons = new Map();
+      const timestamp = (date) => {
+        if (!timestamps.has(date)) timestamps.set(date, Date.parse(date + 'T00:00:00Z'));
+        return timestamps.get(date);
+      };
+      const dimensions = [
+        'as_of_date',
+        'region',
+        'product',
+        'relationship_id',
+        'relationship_name',
+        'ca_id',
+        'facility_id',
+        'owner_id',
+        'owner_name',
+        'team_lead',
+        'banker_name',
+        'source_record_id',
+        'classification',
+        'facility_type',
+        'product_underwriter',
+        'control_unit',
+      ];
       return [...groups].map(([key, rs]) => {
-        const record = Object.fromEntries(
-          [
-            'as_of_date',
-            'region',
-            'product',
-            'relationship_id',
-            'relationship_name',
-            'ca_id',
-            'facility_id',
-            'owner_id',
-            'owner_name',
-            'team_lead',
-            'banker_name',
-            'source_record_id',
-            'classification',
-            'facility_type',
-            'product_underwriter',
-            'control_unit',
-          ].map((field) => [field, unique(rs, field)]),
-        );
-        if (new Set(rs.map((r) => r.owner_id || null)).size > 1) {
+        const record = {};
+        for (const field of dimensions) record[field] = unique(rs, field);
+        if (rs.some((r) => (r.owner_id || null) !== (rs[0].owner_id || null))) {
           record.owner_id = null;
           record.owner_name = null;
         }
         const dateField = ca ? 'ca_expiration_date' : 'maturity_date';
-        const dates = [...new Set(rs.map((r) => r[dateField]).filter(Boolean))];
+        const sourceDate = unique(rs, dateField);
+        const conflictingDates = !sourceDate && rs.some((r) => r[dateField]);
         const demand = !ca && rs.some((r) => String(r.maturity_basis).toUpperCase() === 'DEMAND');
-        const due = dates.length === 1 && !demand ? dates[0] : null;
+        const due = !demand ? sourceDate : null;
         const eligible = rs.every((r) => eligibility(r) === true);
         const asOf = record.as_of_date;
         const days =
           eligible && due && asOf
-            ? Math.round(
-                (Date.parse(asOf + 'T00:00:00Z') - Date.parse(due + 'T00:00:00Z')) / 86400000,
-              )
+            ? Math.round((timestamp(asOf) - timestamp(due)) / 86400000)
             : null;
         const known = Number.isFinite(days);
-        let horizon = null;
-        if (asOf) {
-          const date = new Date(asOf + 'T00:00:00Z');
+        if (asOf && !horizons.has(asOf)) {
+          const date = new Date(timestamp(asOf));
           const last = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 4, 0));
-          horizon = new Date(
-            Date.UTC(
-              date.getUTCFullYear(),
-              date.getUTCMonth() + 3,
-              Math.min(date.getUTCDate(), last.getUTCDate()),
-            ),
-          )
-            .toISOString()
-            .slice(0, 10);
+          horizons.set(
+            asOf,
+            new Date(
+              Date.UTC(
+                date.getUTCFullYear(),
+                date.getUTCMonth() + 3,
+                Math.min(date.getUTCDate(), last.getUTCDate()),
+              ),
+            )
+              .toISOString()
+              .slice(0, 10),
+          );
         }
+        const horizon = horizons.get(asOf) || null;
         const age = known ? Math.max(0, days) : null;
         Object.assign(record, {
           item_id: key.startsWith('missing:') ? null : 'DERIVED:' + category + ':' + key,
@@ -6726,23 +6756,28 @@
           critical: known ? !ca && days >= 60 : null,
           coming_due: known ? days <= 0 && due <= horizon : null,
           description: 'Derived from Facility Data; ' + rs.length + ' source facility row(s).',
-          remarks:
-            dates.length > 1
-              ? 'Conflicting source dates; expiration status unavailable.'
-              : demand
-                ? 'Demand facility; no dated maturity assessment.'
-                : !eligible
-                  ? 'CA eligibility unavailable: requires CM and EMEA CA Review Yes.'
-                  : !due || !asOf
-                    ? 'Report date or expiration date unavailable.'
-                    : null,
+          remarks: conflictingDates
+            ? 'Conflicting source dates; expiration status unavailable.'
+            : demand
+              ? 'Demand facility; no dated maturity assessment.'
+              : !eligible
+                ? 'CA eligibility unavailable: requires CM and EMEA CA Review Yes.'
+                : !due || !asOf
+                  ? 'Report date or expiration date unavailable.'
+                  : null,
         });
         Object.defineProperty(record, '_facilityRows', { value: rs });
         return record;
       });
     }
 
-    async function createLoader({ attachment, validate, allowDemo = false, sampleData = false }) {
+    async function createLoader({
+      attachment,
+      validate,
+      allowDemo = false,
+      sampleData = false,
+      page,
+    }) {
       const definitions = w.CreditWorkbookContract?.workbooks;
       if (!definitions) throw Error('Excel workbook contract is unavailable');
       if (sampleData && !allowDemo) throw Error('Illustrative data cannot be loaded in production');
@@ -6752,8 +6787,25 @@
         datasets = new Map();
       const periodDates = {};
       const sources = [];
+      const enrichmentErrors = {};
+      let enriching = false;
       const specs = (book) => [...book.sheets, ...(book.derived || [])];
       const definition = (key) => definitions.find((item) => item.key === key);
+      const primaryDomains = {
+        CA: ['CA'],
+        FACILITY: ['FACILITY'],
+        CCM: ['CCM'],
+        INSURANCE: ['INSURANCE'],
+        APPRAISALS: ['APPRAISALS'],
+        COVENANTS: ['COVENANTS', 'PORTFOLIO', 'ACTIVITY'],
+        activity: ['ACTIVITY'],
+        portfolio: ['PORTFOLIO', 'COVENANTS', 'CA', 'FACILITY', 'CCM', 'INSURANCE', 'APPRAISALS'],
+        deepdive: ['PORTFOLIO', 'COVENANTS', 'CA', 'FACILITY', 'CCM', 'INSURANCE', 'APPRAISALS'],
+        overview: ['PORTFOLIO', 'COVENANTS', 'CA', 'FACILITY', 'CCM', 'INSURANCE', 'APPRAISALS'],
+        workload: ['PORTFOLIO', 'COVENANTS', 'CA', 'FACILITY', 'CCM', 'INSURANCE', 'APPRAISALS'],
+      };
+      let selected = primaryDomains[page] ? new Set(primaryDomains[page]) : null;
+      const needed = (spec) => !selected || selected.has(spec.source?.domain || spec.category);
 
       // Download independent files together, but bound memory/network pressure.
       // Keep parsing in contract order so Facility Data establishes CA/Maturity dates.
@@ -6822,9 +6874,10 @@
                   dataOnly: true,
                   fields: spec.columns.map((f) => [f.field, f.encoding ? 'text' : f.type]),
                 });
+                const encoded = spec.columns.filter((field) => field.encoding);
                 const rows = envelope.rows.map((row) => {
-                  const result = { ...row };
-                  for (const field of spec.columns) {
+                  const result = row;
+                  for (const field of encoded) {
                     result[field.field] = decode(row[field.field], field.encoding, field.header);
                   }
                   if (spec.category && result.category == null) result.category = spec.category;
@@ -6890,11 +6943,14 @@
       }
 
       const anchor = definition('facility');
-      prefetch(definitions.filter((book) => specs(book).some((spec) => spec.source)));
-      await readSheet(
-        anchor,
-        anchor.sheets.find((spec) => spec.dataset === 'portfolio'),
+      prefetch(
+        definitions.filter((book) => specs(book).some((spec) => spec.source && needed(spec))),
       );
+      if (specs(anchor).some(needed))
+        await readSheet(
+          anchor,
+          anchor.sheets.find((spec) => spec.dataset === 'portfolio'),
+        );
       // Internal compatibility envelope only: no manifest attachment or workbook settings.
       const manifest = {
         schema_version: 2,
@@ -6909,7 +6965,9 @@
             (book) =>
               book.key !== 'covenant_history' &&
               specs(book).some((spec) =>
-                name === 'sources' ? spec.source : spec.dataset === name,
+                name === 'sources'
+                  ? spec.source && needed(spec)
+                  : spec.dataset === name && (name !== 'monitoring' || needed(spec)),
               ),
           ),
         );
@@ -6918,12 +6976,14 @@
             name,
             (async () => {
               for (const book of definitions)
-                for (const spec of specs(book).filter((spec) => spec.source)) {
+                for (const spec of specs(book).filter((spec) => spec.source && needed(spec))) {
                   try {
                     await readSheet(book, spec);
                   } catch (error) {
                     // Activity remains optional enrichment outside its owning dashboard.
-                    if (spec.dataset !== 'activity') throw error;
+                    if (!enriching && spec.dataset !== 'activity') throw error;
+                    if (enriching)
+                      enrichmentErrors[spec.source?.domain || book.key] = error.message;
                   }
                 }
               validate('sources', sources);
@@ -6937,17 +6997,23 @@
               const rows = [];
               for (const book of definitions) {
                 if (book.key === 'covenant_history') continue;
-                for (const spec of specs(book).filter((s) => s.dataset === name)) {
+                for (const spec of specs(book).filter(
+                  (s) => s.dataset === name && (name !== 'monitoring' || needed(s)),
+                )) {
                   try {
                     rows.push(...(await readSheet(book, spec)).rows);
                   } catch (error) {
+                    if (enriching && name === 'monitoring') {
+                      enrichmentErrors[spec.source?.domain || book.key] = error.message;
+                      continue;
+                    }
                     if (book.optional && /Attachment unavailable \(404\)/.test(error.message))
                       continue;
                     throw error;
                   }
                 }
               }
-              validate(name, rows);
+              validate(name, rows, { keysOnly: true });
               if (['monitoring', 'portfolio', 'activity'].includes(name))
                 w.CreditDataCache.verifySources(name, rows, sources);
               if (name === 'history') {
@@ -6988,13 +7054,16 @@
       }
 
       async function previous() {
-        prefetch(definitions, 'previous');
+        prefetch(
+          definitions.filter((book) => specs(book).some(needed)),
+          'previous',
+        );
         const result = { monitoring: [], portfolio: [], activity: [], sources: [] },
           errors = [];
         // Each domain is independently optional. Its stable identity is configured;
         // dates and counts come directly from the uploaded data sheets.
         for (const book of definitions.filter((book) => book.previous)) {
-          for (const spec of specs(book)) {
+          for (const spec of specs(book).filter(needed)) {
             try {
               const envelope = await readSheet(book, spec, 'previous');
               result[spec.dataset].push(...envelope.rows);
@@ -7006,7 +7075,7 @@
         }
         return w.CreditSnapshots.validate(
           { ...manifest, comparison_policy: 'supplied', datasets: result, errors },
-          validate,
+          (name, rows) => validate(name, rows, { keysOnly: true }),
         );
       }
 
@@ -7089,6 +7158,13 @@
 
       return {
         manifest,
+        enrichmentErrors,
+        expand() {
+          enriching = true;
+          if (!selected) return;
+          selected = null;
+          datasets.clear();
+        },
         load,
         previous,
         covenantHistory,
@@ -20826,7 +20902,7 @@
       });
       return [...m].sort((a, b) => b[1] - a[1]);
     }
-    function validateRows(name, rows) {
+    function validateRows(name, rows, { keysOnly = false } = {}) {
       if (!Array.isArray(rows)) throw Error(name + ': missing rows array');
       const dates = new Map();
       function validDate(v) {
@@ -20840,47 +20916,48 @@
           );
         return dates.get(v);
       }
-      for (const [i, r] of rows.entries()) {
-        // Missing or generic numbered display names are unavailable. Keep business
-        // identifiers in their own fields; never substitute an ID for a name.
-        for (const field of [
-          'relationship_name',
-          'owner_name',
-          'banker_name',
-          'lead_underwriter',
-          'team_lead',
-        ]) {
-          const value = r[field];
-          if (
-            typeof value === 'string' &&
-            (!value.trim() ||
-              /^(?:relationship|client|borrower|banker|underwriter|specialist|owner|team[ _-]*lead)[ _-]*#?\d+$/i.test(
-                value.trim(),
-              ))
-          )
-            r[field] = null;
-        }
-        for (const [field, type] of contracts[name]) {
-          // Completeness belongs to upstream standardization. Blank cells remain
-          // unavailable; populated cells must still have the declared type.
-          if (r[field] == null || (typeof r[field] === 'string' && !r[field].trim())) {
-            r[field] = null;
-            continue;
+      if (!keysOnly)
+        for (const [i, r] of rows.entries()) {
+          // Missing or generic numbered display names are unavailable. Keep business
+          // identifiers in their own fields; never substitute an ID for a name.
+          for (const field of [
+            'relationship_name',
+            'owner_name',
+            'banker_name',
+            'lead_underwriter',
+            'team_lead',
+          ]) {
+            const value = r[field];
+            if (
+              typeof value === 'string' &&
+              (!value.trim() ||
+                /^(?:relationship|client|borrower|banker|underwriter|specialist|owner|team[ _-]*lead)[ _-]*#?\d+$/i.test(
+                  value.trim(),
+                ))
+            )
+              r[field] = null;
           }
-          const v = r[field];
-          let ok =
-            type === 'text'
-              ? typeof v === 'string'
-              : type === 'boolean'
-                ? typeof v === 'boolean'
-                : type === 'integer'
-                  ? Number.isInteger(v)
-                  : type === 'number'
-                    ? typeof v === 'number' && Number.isFinite(v)
-                    : validDate(v);
-          if (!ok) throw Error(name + ': invalid ' + field + ' at row ' + (i + 1));
+          for (const [field, type] of contracts[name]) {
+            // Completeness belongs to upstream standardization. Blank cells remain
+            // unavailable; populated cells must still have the declared type.
+            if (r[field] == null || (typeof r[field] === 'string' && !r[field].trim())) {
+              r[field] = null;
+              continue;
+            }
+            const v = r[field];
+            let ok =
+              type === 'text'
+                ? typeof v === 'string'
+                : type === 'boolean'
+                  ? typeof v === 'boolean'
+                  : type === 'integer'
+                    ? Number.isInteger(v)
+                    : type === 'number'
+                      ? typeof v === 'number' && Number.isFinite(v)
+                      : validDate(v);
+            if (!ok) throw Error(name + ': invalid ' + field + ' at row ' + (i + 1));
+          }
         }
-      }
       if (!Array.isArray(rows)) throw Error(name + ': missing rows array');
       const keys = {
         monitoring: 'item_id',
@@ -21040,7 +21117,11 @@
                   throw Error('Previous release identity/count mismatch');
               }
             }
-            data.previous = p ? global.CreditSnapshots.validate(p, validateRows) : null;
+            data.previous = p
+              ? config.mode !== 'demo' && config.dataMode === 'workbooks'
+                ? p
+                : global.CreditSnapshots.validate(p, validateRows)
+              : null;
             if (p?.errors?.length) data.previousError = p.errors.join('; ');
           } catch (e) {
             data.previous = null;
@@ -21135,12 +21216,33 @@
           return relatedSourcesLoad;
         }
         let detailSourcesLoad,
+          detailSourcesReady = false,
           detailRequest = 0;
         function prepareDetailSources() {
-          if (data.covenantHistory !== undefined) return;
+          if (
+            detailSourcesReady ||
+            ((config.mode === 'demo' || config.dataMode !== 'workbooks') &&
+              data.covenantHistory !== undefined)
+          )
+            return;
           if (!detailSourcesLoad) {
             root.setAttribute('aria-busy', 'true');
-            detailSourcesLoad = loadCovenantHistory()
+            detailSourcesLoad = (async () => {
+              if (config.mode !== 'demo' && config.dataMode === 'workbooks') {
+                releaseLoader.expand();
+                for (const name of ['monitoring', 'sources']) {
+                  delete data[name];
+                  delete loadCache[name];
+                }
+                data.previous = undefined;
+                await Promise.all([load('monitoring'), load('sources'), loadPrevious()]);
+                data.relatedSourceErrors ??= {};
+                Object.assign(data.relatedSourceErrors, releaseLoader.enrichmentErrors);
+              }
+              await loadRelatedSources();
+              await loadCovenantHistory();
+              detailSourcesReady = true;
+            })()
               .then(() => {
                 if (data.covenantHistoryError)
                   data.relatedSourceErrors.covenant_history = data.covenantHistoryError;
@@ -22044,7 +22146,8 @@
                 }
               }
             }
-            await loadRelatedSources();
+            if (config.mode === 'demo' || config.dataMode !== 'workbooks')
+              await loadRelatedSources();
             if (turn !== serial || startupCancelled) return;
             // Only the current request may dispose charts or change the rendered view.
             // No asynchronous work follows this commit boundary.
@@ -22224,6 +22327,7 @@
                 validate: validateRows,
                 allowDemo: config.allowSampleData === true,
                 sampleData: config.sampleData === true,
+                page: state.tab,
               });
               manifest = releaseLoader.manifest;
             } else {
@@ -22421,5 +22525,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '7d508479b6e4:overview';
+  window.CREDIT_PAGE_BUILD = 'd74d36be93fe:overview';
 })();
