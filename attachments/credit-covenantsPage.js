@@ -910,8 +910,27 @@
       }
       throw error('date has an invalid value or missing date format', sheet, address);
     }
+    function numericText(value) {
+      if (typeof value !== 'string') return value;
+      let text = value.trim().replace(/[\u00a0\u202f]/g, ' ');
+      const accounting = text.startsWith('(') && text.endsWith(')');
+      if (accounting) {
+        text = text.slice(1, -1).trim();
+        if (/^[+-]/.test(text)) return NaN;
+      }
+      // Consume the entire value. Do not guess decimal-comma locales, strip units,
+      // accept partial numbers, or apply number conversion to identifier columns.
+      if (
+        !/^[+-]?(?:(?:\d+|\d{1,3}(?:,\d{3})+|\d{1,3}(?: \d{3})+)(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(
+          text,
+        )
+      )
+        return NaN;
+      const number = Number(text.replace(/[, ]/g, ''));
+      return accounting ? -number : number;
+    }
     function typedValue(cell, type, workbook, xlsx, address, sheetName = 'Data') {
-      const value = scalar(cell, sheetName, address);
+      let value = scalar(cell, sheetName, address);
       if (value === null) return null;
       if (type === 'date') return calendarDate(cell, value, workbook, xlsx, sheetName, address);
       if (type === 'text' && typeof value !== 'string')
@@ -922,6 +941,7 @@
         );
       if (type === 'boolean' && typeof value !== 'boolean')
         throw error('boolean field must use TRUE or FALSE', sheetName, address);
+      if (type === 'number' || type === 'integer') value = numericText(value);
       if (
         (type === 'number' || type === 'integer') &&
         (typeof value !== 'number' ||
@@ -22241,5 +22261,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '26ed45f77072:COVENANTS';
+  window.CREDIT_PAGE_BUILD = '7d6c05441b5d:COVENANTS';
 })();

@@ -7,7 +7,7 @@
     return;
   }
   if (root.dataset.creditStarted) return;
-  if (window.CREDIT_PAGE_BUILD !== '26ed45f77072:deepdive' || !window.CreditHub) {
+  if (window.CREDIT_PAGE_BUILD !== '7d6c05441b5d:deepdive' || !window.CreditHub) {
     root.textContent = 'Load the matching dashboard logic before this renderer.';
     return;
   }
