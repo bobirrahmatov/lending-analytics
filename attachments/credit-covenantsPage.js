@@ -6592,6 +6592,39 @@
       const sources = [];
       const definition = (key) => definitions.find((item) => item.key === key);
 
+      // Download independent files together, but bound memory/network pressure.
+      // Keep parsing in contract order so Facility Data establishes CA/Maturity dates.
+      const downloadQueue = [];
+      let activeDownloads = 0;
+      function drainDownloads() {
+        while (activeDownloads < 3 && downloadQueue.length) {
+          const { filename, resolve, reject } = downloadQueue.shift();
+          activeDownloads++;
+          Promise.resolve()
+            .then(() => w.CreditDataCache.readBuffer(attachment(filename)))
+            .then(resolve, reject)
+            .finally(() => {
+              activeDownloads--;
+              drainDownloads();
+            });
+        }
+      }
+      function buffer(filename) {
+        if (!buffers.has(filename)) {
+          const pending = new Promise((resolve, reject) => {
+            downloadQueue.push({ filename, resolve, reject });
+          });
+          // Prefetch failures are consumed by the owning sheet's existing error path.
+          pending.catch(() => {});
+          buffers.set(filename, pending);
+          drainDownloads();
+        }
+        return buffers.get(filename);
+      }
+      function prefetch(books, period = 'current') {
+        for (const book of books) if (book[period]) buffer(book[period]);
+      }
+
       async function readSheet(book, spec, period = 'current') {
         const filename = book[period];
         if (!filename) throw Error('No ' + period + ' workbook for ' + book.key);
@@ -6601,14 +6634,13 @@
             key,
             (async () => {
               try {
-                if (!buffers.has(filename))
-                  buffers.set(filename, w.CreditDataCache.readBuffer(attachment(filename)));
                 const aliases = Object.fromEntries(
                   spec.columns.flatMap((f) =>
                     [f.header, ...(f.aliases || [])].map((header) => [header, f.field]),
                   ),
                 );
-                const envelope = await w.CreditExcel.parse(await buffers.get(filename), {
+                const bytes = await buffer(filename);
+                const envelope = await w.CreditExcel.parse(bytes, {
                   dataset: book.key,
                   sheetName: spec.sheet,
                   aliases,
@@ -6683,6 +6715,7 @@
       }
 
       const anchor = definition('facility');
+      prefetch(definitions.filter((book) => book.sheets.some((spec) => spec.source)));
       await readSheet(
         anchor,
         anchor.sheets.find((spec) => spec.dataset === 'portfolio'),
@@ -6696,6 +6729,15 @@
       };
 
       function load(name) {
+        prefetch(
+          definitions.filter(
+            (book) =>
+              book.key !== 'covenant_history' &&
+              book.sheets.some((spec) =>
+                name === 'sources' ? spec.source : spec.dataset === name,
+              ),
+          ),
+        );
         if (name === 'sources' && !datasets.has(name))
           datasets.set(
             name,
@@ -6771,6 +6813,7 @@
       }
 
       async function previous() {
+        prefetch(definitions, 'previous');
         const result = { monitoring: [], portfolio: [], activity: [], sources: [] },
           errors = [];
         // Each domain is independently optional. Its stable identity is configured;
@@ -8487,6 +8530,32 @@
   /* Shared chart workspace: one chart instance, page-level detail, and dashboard drawers. */
   (function (global) {
     'use strict';
+    // Only dashboard-created charts use this wrapper; native Confluence charts are untouched.
+    // Reserve a category gutter so bar labels share a left edge without covering the plot.
+    global.CreditChart = function (element, options) {
+      if (options.chart?.type === 'bar' && options.xAxis?.categories) {
+        const host =
+          typeof element === 'string' ? global.document.getElementById(element) : element;
+        const width = host?.clientWidth || host?.parentElement?.clientWidth || 600;
+        const longest = Math.max(0, ...options.xAxis.categories.map((name) => String(name).length));
+        const gutter = Math.round(
+          Math.min(240, Math.max(90, width * 0.35), Math.max(120, longest * 6 + 24)),
+        );
+        options.chart.marginLeft = gutter;
+        options.xAxis.labels = {
+          ...options.xAxis.labels,
+          align: 'left',
+          x: 12 - gutter,
+          reserveSpace: false,
+          style: {
+            ...options.xAxis.labels?.style,
+            width: gutter - 24 + 'px',
+            textOverflow: 'ellipsis',
+          },
+        };
+      }
+      return global.Highcharts.chart(element, options);
+    };
     // Display dates without changing the source keys used by chart selections.
     const dateMonths = [
       'Jan',
@@ -8644,6 +8713,7 @@
       );
     };
     global.CreditChartDetails = function ({
+      prepareSources,
       root,
       esc,
       getCharts,
@@ -10251,7 +10321,7 @@
               '</p>';
             continue;
           }
-          const detailChart = global.Highcharts.chart(el, {
+          const detailChart = (global.CreditChart || global.Highcharts.chart)(el, {
             chart: {
               type: p.type,
               height: 320,
@@ -10560,7 +10630,9 @@
         };
         const formatted = (k, v) =>
           v == null
-            ? '—'
+            ? k === 'banker_name'
+              ? ''
+              : '—'
             : typeof v === 'boolean'
               ? v
                 ? 'Yes'
@@ -10781,7 +10853,7 @@
             }) || 'bar',
           pie = type === 'pie';
         host.dataset.drillChartType = pie ? 'donut' : 'bar';
-        const chart = global.Highcharts.chart(host, {
+        const chart = (global.CreditChart || global.Highcharts.chart)(host, {
           chart: {
             type,
             height: pie ? 320 : height,
@@ -11152,6 +11224,11 @@
             while (inlineDrills.get(card)?.tableOrigin) restoreInlineFrame(inlineDrills.get(card));
       }
       function drillTable(records, selection, element, trigger) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then(
+            (ready) => ready !== false && drillTable(records, selection, element, trigger),
+          );
         const card = element?.closest('.ch-card');
         if (!card || !records.length) return false;
         const current = inlineDrills.get(card);
@@ -11433,6 +11510,11 @@
         global.CreditUI.enhance(a.host);
       }
       function drillInPlace(id, records, selection, element) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then(
+            (ready) => ready !== false && drillInPlace(id, records, selection, element),
+          );
         if (onChartDrill?.(id, records, selection, element)) return;
         const el = element || $('#' + id),
           card = el?.closest('.ch-card');
@@ -11490,6 +11572,11 @@
         window.scrollTo({ top: d.scroll, behavior: 'instant' });
       }
       function drill(id, records, selection, title) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then(
+            (ready) => ready !== false && drill(id, records, selection, title),
+          );
         closeDrill();
         global.CreditUI.closePopover();
         const m = meta(id),
@@ -11590,6 +11677,9 @@
       }
 
       function open(id, selectedRows, selection) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then((ready) => ready !== false && open(id, selectedRows, selection));
         if (onExpand?.(id, selectedRows, selection)) return;
         clearInline();
         if (active?.id === id) {
@@ -11692,6 +11782,8 @@
         panel.querySelector('.cd-detail-heading h2').focus({ preventScroll: true });
       }
       function openMetric(key) {
+        const preparation = prepareSources?.();
+        if (preparation) return preparation.then((ready) => ready !== false && openMetric(key));
         if (onExpand?.('metric-' + key, getRows('metric-' + key) || getRows(key), metricNames[key]))
           return;
         const custom = getCustomDefinition?.('metric-' + key);
@@ -12400,6 +12492,7 @@
       drillChartType,
     };
     global.CreditPortfolioJourney = function ({
+      prepareSources,
       root,
       esc,
       getRows,
@@ -12428,7 +12521,9 @@
       const number = (v) => Number(v).toLocaleString('en-US');
       const textValue = (key, v) =>
         !present(v)
-          ? 'Not supplied'
+          ? key === 'banker_name'
+            ? ''
+            : 'Not supplied'
           : typeof v === 'boolean'
             ? v
               ? 'Yes'
@@ -12615,7 +12710,7 @@
           }),
           pie = type === 'pie';
         host.dataset.drillChartType = pie ? 'donut' : type;
-        const chart = global.Highcharts.chart(host, {
+        const chart = (global.CreditChart || global.Highcharts.chart)(host, {
           chart: {
             type: type === 'line' ? 'spline' : type,
             height: parseInt(host.style.height),
@@ -13082,6 +13177,11 @@
           a.card.scrollIntoView({ block: 'start', behavior: 'instant' });
       }
       function click(id, rows, selection, element) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then(
+            (ready) => ready !== false && click(id, rows, selection, element),
+          );
         const el = element || $('#' + id),
           card = el?.closest('.ch-card');
         if (!card || card.closest('.cd-detail-page')) return false;
@@ -13153,6 +13253,11 @@
         stack.at(-1)?.charts.forEach((c) => c.reflow());
       }
       function open(id, records, selection, options = {}) {
+        const preparation = prepareSources?.();
+        if (preparation)
+          return preparation.then(
+            (ready) => ready !== false && open(id, records, selection, options),
+          );
         const rows = records ?? getRows(id) ?? [];
         const c = options.c || contract(id, rows, selection || '', getSettings());
         const parent = stack.at(-1),
@@ -14249,11 +14354,11 @@
           },
           style: { fontWeight: 'normal', textOutline: 'none', color: getComputedStyle(root).color },
         };
-        const c = global.Highcharts.chart(el, {
+        const c = (global.CreditChart || global.Highcharts.chart)(el, {
           chart: {
             type,
             height,
-            ...(paired ? { marginTop: 65, marginBottom: 75 } : {}),
+            ...(paired ? { marginTop: 32, marginBottom: 75 } : {}),
             alignTicks: !axes,
             backgroundColor: 'transparent',
             animation: false,
@@ -14616,7 +14721,7 @@
             },
           ],
         }));
-        const c = global.Highcharts.chart(el, {
+        const c = (global.CreditChart || global.Highcharts.chart)(el, {
           chart: {
             type: 'scatter',
             height,
@@ -15462,17 +15567,14 @@
                 },
               },
               {
-                title: { text: 'ROTCE · %', style: { color: COLORS[3], fontSize: '11px' } },
+                title: { text: null },
                 opposite: true,
                 tickInterval: 0.05,
                 min: Math.min(0, ...rels.map((r) => r.rotce ?? 0)),
                 max: Math.max(0.2, ...rels.map((r) => r.rotce ?? 0)),
                 gridLineWidth: 0,
                 labels: {
-                  formatter: function () {
-                    return pct(this.value);
-                  },
-                  style: { color: COLORS[3], fontSize: '10px' },
+                  enabled: false,
                 },
                 plotLines: [
                   {
@@ -17071,7 +17173,7 @@
           overflow: 'justify',
           style: { color: '#fff', fontWeight: '600', textOutline: 'none' },
         };
-        const c = g.Highcharts.chart(el, {
+        const c = (g.CreditChart || g.Highcharts.chart)(el, {
           chart: {
             type: type === 'area' ? 'areaspline' : type === 'line' ? 'spline' : type,
             height,
@@ -18951,7 +19053,7 @@
         }
         el.style.height = '320px';
         if (type !== 'pie') el.classList.add('cov-fluid-plot');
-        const c = global.Highcharts.chart(el, {
+        const c = (global.CreditChart || global.Highcharts.chart)(el, {
           chart: {
             type,
             height: 320,
@@ -20805,7 +20907,8 @@
                 }
               }),
             );
-            await loadCovenantHistory();
+            if (config.mode === 'demo' || config.dataMode !== 'workbooks')
+              await loadCovenantHistory();
             if (data.covenantHistoryError)
               data.relatedSourceErrors.covenant_history = data.covenantHistoryError;
             if (data.previousError) data.relatedSourceErrors.previous = data.previousError;
@@ -20814,6 +20917,26 @@
               data.relatedSourceErrors.portfolio = data.covenantPortfolioError;
           })();
           return relatedSourcesLoad;
+        }
+        let detailSourcesLoad,
+          detailRequest = 0;
+        function prepareDetailSources() {
+          if (data.covenantHistory !== undefined) return;
+          if (!detailSourcesLoad) {
+            root.setAttribute('aria-busy', 'true');
+            detailSourcesLoad = loadCovenantHistory()
+              .then(() => {
+                if (data.covenantHistoryError)
+                  data.relatedSourceErrors.covenant_history = data.covenantHistoryError;
+              })
+              .finally(() => root.removeAttribute('aria-busy'));
+          }
+          const request = ++detailRequest,
+            turn = serial;
+          return detailSourcesLoad.then(
+            () =>
+              request === detailRequest && turn === serial && !startupCancelled && root.isConnected,
+          );
         }
         // Stable facility identity is used for explicit entity navigation, not global click filters.
         const facilityIdentity = (r) =>
@@ -21129,7 +21252,7 @@
               palette[i % palette.length],
             custom: { value: name },
           }));
-          const c = global.Highcharts.chart(el, {
+          const c = (global.CreditChart || global.Highcharts.chart)(el, {
             chart: {
               type,
               backgroundColor: 'transparent',
@@ -21229,7 +21352,7 @@
             return;
           }
           charts.push(
-            global.Highcharts.chart($('#' + id), {
+            (global.CreditChart || global.Highcharts.chart)($('#' + id), {
               chart: {
                 type: 'areaspline',
                 backgroundColor: 'transparent',
@@ -21348,7 +21471,7 @@
                             ? num(v)
                             : f === 'pct'
                               ? pct(v)
-                              : String(v ?? '—');
+                              : String(v ?? (k === 'banker_name' ? '' : '—'));
                       return (
                         '<td class="' +
                         (f === 'n' || f === 'm' ? 'num' : '') +
@@ -21996,6 +22119,7 @@
             chartDetails = global.CreditChartDetails({
               root,
               esc,
+              prepareSources: prepareDetailSources,
               getCharts: () => charts,
               getRows: (id) =>
                 covenants.getRows(id) ?? monitoringViews.getRows(id) ?? pal.getRows(id),
@@ -22035,6 +22159,7 @@
             portfolioJourney = global.CreditPortfolioJourney?.({
               root,
               esc,
+              prepareSources: prepareDetailSources,
               getRows: (id) => pal.getRows(id),
               getData: () => data,
               getSettings: () => pal.settings,
@@ -22090,5 +22215,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = '5fc4e7e786bb:COVENANTS';
+  window.CREDIT_PAGE_BUILD = 'c6a269d380b7:COVENANTS';
 })();
