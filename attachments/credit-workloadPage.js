@@ -19141,7 +19141,16 @@
           '</button>'
         );
       }
-      function tableCard(id, title, headers, rows, rule, note = '', mode = 'summary') {
+      function tableCard(
+        id,
+        title,
+        headers,
+        rows,
+        rule,
+        note = '',
+        mode = 'summary',
+        agingColors = false,
+      ) {
         definition(id, title, scope, rule, note);
         registry[id].table = { headers, rows };
         return (
@@ -19160,7 +19169,19 @@
           '</div>' +
           methodButton(id, title) +
           '</div><div class="credit-data-table-scroll"><table class="credit-data-table"><thead><tr>' +
-          headers.map((h) => '<th scope="col">' + esc(h) + '</th>').join('') +
+          headers
+            .map(
+              (h) =>
+                '<th scope="col">' +
+                (agingColors && h !== 'Region' && h !== 'Total'
+                  ? '<span class="pal-legend-dot" aria-hidden="true" style="margin-right:6px;background:' +
+                    global.CreditCovenantAging.color(h) +
+                    '"></span>'
+                  : '') +
+                esc(h) +
+                '</th>',
+            )
+            .join('') +
           '</tr></thead><tbody>' +
           rows
             .map((r) => '<tr>' + r.map((v) => '<td>' + esc(v ?? '—') + '</td>').join('') + '</tr>')
@@ -19523,6 +19544,32 @@
           };
         });
       }
+      function severityTable(id, rows, status) {
+        const labels = bands(rows),
+          summaries = group(rows, 'region').map((g) =>
+            withRows(
+              [
+                g.name,
+                ...labels.map((band) => g.rows.filter((row) => age(row) === band).length),
+                g.rows.length,
+              ],
+              g.rows,
+            ),
+          );
+        const html = tableCard(
+          id,
+          'Aging Severity by Region',
+          ['Region', ...labels, 'Total'],
+          summaries,
+          'Count selected covenant source rows in each region and aging band. Total includes all selected rows, including missing aging when present. ' +
+            agingRule,
+          status + ' · covenant counts by aging band',
+          'summary',
+          true,
+        );
+        registry[id].rows = rows;
+        return html;
+      }
       function regionalRows(rows) {
         return group(scope, 'region').map((g) =>
           withRows(
@@ -19686,13 +19733,7 @@
           '</div>';
         html +=
           '<div class="ch-grid equal">' +
-          chartCard(
-            'cov-severity',
-            'Aging Severity by Region',
-            selected,
-            agingRule,
-            status + ' · five aging bands',
-          ) +
+          severityTable('cov-severity', selected, status) +
           chartCard(
             'cov-products',
             'Covenants by Product Program',
@@ -19857,21 +19898,6 @@
         );
         if (registry['cov-activity-region']) registry['cov-activity-region'].rows = aw.rows;
         wireTableDrills(root);
-        const reg = group(selected, 'region').map((g) => g.name);
-        draw(
-          'cov-severity',
-          'column',
-          selected,
-          reg,
-          bands(selected).map((b, i) => ({
-            name: b,
-            color: global.CreditCovenantAging.color(b),
-            data: reg.map((name) => {
-              const rs = selected.filter((r) => r.region === name && age(r) === b);
-              return { y: rs.length, custom: { rows: rs } };
-            }),
-          })),
-        );
         draw(
           'cov-products',
           'pie',
@@ -20236,26 +20262,9 @@
           plans.push({ id, type, rows: rs, categories, series: data });
         };
         const addAging = () => {
-          const regs = group(rows, 'region').map((g) => g.name);
-          addChart(
-            'regional-aging',
-            'Aging Severity by Region',
-            'column',
-            rows,
-            {
-              categories: regs,
-              series: bands(rows).map((b, i) => ({
-                name: b,
-                color: global.CreditCovenantAging.color(b),
-                data: regs.map((name) => {
-                  const rs = rows.filter((r) => r.region === name && age(r) === b);
-                  return { y: rs.length, custom: { rows: rs } };
-                }),
-              })),
-            },
-            selectedStatus,
-            agingRule,
-          );
+          const id = a.id + '-regional-aging';
+          blocks.push(severityTable(id, rows, selectedStatus));
+          registry[id].parent = a.id;
           addChart(
             'aging-mix',
             selectedStatus + ' Aging Mix',
@@ -20612,7 +20621,7 @@
         for (const p of plans) draw(p.id, p.type, p.rows, p.categories, p.series, a.detailCharts);
         // Keep the primary analytical pair first; shared expansion owns the compact summary.
         const leading = grid.querySelector(
-          activityView ? '.ch-card:has([id$="-trend"])' : '.ch-card:has([id$="-regional-aging"])',
+          activityView ? '.ch-card:has([id$="-trend"])' : '.ch-card[id$="-regional-aging"]',
         );
         const companion = grid.querySelector(
           activityView ? '.ch-card:has([id$="-regions"])' : '.ch-card:has([id$="-aging-mix"])',
@@ -22571,5 +22580,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'f19f07e34b71:workload';
+  window.CREDIT_PAGE_BUILD = 'c634a981b252:workload';
 })();
