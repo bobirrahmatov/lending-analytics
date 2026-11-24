@@ -15,6 +15,7 @@
 <h2>Data rules</h2>
 <p>Use the exact underscore headers listed below. Keep identifiers as text to preserve leading zeros; dates as YYYY-MM-DD text or date-only Excel cells; amounts as numeric USD units; and flags as plain Yes/No text. PSE_Non_PSE uses PSE/non-PSE and Committed_Uncommitted uses Committed/Uncommitted. ROTCE is a decimal ratio. Do not include formulas, merged cells, subtotal rows or duplicate record keys.</p>
 <p>All listed columns must exist. Blank allowed refers to values, not missing headers. Columns can move because the loader maps by name, but the supplied order follows each verified owning source. Products are source values, not a fixed list: SBL, Structured Lending, CRE, Partner Lending, Law Firm, RRE and additional programs are supported.</p>
+<p>Relationship names and lead underwriter / specialist names may be blank in every current, previous and historical input. Blank Relationship_Name (including Borrowers_Name or Client_Name aliases) displays the supplied Relationship_ID. Blank Lead_Underwriter / Underwriter / Specialist names remain unavailable and do not block loading or comparisons. Whitespace-only names are treated as blank. Data completeness and standardization belong to the upstream preparation tool; the dashboard still needs usable identifiers, dates and typed calculation inputs.</p>
 <h2>What feeds each dashboard</h2>
 <table><tr><th>Dashboard</th><th>Primary Excel inputs</th></tr>
 <tr><td>Portfolio / Relationship Deep Dive</td><td>Facility_current.xlsb / Data. Facility_previous.xlsb supplies comparisons. Portfolio_Aggregated_History.xlsx feeds only Portfolio's Trends section and the Trends compatibility route.</td></tr>
@@ -69,9 +70,9 @@
 <tr><td>9</td><td>Committed_Uncommitted</td><td>Committed / Uncommitted</td><td>Required</td><td>COMMITTED or UNCOMMITTED; unknown values block publication.</td></tr>
 <tr><td>10</td><td>Risk_Category</td><td>text</td><td>Blank allowed</td><td>Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.</td></tr>
 <tr><td>11</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>12</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>12</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>13</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
-<tr><td>14</td><td>Lead_Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>14</td><td>Lead_Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>15</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>16</td><td>Control_Unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
 <tr><td>17</td><td>Fac_Amount</td><td>number</td><td>Required</td><td>Total facility amount in USD units; reporting basis must be confirmed.</td></tr>
@@ -138,10 +139,10 @@
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>4</td><td>Lead_Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>4</td><td>Lead_Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>7</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>7</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>8</td><td>Item_ID</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
 <tr><td>9</td><td>Category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
 <tr><td>10</td><td>Source_ID</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
@@ -190,10 +191,10 @@
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>4</td><td>Lead_Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>4</td><td>Lead_Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>6</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>7</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>7</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>8</td><td>Item_ID</td><td>text</td><td>Required</td><td>Unique category + source + obligation + relationship + facility + cycle key; preserve every covenant-facility association.</td></tr>
 <tr><td>9</td><td>Category</td><td>text</td><td>Required</td><td>COVENANTS, CA, FACILITY, CCM, INSURANCE or APPRAISALS.</td></tr>
 <tr><td>10</td><td>Source_ID</td><td>text</td><td>Required</td><td>Approved source identifier; foreign key to Sources.source_id.</td></tr>
@@ -245,12 +246,12 @@
 <tr><td>3</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
 <tr><td>4</td><td>Originating_Unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
-<tr><td>6</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>6</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>7</td><td>Product_Underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
 <tr><td>8</td><td>OU_Expense_Code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
 <tr><td>9</td><td>CU_Expense_Code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
 <tr><td>10</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>11</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>11</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>12</td><td>Borrowers_Name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
 <tr><td>13</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
 <tr><td>14</td><td>Facility_ID</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
@@ -298,11 +299,11 @@
 <tr><td>2</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>3</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>4</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>5</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>5</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>6</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
 <tr><td>7</td><td>Covenant_ID</td><td>text</td><td>Required</td><td>Covenant key associated with event.</td></tr>
 <tr><td>8</td><td>Product_Program_Name</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
-<tr><td>9</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>9</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>10</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>11</td><td>Covenant_Compliance</td><td>text</td><td>Required</td><td>DEFERRED, WAIVED or DELETED; DEACTIVATED normalized to DELETED during upstream preparation.</td></tr>
 <tr><td>12</td><td>Covenant_Deferred_Date</td><td>date</td><td>Blank allowed</td><td>Optional source detail used in registers and drills. Preserve the source value; leave unavailable values blank.</td></tr>
@@ -337,10 +338,10 @@
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>4</td><td>Client_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>4</td><td>Client_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>5</td><td>Classification</td><td>text</td><td>Blank allowed</td><td>PASS, PASS_WATCH_LIST, SPECIAL_MENTION, SUBSTANDARD, SUBSTANDARD_PERFORMING, SUBSTANDARD_NONPERFORMING, DOUBTFUL, LOSS or UNKNOWN.</td></tr>
 <tr><td>6</td><td>Frequency</td><td>text</td><td>Blank allowed</td><td>Covenant periodicity or CCM frequency.</td></tr>
-<tr><td>7</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>7</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>8</td><td>Next_CCM_Month_End</td><td>date</td><td>Blank allowed</td><td>CCM data month end, separate from approval due date.</td></tr>
 <tr><td>9</td><td>Next_CCM_Approval_Date</td><td>date</td><td>Blank allowed</td><td>Original contractual due/expiry date; required for date-based categories.</td></tr>
 <tr><td>10</td><td>CCM_Status</td><td>text</td><td>Blank allowed</td><td>Source CCM_Status mapped exactly to PAST_DUE / COMING_DUE / OPEN, independently of classification and open/cleared lifecycle.</td></tr>
@@ -390,8 +391,8 @@
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>4</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>5</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>4</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
+<tr><td>5</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>6</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>7</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
 <tr><td>8</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
@@ -443,8 +444,8 @@
 <tr><td>1</td><td>Report_Date</td><td>date</td><td>Required</td><td>Business reporting date from this source, not publication date.</td></tr>
 <tr><td>2</td><td>Region</td><td>text</td><td>Required</td><td>NAM, LATAM, EMEA, APAC, IPB, SARG, CROSS_REGION or UNMAPPED; no silent remap.</td></tr>
 <tr><td>3</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>4</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
-<tr><td>5</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>4</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
+<tr><td>5</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>6</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>7</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
 <tr><td>8</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
@@ -527,12 +528,12 @@
 <tr><td>3</td><td>Product_Program</td><td>text</td><td>Required</td><td>Controlled product program; UNMAPPED if unresolved.</td></tr>
 <tr><td>4</td><td>Originating_Unit</td><td>text</td><td>Blank allowed</td><td>Source originating unit, distinct from Control Unit.</td></tr>
 <tr><td>5</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
-<tr><td>6</td><td>Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>6</td><td>Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>7</td><td>Product_Underwriter</td><td>text</td><td>Blank allowed</td><td>Source product underwriter; not counted as a second owner.</td></tr>
 <tr><td>8</td><td>OU_Expense_Code</td><td>text</td><td>Blank allowed</td><td>Origination Unit expense code; text preserves leading zeros.</td></tr>
 <tr><td>9</td><td>CU_Expense_Code</td><td>text</td><td>Blank allowed</td><td>Control Unit expense code; text preserves leading zeros.</td></tr>
 <tr><td>10</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>11</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>11</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>12</td><td>Borrowers_Name</td><td>text</td><td>Blank allowed</td><td>Source borrower display name, distinct from relationship.</td></tr>
 <tr><td>13</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>CA identifier, deduplicated by approval cycle for CA monitoring.</td></tr>
 <tr><td>14</td><td>Facility_ID</td><td>text</td><td>Blank allowed</td><td>Facility identifier; not itself a unique insurance/appraisal key.</td></tr>
@@ -586,9 +587,9 @@
 <tr><td>9</td><td>Committed_Uncommitted</td><td>Committed / Uncommitted</td><td>Required</td><td>COMMITTED or UNCOMMITTED; unknown values block publication.</td></tr>
 <tr><td>10</td><td>Risk_Category</td><td>text</td><td>Blank allowed</td><td>Original risk category; NAM Clearing/Notation/Settlement excluded during upstream preparation.</td></tr>
 <tr><td>11</td><td>Relationship_ID</td><td>text</td><td>Required</td><td>CARE or approved relationship identifier, stored as text.</td></tr>
-<tr><td>12</td><td>Relationship_Name</td><td>text</td><td>Required</td><td>Relationship display name; never substitute a CA ID.</td></tr>
+<tr><td>12</td><td>Relationship_Name</td><td>text</td><td>Blank allowed</td><td>Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.</td></tr>
 <tr><td>13</td><td>CA_ID</td><td>text</td><td>Blank allowed</td><td>Credit approval ID.</td></tr>
-<tr><td>14</td><td>Lead_Underwriter</td><td>text</td><td>Required</td><td>Display name from controlled owner mapping.</td></tr>
+<tr><td>14</td><td>Lead_Underwriter</td><td>text</td><td>Blank allowed</td><td>Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.</td></tr>
 <tr><td>15</td><td>Underwriting_Team_Lead</td><td>text</td><td>Required</td><td>Controlled team lead display name; UNASSIGNED if unresolved.</td></tr>
 <tr><td>16</td><td>Control_Unit</td><td>text</td><td>Blank allowed</td><td>Source Control Unit used for region mapping.</td></tr>
 <tr><td>17</td><td>Fac_Amount</td><td>number</td><td>Required</td><td>Total facility amount in USD units; reporting basis must be confirmed.</td></tr>

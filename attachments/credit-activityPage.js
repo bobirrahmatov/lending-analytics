@@ -1391,8 +1391,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship_Name',
               },
@@ -1407,8 +1408,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Lead_Underwriter',
                 source_header: 'Lead_Underwriter',
               },
@@ -2025,8 +2027,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Lead_Underwriter',
                 source_header: 'Lead_Underwriter',
               },
@@ -2049,8 +2052,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship_Name',
               },
@@ -2468,8 +2472,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Lead_Underwriter',
                 source_header: 'Lead_Underwriter',
               },
@@ -2492,8 +2497,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship_Name',
               },
@@ -2934,8 +2940,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -2974,8 +2981,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship Name',
               },
@@ -3385,8 +3393,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship Name',
               },
@@ -3418,8 +3427,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -3719,8 +3729,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Client_Name',
                 source_header: 'Client_Name',
               },
@@ -3744,8 +3755,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -4169,16 +4181,18 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship Name',
               },
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -4619,16 +4633,18 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship Name',
               },
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -5328,8 +5344,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Underwriter',
                 source_header: 'Underwriter',
               },
@@ -5368,8 +5385,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship Name',
               },
@@ -5825,8 +5843,9 @@
               {
                 field: 'relationship_name',
                 type: 'text',
-                required: true,
-                definition: 'Relationship display name; never substitute a CA ID.',
+                required: false,
+                definition:
+                  'Optional relationship display name. If blank, display the supplied Relationship_ID; identifiers remain the basis for joins.',
                 header: 'Relationship_Name',
                 source_header: 'Relationship_Name',
               },
@@ -5841,8 +5860,9 @@
               {
                 field: 'owner_name',
                 type: 'text',
-                required: true,
-                definition: 'Display name from controlled owner mapping.',
+                required: false,
+                definition:
+                  'Optional lead underwriter / specialist display name. Blank values are accepted and remain unavailable; do not invent an assignment.',
                 header: 'Lead_Underwriter',
                 source_header: 'Lead_Underwriter',
               },
@@ -20197,11 +20217,11 @@
         ['as_of_date', 'date', true],
         ['region', 'text', true],
         ['owner_id', 'text', true],
-        ['owner_name', 'text', true],
+        ['owner_name', 'text', false],
         ['team_lead', 'text', true],
         ['product', 'text', true],
         ['relationship_id', 'text', true],
-        ['relationship_name', 'text', true],
+        ['relationship_name', 'text', false],
         ['owner_role', 'text', true],
         ['ca_id', 'text', false],
         ['facility_id', 'text', false],
@@ -20243,11 +20263,11 @@
         ['as_of_date', 'date', true],
         ['region', 'text', true],
         ['owner_id', 'text', true],
-        ['owner_name', 'text', true],
+        ['owner_name', 'text', false],
         ['team_lead', 'text', true],
         ['product', 'text', true],
         ['relationship_id', 'text', true],
-        ['relationship_name', 'text', true],
+        ['relationship_name', 'text', false],
         ['facility_id', 'text', true],
         ['parent_facility_id', 'text', false],
         ['ca_id', 'text', false],
@@ -20341,11 +20361,11 @@
         ['as_of_date', 'date', true],
         ['region', 'text', true],
         ['owner_id', 'text', true],
-        ['owner_name', 'text', true],
+        ['owner_name', 'text', false],
         ['team_lead', 'text', true],
         ['product', 'text', true],
         ['relationship_id', 'text', true],
-        ['relationship_name', 'text', true],
+        ['relationship_name', 'text', false],
         ['covenant_id', 'text', true],
         ['event_date', 'date', true],
         ['month', 'text', true],
@@ -20445,6 +20465,20 @@
         return dates.get(v);
       }
       for (const [i, r] of rows.entries()) {
+        // Names are optional display labels. Upstream standardization owns completeness;
+        // keep exact identifiers for relationships, assignments and comparisons.
+        if (
+          Object.hasOwn(r, 'relationship_name') &&
+          (r.relationship_name === null ||
+            (typeof r.relationship_name === 'string' && !r.relationship_name.trim()))
+        )
+          r.relationship_name = r.relationship_id || null;
+        if (
+          Object.hasOwn(r, 'owner_name') &&
+          typeof r.owner_name === 'string' &&
+          !r.owner_name.trim()
+        )
+          r.owner_name = null;
         for (const [field, type, required] of contracts[name]) {
           if (!Object.hasOwn(r, field))
             throw Error(name + ': missing ' + field + ' at row ' + (i + 1));
@@ -21507,7 +21541,14 @@
               product: 'All products',
             };
             const m = new Map(
-              rows.filter((r) => r[k]).map((r) => [r[k], k === 'owner_id' ? r.owner_name : r[k]]),
+              rows
+                .filter((r) => r[k])
+                .map((r) => [
+                  r[k],
+                  k === 'owner_id'
+                    ? r.owner_name || r.owner_id || 'Underwriter not supplied'
+                    : r[k],
+                ]),
             );
             if (state[k] && !m.has(state[k]))
               m.set(state[k], state[k] + ' (no records in this view)');
@@ -21840,7 +21881,12 @@
                     '</option>' +
                     [
                       ...new Map(
-                        data.monitoring.map((r) => [r[k], k === 'owner_id' ? r.owner_name : r[k]]),
+                        data.monitoring.map((r) => [
+                          r[k],
+                          k === 'owner_id'
+                            ? r.owner_name || r.owner_id || 'Underwriter not supplied'
+                            : r[k],
+                        ]),
                       ).entries(),
                     ]
                       .sort((a, b) => a[1].localeCompare(b[1]))
@@ -21983,5 +22029,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'e74c902005be:activity';
+  window.CREDIT_PAGE_BUILD = '01eb8586fc80:activity';
 })();
