@@ -13039,6 +13039,8 @@
               data: gs.map((g) => ({
                 name: g.name,
                 y: g.y,
+                color:
+                  key === 'analysis_aging' ? global.CreditCovenantAging.color(g.name) : undefined,
                 custom: { group: g, rows: g.rows },
               })),
             },
@@ -14299,6 +14301,26 @@
     // Exact source-file bands take precedence; coarse legacy bands need dated aging.
     global.CreditCovenantAging = {
       bands: ['1–30', '31–45', '46–60', '61–90', '>90'],
+      color(value) {
+        return (
+          {
+            '1–30': '#00875A',
+            '31–45': '#57A773',
+            '46–60': '#E9B949',
+            '61–90': '#D97706',
+            '>90': '#D92D20',
+          }[this.normalize(value)] || '#98A2B3'
+        );
+      },
+      riskColor(state) {
+        return (
+          {
+            'Over 90 days': this.color('>90'),
+            'Other past due': this.color('61–90'),
+            'Coming due only': this.color('1–30'),
+          }[state] || '#98A2B3'
+        );
+      },
       daysUntil(r) {
         if (r.effective_due_date && r.as_of_date) {
           const due = Date.parse(r.effective_due_date + 'T00:00:00Z'),
@@ -15959,7 +15981,7 @@
             ...(cv.some((r) => bucket(r) === 'Aging not supplied') ? ['Aging not supplied'] : []),
           ].map((name, i) => {
             const rs = cv.filter((r) => bucket(r) === name);
-            return { name, y: rs.length, color: COLORS[i], custom: { rows: rs } };
+            return { name, y: rs.length, color: aging.color(name), custom: { rows: rs } };
           });
         chart('covenantMonitoringChart', 'pie', [], [{ name: 'Covenants', data: cp }], cv);
         const regions = ['APAC', 'EMEA', 'NAM', 'LATAM'].filter((r) =>
@@ -17243,7 +17265,7 @@
         );
     };
     // The unassigned group represents records, never an identified person.
-    const ownerSummary = (visible, ranked, noun) => {
+    const ownerSummary = (visible, ranked, noun, unit = 'actions') => {
       const identified = ranked.filter((p) => p.rows[0].owner_id),
         shown = visible.filter((p) => p.rows[0].owner_id);
       const unassigned = visible.filter((p) => !p.rows[0].owner_id).reduce((n, p) => n + p.y, 0);
@@ -17251,7 +17273,7 @@
         (identified.length
           ? 'Top ' + shown.length + ' of ' + identified.length + ' ' + noun
           : 'No identified ' + noun) +
-        (unassigned ? ' · ' + unassigned + ' unassigned actions' : ' · current actions')
+        (unassigned ? ' · ' + unassigned + ' unassigned ' + unit : ' · current ' + unit)
       );
     };
     const activityRule =
@@ -17809,6 +17831,24 @@
             )
             .replace('<section class=', '<section data-bento-span="' + span + '" class=');
         };
+        const addTopUnderwriters = (title, current, previous, span, unit) => {
+          const ranked = ownerPoints(current),
+            visible = ranked.slice(0, 10),
+            keys = new Set(visible.map((point) => point.ownerKey));
+          return add(
+            title,
+            'bar',
+            current.filter((row) => keys.has(ownerKey(row))),
+            previous.filter((row) => keys.has(ownerKey(row))),
+            ownerKey,
+            'Top ten underwriters ranked by current ' +
+              unit +
+              ' count, then display name and exact ID for ties. Separate IDs are never merged by name; missing IDs form one unassigned group. Previous comparisons use the same selected IDs. All records remain in the page totals and source register.',
+            span,
+            null,
+            ownerSummary(visible, ranked, 'underwriters', unit),
+          );
+        };
         html += '<div class="ch-grid mon-bento">';
         if (tab === 'overview') {
           html += add(
@@ -17977,15 +18017,7 @@
             7,
             risk,
           );
-          html += add(
-            'Underwriter follow-up queue',
-            'bar',
-            a,
-            pa,
-            'owner_name',
-            'Actionable facility obligations ranked by underwriter.',
-            5,
-          );
+          html += addTopUnderwriters('Underwriter follow-up queue', a, pa, 5, 'actions');
         } else if (tab === 'CCM') {
           html += add(
             'Classification by region',
@@ -18159,15 +18191,7 @@
             'Recorded event types in the selected source population.',
             4,
           );
-          html += add(
-            'Activity by underwriter',
-            'bar',
-            all,
-            prior,
-            'owner_name',
-            'Recorded events by accountable underwriter.',
-            6,
-          );
+          html += addTopUnderwriters('Activity by underwriter', all, prior, 6, 'events');
           html += add(
             'Regional activity by month',
             'column',
@@ -18456,7 +18480,7 @@
               ['Covenant activity by month', 'column', 'month', 6, 'event_type'],
               ['Event mix', 'pie', 'event_type', 4],
               ['Cumulative deferred days', 'bar', deferredBand, 6, null, 'DEFERRED'],
-              ['Accountable underwriters', 'bar', 'owner_name', 6],
+              ['Top 10 underwriters', 'bar', ownerKey, 6],
             ]
           : page === 'CA'
             ? [
@@ -18470,7 +18494,7 @@
                   ['Facility maturity calendar', 'column', dueMonth, 8],
                   ['Product maturity mix', 'pie', 'product', 4],
                   ['Maturity aging', 'bar', age, 7],
-                  ['Underwriter follow-up', 'bar', 'owner_name', 5],
+                  ['Top 10 underwriters', 'bar', ownerKey, 5],
                 ]
               : page === 'APPRAISALS'
                 ? [
@@ -18513,7 +18537,8 @@
                         ];
         const detailScope = (rows, key, eventType) => {
           const selected = eventType ? rows.filter((r) => r.event_type === eventType) : rows;
-          if (page !== 'workload' || key !== ownerKey) return selected;
+          if (!['workload', 'activity', 'FACILITY'].includes(page) || key !== ownerKey)
+            return selected;
           const keys = new Set(
             ownerPoints(rs)
               .slice(0, 10)
@@ -18539,8 +18564,8 @@
                   (key === dueDate
                     ? 'actual effective due date. Date spacing follows calendar time; undated records remain available in their own drill control'
                     : key === ownerKey
-                      ? page === 'workload'
-                        ? 'exact underwriter ID, showing the ten largest current workloads; ties use display name then ID; previous counts use the same selected IDs'
+                      ? ['workload', 'activity', 'FACILITY'].includes(page)
+                        ? 'exact underwriter ID, showing the ten largest current counts; ties use display name then ID; previous counts use the same selected IDs'
                         : 'exact specialist ID'
                       : key === dueMonth
                         ? 'effective due month. Dates are source deadlines, not forecasts; missing dates remain explicit'
@@ -18555,7 +18580,9 @@
                                 : key) +
                   (page === 'workload' && key === ownerKey
                     ? '. One stacked bar partitions the current workload into mutually exclusive blue Other actions and red Critical segments with counts inside and a total at the end. All underwriters remain in the full supporting records.'
-                    : '. All groups are included.'),
+                    : ['activity', 'FACILITY'].includes(page) && key === ownerKey
+                      ? '. All underwriters remain in the page totals and source register.'
+                      : '. All groups are included.'),
               );
             registry[id].parent = a.id;
             return html.replace(
@@ -19491,7 +19518,7 @@
           return {
             name,
             y: selected.length,
-            color: colors[i % colors.length],
+            color: global.CreditCovenantAging.color(name),
             custom: { rows: selected },
           };
         });
@@ -19838,7 +19865,7 @@
           reg,
           bands(selected).map((b, i) => ({
             name: b,
-            color: colors[i],
+            color: global.CreditCovenantAging.color(b),
             data: reg.map((name) => {
               const rs = selected.filter((r) => r.region === name && age(r) === b);
               return { y: rs.length, custom: { rows: rs } };
@@ -19873,7 +19900,7 @@
             data: states.map((name, i) => ({
               name,
               y: facilitySet.groups.filter((g) => g.record.risk_state === name).length,
-              color: colors[i],
+              color: global.CreditCovenantAging.riskColor(name),
               custom: {
                 rows: facilitySet.groups
                   .filter((g) => g.record.risk_state === name)
@@ -20219,7 +20246,7 @@
               categories: regs,
               series: bands(rows).map((b, i) => ({
                 name: b,
-                color: colors[i],
+                color: global.CreditCovenantAging.color(b),
                 data: regs.map((name) => {
                   const rs = rows.filter((r) => r.region === name && age(r) === b);
                   return { y: rs.length, custom: { rows: rs } };
@@ -20254,6 +20281,7 @@
                   name: 'Facilities',
                   data: states.map((name) => ({
                     y: fs.groups.filter((g) => g.record.risk_state === name).length,
+                    color: global.CreditCovenantAging.riskColor(name),
                     custom: {
                       rows: fs.groups
                         .filter((g) => g.record.risk_state === name)
@@ -21219,6 +21247,24 @@
           detailSourcesReady = false,
           detailRequest = 0;
         function prepareDetailSources() {
+          // CCM charts and records are fully described by their own snapshots.
+          // Keep opening a detail as lightweight as opening the page itself.
+          if (state.tab === 'CCM' && config.mode !== 'demo' && config.dataMode === 'workbooks') {
+            data.relatedSourceErrors ??= {};
+            for (const name of [
+              'portfolio',
+              'activity',
+              'COVENANTS',
+              'CA',
+              'FACILITY',
+              'INSURANCE',
+              'APPRAISALS',
+              'covenant_history',
+            ])
+              data.relatedSourceErrors[name] =
+                'Not loaded on CCM. Open the corresponding dashboard to view this source.';
+            return;
+          }
           if (
             detailSourcesReady ||
             ((config.mode === 'demo' || config.dataMode !== 'workbooks') &&
@@ -22525,5 +22571,5 @@
     };
   })(window);
 
-  window.CREDIT_PAGE_BUILD = 'd74d36be93fe:overview';
+  window.CREDIT_PAGE_BUILD = 'f19f07e34b71:overview';
 })();
